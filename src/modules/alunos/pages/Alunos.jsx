@@ -158,11 +158,14 @@ export default function Alunos() {
                     {totalFaltas} {alerta && '⚠️'}
                   </span>
                 </td>
-                <td style={{ display: 'flex', gap: '0.5rem' }}>
-                  <Link to={`/alunos/${a.id}`}>
-                    <button className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Histórico</button>
+                <td style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <Link to={`/alunos/${a.id}/editar`}>
+                    <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Editar</button>
                   </Link>
-                  <button className="btn-danger" onClick={() => handleDelete(a.id)}>Excluir</button>
+                  <Link to={`/alunos/${a.id}`}>
+                    <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Histórico</button>
+                  </Link>
+                  <button type="button" className="btn-danger" onClick={() => handleDelete(a.id)}>Excluir</button>
                 </td>
               </tr>
             );
