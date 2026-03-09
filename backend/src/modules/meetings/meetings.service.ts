@@ -18,4 +18,14 @@ export class MeetingsService {
   create(dto: CreateMeetingDto) {
     return this.repo.save(this.repo.create(dto))
   }
+
+  async update(id: number, dto: Partial<CreateMeetingDto>) {
+    await this.repo.update(id, dto)
+    return this.repo.findOne({ where: { id } })
+  }
+
+  async remove(id: number) {
+    await this.repo.delete(id)
+    return { success: true }
+  }
 }

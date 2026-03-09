@@ -4,6 +4,6 @@ export const horariosService = {
   listar: (classId) => api.get('/schedules' + (classId ? `?class_id=${classId}` : '')),
   buscarPorId: (id) => api.get(`/schedules/${id}`),
   criar: (data) => api.post('/schedules', data),
-  atualizar: (id, data) => api.patch(`/schedules/${id}`, data),
+  atualizar: (id, data) => api.put(`/schedules/${id}`, data),
   excluir: (id) => api.delete(`/schedules/${id}`),
 }
