@@ -20,29 +20,39 @@ export const router = createBrowserRouter([
   ...publicRoutes,
   {
     path: '/',
-    element: <ProtectedRoute><Outlet /></ProtectedRoute>,
+    element: <ProtectedRoute />,
     children: [
       { index: true, element: <RoleBasedRedirect /> },
       {
         path: 'aluno',
-        element: <AlunoLayout />,
+        element: <ProtectedRoute allowedRoles={['student']} />,
         children: [
-          { index: true, element: <Navigate to="/aluno/dados" replace /> },
-          { path: 'dados', element: <MeusDados /> },
-          { path: 'notificacoes', element: <Notificacoes /> },
-          { path: 'alterar-senha', element: <AlterarSenha /> },
+          {
+            element: <AlunoLayout />,
+            children: [
+              { index: true, element: <Navigate to="/aluno/dados" replace /> },
+              { path: 'dados', element: <MeusDados /> },
+              { path: 'notificacoes', element: <Notificacoes /> },
+              { path: 'alterar-senha', element: <AlterarSenha /> },
+            ],
+          },
         ],
       },
       {
         path: 'professor',
-        element: <ProfessorLayout />,
+        element: <ProtectedRoute allowedRoles={['teacher']} />,
         children: [
-          { index: true, element: <Navigate to="/professor/turmas" replace /> },
-          { path: 'turmas', element: <MinhasTurmas /> },
-          { path: 'faltas', element: <Presenca /> },
-          { path: 'notas', element: <Notas /> },
-          { path: 'historico', element: <RelatorioPresenca /> },
-          { path: 'alterar-senha', element: <AlterarSenhaProfessor /> },
+          {
+            element: <ProfessorLayout />,
+            children: [
+              { index: true, element: <Navigate to="/professor/turmas" replace /> },
+              { path: 'turmas', element: <MinhasTurmas /> },
+              { path: 'faltas', element: <Presenca /> },
+              { path: 'notas', element: <Notas /> },
+              { path: 'historico', element: <RelatorioPresenca /> },
+              { path: 'alterar-senha', element: <AlterarSenhaProfessor /> },
+            ],
+          },
         ],
       },
       {

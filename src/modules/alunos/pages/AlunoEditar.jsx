@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Card, PageHeader, FormInput } from '../../../components/ui';
+import { useParams } from 'react-router-dom';
+import { Card, PageHeader, FormInput, Spinner, Breadcrumb } from '../../../components/ui';
 import { alunosService } from '../../../services/alunos.service';
 import { turmasService } from '../../../services/turmas.service';
 import toast from 'react-hot-toast';
@@ -45,16 +45,7 @@ export default function AlunoEditar() {
     e.preventDefault();
     setSaving(true);
     try {
-      let resolvedClassId = null;
-      if (form.class_id) {
-        const num = Number(form.class_id);
-        if (!isNaN(num) && turmas.find(t => t.id === num)) {
-          resolvedClassId = num;
-        } else {
-          const t = turmas.find(t => t.name.toLowerCase() === String(form.class_id).toLowerCase());
-          if (t) resolvedClassId = t.id;
-        }
-      }
+      const classId = form.class_id ? Number(form.class_id) : null;
       await alunosService.atualizar(id, {
         name: form.name,
         birth_date: form.birth_date || null,
@@ -62,7 +53,7 @@ export default function AlunoEditar() {
         guardian_name: form.guardian_name || null,
         guardian_phone: form.guardian_phone || null,
         address: form.address || null,
-        class_id: resolvedClassId
+        class_id: classId
       });
       toast.success('Aluno atualizado com sucesso!');
     } catch (error) {
@@ -72,13 +63,14 @@ export default function AlunoEditar() {
     }
   };
 
-  if (loading) return <div className="page">Carregando...</div>;
+  if (loading) return <div className="page"><Spinner /></div>;
 
   return (
     <div className="page">
-      <Link to="/alunos" style={{ color: '#646cff', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-        &larr; Voltar para Alunos
-      </Link>
+      <Breadcrumb items={[
+        { label: 'Alunos', to: '/alunos' },
+        { label: form.name || 'Editar' }
+      ]} />
 
       <PageHeader title="Editar Aluno" description={`Editando: ${form.name || '...'}`} />
 

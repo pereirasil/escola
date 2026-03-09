@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Card, PageHeader, DataTable } from '../../../components/ui';
+import { useParams } from 'react-router-dom';
+import { Card, PageHeader, DataTable, Spinner, Breadcrumb } from '../../../components/ui';
 import { alunosService } from '../../../services/alunos.service';
 import { presencasService } from '../../../services/presencas.service';
 import { materiasService } from '../../../services/materias.service';
@@ -55,19 +55,20 @@ export default function AlunoDetalhes() {
   const formatData = (dataStr) => {
     if (!dataStr) return '';
     const partes = dataStr.split('-');
-    if (partes.length === 3) return `${partes[2]}/${partes[1]}`;
+    if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
     return dataStr;
   };
 
-  if (!aluno) return <div className="page"><p>Carregando...</p></div>;
+  if (!aluno) return <div className="page"><Spinner /></div>;
 
   return (
     <div className="page">
-      <Link to="/alunos" style={{ color: '#646cff', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-        &larr; Voltar para Alunos
-      </Link>
+      <Breadcrumb items={[
+        { label: 'Alunos', to: '/alunos' },
+        { label: aluno.name }
+      ]} />
 
-      <PageHeader title={aluno.name} description={`Matrícula/CPF: ${aluno.document || 'Não informado'}`} />
+      <PageHeader title={aluno.name} description={`Matricula/CPF: ${aluno.document || 'Nao informado'}`} />
 
       <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
         <Card>

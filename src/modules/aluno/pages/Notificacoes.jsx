@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card } from '../../../components/ui'
+import { Card, Spinner } from '../../../components/ui'
 import { alunosService } from '../../../services/alunos.service'
 import toast from 'react-hot-toast'
 
@@ -8,16 +8,16 @@ export default function Notificacoes() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    alunosService.minhasNotificacoes().then(setLista).catch(() => toast.error('Erro ao carregar notificações.')).finally(() => setLoading(false))
+    alunosService.minhasNotificacoes().then(setLista).catch(() => toast.error('Erro ao carregar notificacoes.')).finally(() => setLoading(false))
   }, [])
 
   return (
     <div className="page">
-      <Card title="Notificações">
+      <Card title="Notificacoes">
         {loading ? (
-          <p>Carregando...</p>
+          <Spinner />
         ) : lista.length === 0 ? (
-          <p>Nenhuma notificação.</p>
+          <div className="empty-state">Nenhuma notificacao.</div>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {lista.map((n) => (

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, PageHeader, DataTable, SelectField } from '../../../components/ui';
+import { Card, PageHeader, DataTable, SelectField, Spinner } from '../../../components/ui';
 import { turmasService } from '../../../services/turmas.service';
 import { presencasService } from '../../../services/presencas.service';
 import toast from 'react-hot-toast';
@@ -51,6 +51,7 @@ export default function RelatorioPresenca() {
       <Card title="Selecione a Turma">
         <div style={{ maxWidth: '300px' }}>
           <SelectField 
+            label="Turma"
             id="turma" 
             value={turmaId} 
             onChange={e => setTurmaId(e.target.value)}
@@ -62,7 +63,7 @@ export default function RelatorioPresenca() {
       {turmaId && (
         <Card title="Frequência da Turma">
           {loading ? (
-            <p>Carregando dados...</p>
+            <Spinner />
           ) : (
             <DataTable
               columns={['Aluno', 'Presenças', 'Faltas', 'Frequência']}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { usersService } from '../../../services/users.service'
-import { Card, PageHeader, DataTable } from '../../../components/ui'
+import { Card, PageHeader, DataTable, Spinner } from '../../../components/ui'
 import toast from 'react-hot-toast'
 
 export default function AprovarEscolas() {
@@ -36,7 +36,7 @@ export default function AprovarEscolas() {
       
       <Card>
         {loading ? (
-          <p>Carregando...</p>
+          <Spinner />
         ) : (
           <DataTable
             columns={['Nome', 'E-mail', 'Data cadastro', 'Ações']}

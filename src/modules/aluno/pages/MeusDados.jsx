@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card, FormInput } from '../../../components/ui'
+import { Card, FormInput, Spinner } from '../../../components/ui'
 import { alunosService } from '../../../services/alunos.service'
 import { useAuthStore } from '../../../store/useAuthStore'
 import toast from 'react-hot-toast'
@@ -35,7 +35,7 @@ export default function MeusDados() {
     }
   }
 
-  if (loading) return <div className="page">Carregando...</div>
+  if (loading) return <div className="page"><Spinner /></div>
   if (!dados) return <div className="page">Não foi possível carregar seus dados.</div>
 
   return (

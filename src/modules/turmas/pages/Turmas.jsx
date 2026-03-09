@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, DataTable, FormInput, SelectField } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal } from '../../../components/ui';
 import { turmasService } from '../../../services/turmas.service';
 import toast from 'react-hot-toast';
 
@@ -9,6 +9,7 @@ export default function Turmas() {
   const [editId, setEditId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const load = async () => {
     try {
@@ -61,21 +62,22 @@ export default function Turmas() {
     setIsModalOpen(false);
   };
 
-  const handleDelete = async (id) => {
-    if (confirm('Tem certeza?')) {
-      try {
-        await turmasService.excluir(id);
-        toast.success('Turma excluída com sucesso!');
-        load();
-      } catch (error) {
-        toast.error('Erro ao excluir turma.');
-      }
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await turmasService.excluir(deleteTarget);
+      toast.success('Turma excluida com sucesso!');
+      load();
+    } catch (error) {
+      toast.error('Erro ao excluir turma.');
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
   return (
     <div className="page">
-      <PageHeader title="Turmas" description="Organização das salas de aula" />
+      <PageHeader title="Turmas" description="Organizacao das salas de aula" />
       
       <Card title="Cadastrar Nova Turma">
         <form onSubmit={(e) => {
@@ -86,18 +88,18 @@ export default function Turmas() {
             <FormInput 
               label="Nome da Turma" 
               id="new-name" 
-              placeholder="Ex: 6º Ano A" 
+              placeholder="Ex: 6o Ano A" 
               required 
               value={!editId ? form.name : ''} 
               onChange={e => !editId && setForm({ ...form, name: e.target.value })} 
             />
             
             <div className="form-group">
-              <label htmlFor="new-grade">Série / Ano</label>
+              <label htmlFor="new-grade">Serie / Ano</label>
               <input 
                 id="new-grade"
                 list="new-grades-list"
-                placeholder="Ex: 6º Ano (Ensino Fundamental)" 
+                placeholder="Ex: 6o Ano (Ensino Fundamental)" 
                 value={!editId ? form.grade : ''} 
                 onChange={e => !editId && setForm({ ...form, grade: e.target.value })} 
               />
@@ -105,19 +107,19 @@ export default function Turmas() {
                 <option value="Maternal" />
                 <option value="Jardim I" />
                 <option value="Jardim II" />
-                <option value="Pré-escola" />
-                <option value="1º Ano (Ensino Fundamental)" />
-                <option value="2º Ano (Ensino Fundamental)" />
-                <option value="3º Ano (Ensino Fundamental)" />
-                <option value="4º Ano (Ensino Fundamental)" />
-                <option value="5º Ano (Ensino Fundamental)" />
-                <option value="6º Ano (Ensino Fundamental)" />
-                <option value="7º Ano (Ensino Fundamental)" />
-                <option value="8º Ano (Ensino Fundamental)" />
-                <option value="9º Ano (Ensino Fundamental)" />
-                <option value="1º Ano (Ensino Médio)" />
-                <option value="2º Ano (Ensino Médio)" />
-                <option value="3º Ano (Ensino Médio)" />
+                <option value="Pre-escola" />
+                <option value="1o Ano (Ensino Fundamental)" />
+                <option value="2o Ano (Ensino Fundamental)" />
+                <option value="3o Ano (Ensino Fundamental)" />
+                <option value="4o Ano (Ensino Fundamental)" />
+                <option value="5o Ano (Ensino Fundamental)" />
+                <option value="6o Ano (Ensino Fundamental)" />
+                <option value="7o Ano (Ensino Fundamental)" />
+                <option value="8o Ano (Ensino Fundamental)" />
+                <option value="9o Ano (Ensino Fundamental)" />
+                <option value="1o Ano (Ensino Medio)" />
+                <option value="2o Ano (Ensino Medio)" />
+                <option value="3o Ano (Ensino Medio)" />
               </datalist>
             </div>
 
@@ -127,7 +129,7 @@ export default function Turmas() {
               value={!editId ? form.shift : ''} 
               onChange={e => !editId && setForm({ ...form, shift: e.target.value })}
               options={[
-                { value: 'Manhã', label: 'Manhã' },
+                { value: 'Manha', label: 'Manha' },
                 { value: 'Tarde', label: 'Tarde' },
                 { value: 'Noite', label: 'Noite' }
               ]}
@@ -156,7 +158,7 @@ export default function Turmas() {
 
       <Card title="Lista de Turmas">
         <DataTable
-          columns={['Nome', 'Série/Ano', 'Turno', 'Sala', 'Ano Letivo', 'Ações']}
+          columns={['Nome', 'Serie/Ano', 'Turno', 'Sala', 'Ano Letivo', 'Acoes']}
           data={turmas}
           renderRow={(t) => (
             <tr key={t.id}>
@@ -177,7 +179,7 @@ export default function Turmas() {
                   <button 
                     className="btn-danger" 
                     style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} 
-                    onClick={() => handleDelete(t.id)}
+                    onClick={() => setDeleteTarget(t.id)}
                   >
                     Excluir
                   </button>
@@ -188,75 +190,47 @@ export default function Turmas() {
         />
       </Card>
 
-      {/* Modal de Edição */}
       {isModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: '#1e1e1e', // tema escuro
-            padding: '2rem',
-            borderRadius: '8px',
-            width: '100%',
-            maxWidth: '500px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            maxHeight: '90vh',
-            overflowY: 'auto'
-          }}>
-            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#fff' }}>Editar Turma</h3>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Editar Turma</h3>
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <FormInput 
                   label="Nome da Turma" 
                   id="edit-name" 
-                  placeholder="Ex: 6º Ano A" 
+                  placeholder="Ex: 6o Ano A" 
                   required 
                   value={form.name} 
                   onChange={e => setForm({ ...form, name: e.target.value })} 
                 />
                 
-                <div className="form-group" style={{ display: 'flex', flexDirection: 'column' }}>
-                  <label htmlFor="edit-grade" style={{ marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500, color: '#ccc' }}>Série / Ano</label>
+                <div className="form-group">
+                  <label htmlFor="edit-grade">Serie / Ano</label>
                   <input 
                     id="edit-grade"
                     list="edit-grades-list"
-                    placeholder="Ex: 6º Ano (Ensino Fundamental)" 
+                    placeholder="Ex: 6o Ano (Ensino Fundamental)" 
                     value={form.grade} 
                     onChange={e => setForm({ ...form, grade: e.target.value })} 
-                    style={{
-                      padding: '0.5rem',
-                      borderRadius: '4px',
-                      border: '1px solid #333',
-                      backgroundColor: '#242424',
-                      color: '#fff'
-                    }}
                   />
                   <datalist id="edit-grades-list">
                     <option value="Maternal" />
                     <option value="Jardim I" />
                     <option value="Jardim II" />
-                    <option value="Pré-escola" />
-                    <option value="1º Ano (Ensino Fundamental)" />
-                    <option value="2º Ano (Ensino Fundamental)" />
-                    <option value="3º Ano (Ensino Fundamental)" />
-                    <option value="4º Ano (Ensino Fundamental)" />
-                    <option value="5º Ano (Ensino Fundamental)" />
-                    <option value="6º Ano (Ensino Fundamental)" />
-                    <option value="7º Ano (Ensino Fundamental)" />
-                    <option value="8º Ano (Ensino Fundamental)" />
-                    <option value="9º Ano (Ensino Fundamental)" />
-                    <option value="1º Ano (Ensino Médio)" />
-                    <option value="2º Ano (Ensino Médio)" />
-                    <option value="3º Ano (Ensino Médio)" />
+                    <option value="Pre-escola" />
+                    <option value="1o Ano (Ensino Fundamental)" />
+                    <option value="2o Ano (Ensino Fundamental)" />
+                    <option value="3o Ano (Ensino Fundamental)" />
+                    <option value="4o Ano (Ensino Fundamental)" />
+                    <option value="5o Ano (Ensino Fundamental)" />
+                    <option value="6o Ano (Ensino Fundamental)" />
+                    <option value="7o Ano (Ensino Fundamental)" />
+                    <option value="8o Ano (Ensino Fundamental)" />
+                    <option value="9o Ano (Ensino Fundamental)" />
+                    <option value="1o Ano (Ensino Medio)" />
+                    <option value="2o Ano (Ensino Medio)" />
+                    <option value="3o Ano (Ensino Medio)" />
                   </datalist>
                 </div>
 
@@ -266,7 +240,7 @@ export default function Turmas() {
                   value={form.shift} 
                   onChange={e => setForm({ ...form, shift: e.target.value })}
                   options={[
-                    { value: 'Manhã', label: 'Manhã' },
+                    { value: 'Manha', label: 'Manha' },
                     { value: 'Tarde', label: 'Tarde' },
                     { value: 'Noite', label: 'Noite' }
                   ]}
@@ -287,7 +261,7 @@ export default function Turmas() {
                   onChange={e => setForm({ ...form, school_year: e.target.value })} 
                 />
               </div>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={cancelEdit} disabled={loading}>
                   Cancelar
                 </button>
@@ -299,6 +273,16 @@ export default function Turmas() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Excluir turma"
+        message="Tem certeza que deseja excluir esta turma? Esta acao nao pode ser desfeita."
+        confirmLabel="Excluir"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

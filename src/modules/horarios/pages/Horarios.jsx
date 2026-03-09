@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, FormInput, SelectField } from '../../../components/ui';
+import { Card, PageHeader, FormInput, SelectField, ConfirmModal } from '../../../components/ui';
 import { horariosService } from '../../../services/horarios.service';
 import { turmasService } from '../../../services/turmas.service';
 import { professoresService } from '../../../services/professores.service';
@@ -100,15 +100,18 @@ export default function Horarios() {
     setIsModalOpen(false);
   };
 
-  const handleDelete = async (id) => {
-    if (confirm('Tem certeza que deseja remover este horário?')) {
-      try {
-        await horariosService.excluir(id);
-        toast.success('Horário removido com sucesso!');
-        loadHorarios();
-      } catch (error) {
-        toast.error('Erro ao remover horário.');
-      }
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    try {
+      await horariosService.excluir(deleteTarget);
+      toast.success('Horario removido com sucesso!');
+      loadHorarios();
+    } catch (error) {
+      toast.error('Erro ao remover horario.');
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -261,7 +264,7 @@ export default function Horarios() {
                                             cursor: 'pointer',
                                             flex: 1
                                           }}
-                                          onClick={() => handleDelete(aula.id)}
+                                          onClick={() => setDeleteTarget(aula.id)}
                                         >
                                           Remover
                                         </button>
@@ -285,31 +288,10 @@ export default function Horarios() {
         )}
       </Card>
 
-      {/* Modal de Edição */}
       {isModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: '#1e1e1e', // tema escuro
-            padding: '2rem',
-            borderRadius: '8px',
-            width: '100%',
-            maxWidth: '600px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-            maxHeight: '90vh',
-            overflowY: 'auto'
-          }}>
-            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#fff' }}>Editar Horário</h3>
+        <div className="modal-overlay">
+          <div className="modal-content modal-content-wide">
+            <h3>Editar Horario</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-grid">
                 <SelectField 
@@ -331,7 +313,7 @@ export default function Horarios() {
                 />
 
                 <SelectField 
-                  label="Matéria" 
+                  label="Materia" 
                   id="edit-subject_id" 
                   required 
                   value={form.subject_id} 
@@ -348,22 +330,32 @@ export default function Horarios() {
                   options={diasDaSemana.map(d => ({ value: d, label: d }))}
                 />
 
-                <FormInput label="Início" id="edit-start_time" type="time" required value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
+                <FormInput label="Inicio" id="edit-start_time" type="time" required value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
                 <FormInput label="Fim" id="edit-end_time" type="time" required value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} />
                 <FormInput label="Sala" id="edit-room" placeholder="Ex: Lab 1" value={form.room} onChange={e => setForm({ ...form, room: e.target.value })} />
               </div>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={cancelEdit} disabled={loading}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Salvando...' : 'Atualizar Horário'}
+                  {loading ? 'Salvando...' : 'Atualizar Horario'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Remover horario"
+        message="Tem certeza que deseja remover este horario?"
+        confirmLabel="Remover"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

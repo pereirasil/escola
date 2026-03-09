@@ -370,6 +370,311 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* Sidebar toggle (mobile) */
+.sidebar-toggle {
+  display: none;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+/* Page description (respects theme) */
+.page-description {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Confirm modal */
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.confirm-dialog {
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.confirm-dialog h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.confirm-dialog p {
+  margin: 0 0 1.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.confirm-dialog .confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.confirm-dialog .confirm-actions button {
+  flex: 1;
+  padding: 0.6rem 1rem;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #333;
+}
+
+.pagination button {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pagination .pagination-info {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0.5rem;
+}
+
+/* Spinner */
+.spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.spinner::after {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 3px solid #333;
+  border-top-color: #646cff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Edit modal (shared) */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #1e1e1e;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-content-wide {
+  max-width: 600px;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
+
+/* Sidebar section grouping */
+.sidebar-section-title {
+  padding: 0.75rem 1.2rem 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 0.5rem;
+}
+
+.sidebar-section-title:first-child {
+  margin-top: 0;
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.breadcrumb a {
+  color: #646cff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb .breadcrumb-separator {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.breadcrumb .breadcrumb-current {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Textarea */
+.form-group textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #444;
+  border-radius: 6px;
+  background-color: #242424;
+  color: inherit;
+  font: inherit;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+/* Field hint */
+.field-hint {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  margin-top: 0.2rem;
+}
+
+/* Required marker */
+.form-group label .required-mark {
+  color: #f87171;
+  margin-left: 0.15rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    bottom: 0;
+    z-index: 1100;
+    width: 260px;
+    transition: left 0.3s ease;
+  }
+
+  .sidebar.sidebar-open {
+    left: 0;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1050;
+  }
+
+  .sidebar-overlay.sidebar-overlay-visible {
+    display: block;
+  }
+
+  .sidebar-toggle {
+    display: block;
+  }
+
+  .layout-content {
+    padding: 1rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    padding: 0.75rem 1rem;
+  }
+
+  .header-title {
+    font-size: 1rem;
+  }
+
+  .auth-card {
+    padding: 1.5rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .modal-content,
+  .modal-content-wide {
+    max-width: 95%;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+
+  .confirm-dialog {
+    width: 95%;
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -396,6 +701,9 @@ button:focus-visible {
     background-color: #646cff;
     color: #fff;
   }
+  .sidebar-section-title {
+    color: rgba(0, 0, 0, 0.35);
+  }
   .header {
     background-color: #fff;
     border-bottom-color: #eee;
@@ -405,6 +713,9 @@ button:focus-visible {
   }
   .header-user {
     color: #666;
+  }
+  .page-description {
+    color: #555;
   }
   .page p {
     color: #555;
@@ -445,7 +756,8 @@ button:focus-visible {
     color: #444;
   }
   .form-group input,
-  .form-group select {
+  .form-group select,
+  .form-group textarea {
     border-color: #ccc;
     background-color: #fff;
     color: #213547;
@@ -454,5 +766,43 @@ button:focus-visible {
     color: #888;
     background-color: #f9f9f9;
     border-color: #ddd;
+  }
+  .pagination {
+    border-top-color: #eee;
+  }
+  .pagination .pagination-info {
+    color: #888;
+  }
+  .spinner::after {
+    border-color: #ddd;
+    border-top-color: #646cff;
+  }
+  .confirm-dialog {
+    background-color: #fff;
+    border-color: #ddd;
+  }
+  .confirm-dialog p {
+    color: #555;
+  }
+  .modal-content {
+    background-color: #fff;
+    border: 1px solid #ddd;
+  }
+  .breadcrumb {
+    color: #888;
+  }
+  .breadcrumb .breadcrumb-separator {
+    color: #ccc;
+  }
+  .breadcrumb .breadcrumb-current {
+    color: #555;
+  }
+  .field-hint {
+    color: rgba(0, 0, 0, 0.4);
+  }
+  .form-group textarea {
+    border-color: #ccc;
+    background-color: #fff;
+    color: #213547;
   }
 }

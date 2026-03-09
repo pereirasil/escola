@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, DataTable, FormInput, SelectField } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal } from '../../../components/ui';
 import { reunioesService } from '../../../services/reunioes.service';
 import { turmasService } from '../../../services/turmas.service';
 import toast from 'react-hot-toast';
@@ -11,6 +11,7 @@ export default function Reunioes() {
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({ title: '', scheduled_at: '', description: '', class_id: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const carregarDados = async () => {
     try {
@@ -91,17 +92,16 @@ export default function Reunioes() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta reunião?')) {
-      return;
-    }
-
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await reunioesService.excluir(id);
-      toast.success('Reunião excluída com sucesso!');
+      await reunioesService.excluir(deleteTarget);
+      toast.success('Reuniao excluida com sucesso!');
       carregarDados();
     } catch (error) {
-      toast.error('Erro ao excluir reunião.');
+      toast.error('Erro ao excluir reuniao.');
+    } finally {
+      setDeleteTarget(null);
     }
   };
 
@@ -161,17 +161,20 @@ export default function Reunioes() {
               value={!editId ? form.scheduled_at : ''}
               onChange={(e) => !editId && setForm({ ...form, scheduled_at: e.target.value })}
             />
-            <FormInput
-              label="Descrição"
-              id="new-description"
-              placeholder="Pauta ou detalhes da reunião"
-              value={!editId ? form.description : ''}
-              onChange={(e) => !editId && setForm({ ...form, description: e.target.value })}
-            />
+            <div className="form-group">
+              <label htmlFor="new-description">Descricao</label>
+              <textarea
+                id="new-description"
+                placeholder="Pauta ou detalhes da reuniao"
+                value={!editId ? form.description : ''}
+                onChange={(e) => !editId && setForm({ ...form, description: e.target.value })}
+                rows={3}
+              />
+            </div>
           </div>
           <div style={{ marginTop: '1rem' }}>
             <button type="submit" className="btn-primary" disabled={loading || editId}>
-              {loading && !editId ? 'Agendando...' : 'Agendar Reunião'}
+              {loading && !editId ? 'Agendando...' : 'Agendar Reuniao'}
             </button>
           </div>
         </form>
@@ -211,7 +214,7 @@ export default function Reunioes() {
                   <button 
                     className="btn-danger" 
                     style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} 
-                    onClick={() => handleDelete(item.id)}
+                    onClick={() => setDeleteTarget(item.id)}
                   >
                     Excluir
                   </button>
@@ -222,36 +225,17 @@ export default function Reunioes() {
         />
       </Card>
 
-      {/* Modal de Edição */}
       {isModalOpen && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000
-        }}>
-          <div style={{
-            backgroundColor: '#1e1e1e', // tema escuro
-            padding: '2rem',
-            borderRadius: '8px',
-            width: '100%',
-            maxWidth: '500px',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-          }}>
-            <h3 style={{ marginTop: 0, marginBottom: '1.5rem', color: '#fff' }}>Editar Reunião</h3>
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Editar Reuniao</h3>
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <FormInput
-                  label="Título"
+                  label="Titulo"
                   id="edit-title"
                   required
-                  placeholder="Ex: Reunião de Pais"
+                  placeholder="Ex: Reuniao de Pais"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
@@ -271,26 +255,39 @@ export default function Reunioes() {
                   value={form.scheduled_at}
                   onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
                 />
-                <FormInput
-                  label="Descrição"
-                  id="edit-description"
-                  placeholder="Pauta ou detalhes da reunião"
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                />
+                <div className="form-group">
+                  <label htmlFor="edit-description">Descricao</label>
+                  <textarea
+                    id="edit-description"
+                    placeholder="Pauta ou detalhes da reuniao"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    rows={3}
+                  />
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <div className="modal-actions">
                 <button type="button" className="btn-secondary" onClick={cancelEdit} disabled={loading}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Salvando...' : 'Atualizar Reunião'}
+                  {loading ? 'Salvando...' : 'Atualizar Reuniao'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Excluir reuniao"
+        message="Tem certeza que deseja excluir esta reuniao?"
+        confirmLabel="Excluir"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

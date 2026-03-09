@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card } from '../../../components/ui'
+import { Card, Spinner } from '../../../components/ui'
 import { professoresService } from '../../../services/professores.service'
 import toast from 'react-hot-toast'
 
@@ -19,9 +19,9 @@ export default function MinhasTurmas() {
     <div className="page">
       <Card title="Minhas Turmas">
         {loading ? (
-          <p>Carregando...</p>
+          <Spinner />
         ) : turmas.length === 0 ? (
-          <p>Nenhuma turma atribuída.</p>
+          <div className="empty-state">Nenhuma turma atribuida.</div>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {turmas.map((t) => (

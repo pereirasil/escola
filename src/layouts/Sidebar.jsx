@@ -1,45 +1,44 @@
 import { NavLink } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
 
-const menuItems = [
-  { path: '/dashboard', label: 'Dashboard' },
-  { path: '/alunos', label: 'Alunos' },
-  { path: '/professores', label: 'Professores' },
-  { path: '/materias', label: 'Matérias' },
-  { path: '/turmas', label: 'Turmas' },
-  { path: '/horarios', label: 'Horários' },
-  { path: '/presenca', label: 'Chamada (Presença)' },
-  { path: '/relatorio-presenca', label: 'Relatório de Faltas' },
-  { path: '/notas', label: 'Notas' },
-  { path: '/financeiro', label: 'Financeiro' },
-  { path: '/reunioes', label: 'Reuniões' },
-]
-
-export default function Sidebar() {
+export default function Sidebar({ open, onClose }) {
   const user = useAuthStore(state => state.user)
   const isAdmin = user?.role === 'admin'
 
+  const linkClass = ({ isActive }) => (isActive ? 'sidebar-link active' : 'sidebar-link')
+  const handleClick = () => { if (onClose) onClose() }
+
   return (
-    <aside className="sidebar">
-      <nav className="sidebar-nav">
-        {isAdmin && (
-          <NavLink
-            to="/aprovar-escolas"
-            className={({ isActive }) => (isActive ? 'sidebar-link active' : 'sidebar-link')}
-          >
-            Aprovar escolas
-          </NavLink>
-        )}
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            className={({ isActive }) => (isActive ? 'sidebar-link active' : 'sidebar-link')}
-          >
-            {item.label}
-          </NavLink>
-        ))}
-      </nav>
-    </aside>
+    <>
+      {open && <div className="sidebar-overlay sidebar-overlay-visible" onClick={onClose} />}
+      <aside className={`sidebar${open ? ' sidebar-open' : ''}`}>
+        <nav className="sidebar-nav">
+          <NavLink to="/dashboard" className={linkClass} onClick={handleClick}>Dashboard</NavLink>
+
+          {isAdmin && (
+            <>
+              <div className="sidebar-section-title">Administracao</div>
+              <NavLink to="/aprovar-escolas" className={linkClass} onClick={handleClick}>Aprovar Escolas</NavLink>
+            </>
+          )}
+
+          <div className="sidebar-section-title">Academico</div>
+          <NavLink to="/alunos" className={linkClass} onClick={handleClick}>Alunos</NavLink>
+          <NavLink to="/professores" className={linkClass} onClick={handleClick}>Professores</NavLink>
+          <NavLink to="/materias" className={linkClass} onClick={handleClick}>Materias</NavLink>
+          <NavLink to="/turmas" className={linkClass} onClick={handleClick}>Turmas</NavLink>
+          <NavLink to="/horarios" className={linkClass} onClick={handleClick}>Horarios</NavLink>
+
+          <div className="sidebar-section-title">Avaliacao</div>
+          <NavLink to="/notas" className={linkClass} onClick={handleClick}>Notas</NavLink>
+          <NavLink to="/presenca" className={linkClass} onClick={handleClick}>Chamada (Presenca)</NavLink>
+          <NavLink to="/relatorio-presenca" className={linkClass} onClick={handleClick}>Relatorio de Faltas</NavLink>
+
+          <div className="sidebar-section-title">Gestao</div>
+          <NavLink to="/financeiro" className={linkClass} onClick={handleClick}>Financeiro</NavLink>
+          <NavLink to="/reunioes" className={linkClass} onClick={handleClick}>Reunioes</NavLink>
+        </nav>
+      </aside>
+    </>
   )
 }

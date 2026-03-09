@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
 
-export default function Header() {
+export default function Header({ onToggleSidebar }) {
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
 
@@ -12,9 +12,14 @@ export default function Header() {
 
   return (
     <header className="header">
-      <h1 className="header-title">Gestão Escolar</h1>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <button type="button" className="sidebar-toggle" onClick={onToggleSidebar} aria-label="Menu">
+          &#9776;
+        </button>
+        <h1 className="header-title">Gestao Escolar</h1>
+      </div>
       <div className="header-actions">
-        <span className="header-user">{user?.name || user?.email || 'Usuário'}</span>
+        <span className="header-user">{user?.name || user?.email || 'Usuario'}</span>
         <button type="button" className="header-logout" onClick={handleLogout}>
           Sair
         </button>
