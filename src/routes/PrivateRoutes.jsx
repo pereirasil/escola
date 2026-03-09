@@ -14,6 +14,7 @@ import RelatorioPresenca from '../modules/presenca/pages/RelatorioPresenca';
 import Financeiro from '../modules/financeiro/pages/Financeiro';
 import Reunioes from '../modules/reunioes/pages/Reunioes';
 import AprovarEscolas from '../modules/admin/pages/AprovarEscolas';
+import EscolasAprovadas from '../modules/admin/pages/EscolasAprovadas';
 
 export const privateRoutes = {
   path: '/',
@@ -34,5 +35,6 @@ export const privateRoutes = {
     { path: 'financeiro', element: <Financeiro /> },
     { path: 'reunioes', element: <Reunioes /> },
     { path: 'aprovar-escolas', element: <AprovarEscolas /> },
+    { path: 'escolas-aprovadas', element: <EscolasAprovadas /> },
   ],
 };
