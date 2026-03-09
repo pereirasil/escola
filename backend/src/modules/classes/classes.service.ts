@@ -16,6 +16,10 @@ export class ClassesService {
     return this.repo.find({ order: { name: 'ASC' } })
   }
 
+  findByTeacherId(teacherId: number) {
+    return this.repo.find({ where: { teacher_id: teacherId }, order: { name: 'ASC' } })
+  }
+
   findOne(id: number) {
     return this.repo.findOne({ where: { id } })
   }

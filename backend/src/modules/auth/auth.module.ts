@@ -4,11 +4,15 @@ import { PassportModule } from '@nestjs/passport'
 import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { UsersModule } from '../users/users.module'
+import { StudentsModule } from '../students/students.module'
+import { TeachersModule } from '../teachers/teachers.module'
 import { JwtStrategy } from './strategies/jwt.strategy'
 
 @Module({
   imports: [
     UsersModule,
+    StudentsModule,
+    TeachersModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? 'chave-secreta-trocar-em-producao',

@@ -1,12 +1,15 @@
-import { IsString, IsOptional, IsEmail } from 'class-validator'
+import { IsString, IsOptional, IsEmail, MinLength, IsArray, IsNumber } from 'class-validator'
 
 export class CreateTeacherDto {
   @IsString()
   name: string
 
-  @IsOptional()
   @IsString()
-  document?: string
+  document: string
+
+  @IsString()
+  @MinLength(6, { message: 'Senha deve ter no mínimo 6 caracteres' })
+  password: string
 
   @IsOptional()
   @IsString()
@@ -19,4 +22,9 @@ export class CreateTeacherDto {
   @IsOptional()
   @IsString()
   subject?: string
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  class_ids?: number[]
 }

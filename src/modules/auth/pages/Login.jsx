@@ -5,33 +5,49 @@ import { useAuthStore } from '../../../store/useAuthStore'
 import toast from 'react-hot-toast'
 
 export default function Login() {
-  const [email, setEmail] = useState('')
+  const [usuario, setUsuario] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
-  
   const { login, isAuthenticated } = useAuthStore()
 
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/dashboard', { replace: true })
+      const role = useAuthStore.getState().user?.role
+      const target = role === 'student' ? '/aluno' : role === 'teacher' ? '/professor' : '/dashboard'
+      navigate(target, { replace: true })
     }
   }, [navigate, isAuthenticated])
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    authService
-      .login(email, password)
-      .then((data) => {
-        login(data.user, data.access_token)
-        toast.success('Bem-vindo de volta!')
-        navigate('/dashboard', { replace: true })
-      })
-      .catch((err) => {
-        toast.error(err.response?.data?.message || 'Erro ao entrar. Tente novamente.')
-      })
-      .finally(() => setLoading(false))
+    try {
+      const isEmail = usuario.includes('@')
+      let data
+      if (isEmail) {
+        data = await authService.login(usuario, password)
+      } else {
+        try {
+          data = await authService.loginStudent(usuario, password)
+        } catch (errStudent) {
+          if (errStudent.response?.status === 401) {
+            data = await authService.loginTeacher(usuario, password)
+          } else {
+            throw errStudent
+          }
+        }
+      }
+      login(data.user, data.access_token)
+      toast.success('Bem-vindo de volta!')
+      const role = data.user.role
+      const target = role === 'student' ? '/aluno' : role === 'teacher' ? '/professor' : '/dashboard'
+      navigate(target, { replace: true })
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Erro ao entrar. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -41,13 +57,14 @@ export default function Login() {
         <h2>Entrar</h2>
         <form onSubmit={handleSubmit} className="auth-form">
           <label>
-            E-mail
+            E-mail ou CPF
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              placeholder="E-mail (gestão) ou CPF (aluno)"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
               required
-              autoComplete="email"
+              autoComplete="username"
             />
           </label>
           <label style={{ marginBottom: '0.25rem' }}>
@@ -67,7 +84,6 @@ export default function Login() {
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
-        
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Repository, In } from 'typeorm'
 import { Attendance } from './entities/attendance.entity'
 import { CreateAttendanceDto } from './dto/create-attendance.dto'
 import { Student } from '../students/entities/student.entity'
@@ -14,6 +14,8 @@ export class AttendanceService {
     private repo: Repository<Attendance>,
     @InjectRepository(Student)
     private studentRepo: Repository<Student>,
+    @InjectRepository(Class)
+    private classRepo: Repository<Class>,
   ) {}
 
   findAll() {
@@ -103,5 +105,19 @@ export class AttendanceService {
 
     // Ordena de quem tem mais faltas para quem tem menos
     return relatorio.sort((a, b) => b.faltas - a.faltas).filter(r => r.faltas > 0);
+  }
+
+  async getRankingFaltasByTeacherId(teacherId: number) {
+    const classes = await this.classRepo.find({ where: { teacher_id: teacherId } })
+    const classIds = classes.map((c) => c.id)
+    if (classIds.length === 0) return []
+    const alunosFiltered = await this.studentRepo.find({ where: { class_id: In(classIds) } })
+    const todasPresencas = await this.repo.find()
+    const relatorio = alunosFiltered.map((aluno) => {
+      const presencasAluno = todasPresencas.filter((p) => p.student_id === aluno.id)
+      const faltas = presencasAluno.filter((p) => p.status === 'F').length
+      return { aluno_id: aluno.id, nome: aluno.name, class_id: aluno.class_id, faltas }
+    })
+    return relatorio.sort((a, b) => b.faltas - a.faltas).filter((r) => r.faltas > 0)
   }
 }

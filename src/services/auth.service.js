@@ -4,6 +4,12 @@ export const authService = {
   login: (email, password) =>
     api.post('/auth/login', { email, password }).then((res) => res.data),
 
+  loginStudent: (cpf, password) =>
+    api.post('/auth/login-student', { cpf, password }).then((res) => res.data),
+
+  loginTeacher: (cpf, password) =>
+    api.post('/auth/login-teacher', { cpf, password }).then((res) => res.data),
+
   register: (name, email, password) =>
     api.post('/auth/register', { name, email, password }),
 }

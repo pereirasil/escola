@@ -10,7 +10,7 @@ export default function Alunos() {
   const [alunos, setAlunos] = useState([]);
   const [turmas, setTurmas] = useState([]);
   const [ranking, setRanking] = useState([]);
-  const [form, setForm] = useState({ name: '', birth_date: '', document: '', guardian_name: '', guardian_phone: '', address: '', class_id: '' });
+  const [form, setForm] = useState({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', address: '', class_id: '' });
   
   // Filtros
   const [filtroNome, setFiltroNome] = useState('');
@@ -47,9 +47,14 @@ export default function Alunos() {
         }
       }
       
-      await alunosService.criar({ ...form, class_id: resolvedClassId });
+      if (form.password !== form.confirmPassword) {
+        toast.error('Senha e confirmação não conferem.');
+        return;
+      }
+      const { confirmPassword, ...payload } = form;
+      await alunosService.criar({ ...payload, class_id: resolvedClassId });
       toast.success('Aluno cadastrado com sucesso!');
-      setForm({ name: '', birth_date: '', document: '', guardian_name: '', guardian_phone: '', address: '', class_id: '' });
+      setForm({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', address: '', class_id: '' });
       load();
     } catch (error) {
       toast.error('Erro ao salvar aluno.');
@@ -84,7 +89,9 @@ export default function Alunos() {
           <div className="form-grid">
             <FormInput label="Nome do aluno" id="name" placeholder="Ex: João da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <FormInput label="Data de nascimento" id="birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />
-            <FormInput label="CPF ou Matrícula" id="document" placeholder="Ex: 123.456.789-00" value={form.document} onChange={e => setForm({ ...form, document: e.target.value })} />
+            <FormInput label="CPF (usuário de acesso)" id="document" placeholder="Ex: 123.456.789-00" required value={form.document} onChange={e => setForm({ ...form, document: e.target.value })} />
+            <FormInput label="Senha" id="password" type="password" placeholder="Mínimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+            <FormInput label="Confirmar senha" id="confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
             <FormInput label="Nome do Responsável" id="guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
             <FormInput label="Telefone do Responsável" id="guardian_phone" placeholder="Ex: (11) 99999-9999" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: e.target.value })} />
             <FormInput label="Endereço" id="address" placeholder="Rua, número, bairro" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />

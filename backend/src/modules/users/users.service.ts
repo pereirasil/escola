@@ -1,7 +1,10 @@
+import * as bcrypt from 'bcrypt'
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { User } from './entities/user.entity'
+
+const SALT_ROUNDS = 10
 
 @Injectable()
 export class UsersService {
@@ -14,11 +17,12 @@ export class UsersService {
     return this.repo.findOne({ where: { email } })
   }
 
-  createSchool(name: string, email: string, password: string): Promise<User> {
+  async createSchool(name: string, email: string, password: string): Promise<User> {
+    const password_hash = await bcrypt.hash(password, SALT_ROUNDS)
     const user = this.repo.create({
       name,
       email,
-      password_hash: password,
+      password_hash,
       role: 'school',
       approved: 0,
     })
@@ -36,20 +40,19 @@ export class UsersService {
     return this.repo.update(id, { approved: 1 }).then(() => this.repo.findOneOrFail({ where: { id } }))
   }
 
-  ensureAdminExists(): Promise<void> {
-    return this.repo.findOne({ where: { role: 'admin' } }).then((admin) => {
-      if (!admin) {
-        return this.repo.save(
-          this.repo.create({
-            email: 'admin@escola.com',
-            password_hash: 'admin123',
-            name: 'Administrador Geral',
-            role: 'admin',
-            approved: 1,
-          }),
-        ).then(() => undefined)
-      }
-      return undefined
-    })
+  async ensureAdminExists(): Promise<void> {
+    const admin = await this.repo.findOne({ where: { role: 'admin' } })
+    if (!admin) {
+      const password_hash = await bcrypt.hash('admin123', SALT_ROUNDS)
+      await this.repo.save(
+        this.repo.create({
+          email: 'admin@escola.com',
+          password_hash,
+          name: 'Administrador Geral',
+          role: 'admin',
+          approved: 1,
+        }),
+      )
+    }
   }
 }

@@ -1,4 +1,5 @@
 import { Entity, Column } from 'typeorm'
+import { Exclude } from 'class-transformer'
 import { BaseEntity } from '../../../common/base.entity'
 
 @Entity('students')
@@ -26,4 +27,8 @@ export class Student extends BaseEntity {
 
   @Column({ nullable: true })
   class_id: number
+
+  @Column({ nullable: true })
+  @Exclude()
+  password_hash: string
 }

@@ -9,8 +9,9 @@ import { GradesModule } from './modules/grades/grades.module'
 import { AttendanceModule } from './modules/attendance/attendance.module'
 import { MeetingsModule } from './modules/meetings/meetings.module'
 import { PaymentsModule } from './modules/payments/payments.module'
-import { SubjectsModule } from './modules/subjects/subjects.module';
-import { SchedulesModule } from './modules/schedules/schedules.module';
+import { SubjectsModule } from './modules/subjects/subjects.module'
+import { SchedulesModule } from './modules/schedules/schedules.module'
+import { NotificationsModule } from './modules/notifications/notifications.module'
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { SchedulesModule } from './modules/schedules/schedules.module';
     PaymentsModule,
     SubjectsModule,
     SchedulesModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}
