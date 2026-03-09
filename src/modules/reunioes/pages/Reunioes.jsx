@@ -1,26 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, DataTable, FormInput } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, SelectField } from '../../../components/ui';
 import { reunioesService } from '../../../services/reunioes.service';
+import { turmasService } from '../../../services/turmas.service';
 import toast from 'react-hot-toast';
 
 export default function Reunioes() {
   const [reunioes, setReunioes] = useState([]);
+  const [turmas, setTurmas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ title: '', scheduled_at: '', description: '' });
+  const [form, setForm] = useState({ title: '', scheduled_at: '', description: '', class_id: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const carregarReunioes = async () => {
+  const carregarDados = async () => {
     try {
-      const res = await reunioesService.listar();
-      setReunioes(res.data || []);
+      const [resReunioes, resTurmas] = await Promise.all([
+        reunioesService.listar(),
+        turmasService.listar()
+      ]);
+      setReunioes(resReunioes.data || []);
+      setTurmas(resTurmas.data || []);
     } catch (error) {
-      toast.error('Erro ao carregar reuniões.');
+      toast.error('Erro ao carregar os dados.');
     }
   };
 
   useEffect(() => {
-    carregarReunioes();
+    carregarDados();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -37,6 +43,12 @@ export default function Reunioes() {
         payload.scheduled_at = null;
       }
       
+      if (payload.class_id) {
+        payload.class_id = Number(payload.class_id);
+      } else {
+        payload.class_id = null;
+      }
+      
       if (editId) {
         await reunioesService.atualizar(editId, payload);
         toast.success('Reunião atualizada com sucesso!');
@@ -46,9 +58,9 @@ export default function Reunioes() {
         toast.success('Reunião agendada com sucesso!');
       }
 
-      setForm({ title: '', scheduled_at: '', description: '' });
+      setForm({ title: '', scheduled_at: '', description: '', class_id: '' });
       setEditId(null);
-      carregarReunioes();
+      carregarDados();
     } catch (error) {
       toast.error(editId ? 'Erro ao atualizar reunião.' : 'Erro ao agendar reunião.');
     } finally {
@@ -72,7 +84,8 @@ export default function Reunioes() {
     setForm({
       title: item.title || '',
       scheduled_at: formattedDate,
-      description: item.description || ''
+      description: item.description || '',
+      class_id: item.class_id || ''
     });
     
     setIsModalOpen(true);
@@ -86,14 +99,14 @@ export default function Reunioes() {
     try {
       await reunioesService.excluir(id);
       toast.success('Reunião excluída com sucesso!');
-      carregarReunioes();
+      carregarDados();
     } catch (error) {
       toast.error('Erro ao excluir reunião.');
     }
   };
 
   const cancelEdit = () => {
-    setForm({ title: '', scheduled_at: '', description: '' });
+    setForm({ title: '', scheduled_at: '', description: '', class_id: '' });
     setEditId(null);
     setIsModalOpen(false);
   };
@@ -106,6 +119,12 @@ export default function Reunioes() {
       dateStyle: 'short',
       timeStyle: 'short',
     }).format(data);
+  };
+
+  const getNomeTurma = (classId) => {
+    if (!classId) return 'Todas as turmas';
+    const turma = turmas.find(t => t.id === classId);
+    return turma ? turma.name : 'Desconhecida';
   };
 
   return (
@@ -126,6 +145,15 @@ export default function Reunioes() {
               value={!editId ? form.title : ''}
               onChange={(e) => !editId && setForm({ ...form, title: e.target.value })}
             />
+            
+            <SelectField 
+              label="Turma Alvo" 
+              id="new-class_id" 
+              value={!editId ? form.class_id : ''} 
+              onChange={e => !editId && setForm({ ...form, class_id: e.target.value })}
+              options={turmas.map(t => ({ value: t.id, label: t.name }))}
+            />
+
             <FormInput
               label="Data e Hora"
               id="new-scheduled_at"
@@ -151,12 +179,24 @@ export default function Reunioes() {
 
       <Card title="Agendamentos">
         <DataTable
-          columns={['Título', 'Data e Hora', 'Descrição', 'Ações']}
+          columns={['Título', 'Turma(s)', 'Data e Hora', 'Descrição', 'Ações']}
           data={reunioes}
           emptyMessage="Nenhuma reunião agendada."
           renderRow={(item) => (
             <tr key={item.id}>
               <td>{item.title}</td>
+              <td>
+                <span style={{ 
+                  backgroundColor: item.class_id ? '#3b82f6' : '#4b5563', 
+                  color: '#fff', 
+                  padding: '0.2rem 0.5rem', 
+                  borderRadius: '12px', 
+                  fontSize: '0.75rem',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {getNomeTurma(item.class_id)}
+                </span>
+              </td>
               <td>{formatarDataHora(item.scheduled_at)}</td>
               <td>{item.description || '-'}</td>
               <td>
@@ -215,6 +255,15 @@ export default function Reunioes() {
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
+                
+                <SelectField 
+                  label="Turma Alvo" 
+                  id="edit-class_id" 
+                  value={form.class_id} 
+                  onChange={e => setForm({ ...form, class_id: e.target.value })}
+                  options={turmas.map(t => ({ value: t.id, label: t.name }))}
+                />
+
                 <FormInput
                   label="Data e Hora"
                   id="edit-scheduled_at"

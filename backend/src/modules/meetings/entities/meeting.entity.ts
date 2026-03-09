@@ -11,4 +11,7 @@ export class Meeting extends BaseEntity {
 
   @Column({ nullable: true })
   description: string
+
+  @Column({ nullable: true })
+  class_id: number
 }

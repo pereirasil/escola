@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator'
+import { IsString, IsOptional, IsNumber } from 'class-validator'
 
 export class CreateMeetingDto {
   @IsString()
@@ -11,4 +11,8 @@ export class CreateMeetingDto {
   @IsOptional()
   @IsString()
   description?: string
+
+  @IsOptional()
+  @IsNumber()
+  class_id?: number
 }
