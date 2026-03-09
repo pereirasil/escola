@@ -36,6 +36,13 @@ export class UsersService {
     })
   }
 
+  findApprovedSchools(): Promise<User[]> {
+    return this.repo.find({
+      where: { role: 'school', approved: 1 },
+      order: { created_at: 'DESC' },
+    })
+  }
+
   approve(id: number): Promise<User> {
     return this.repo.update(id, { approved: 1 }).then(() => this.repo.findOneOrFail({ where: { id } }))
   }

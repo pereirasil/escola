@@ -15,6 +15,13 @@ export class UsersController {
     return this.service.findPendingSchools()
   }
 
+  @Get('approved')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  findApproved() {
+    return this.service.findApprovedSchools()
+  }
+
   @Patch(':id/approve')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin')
