@@ -47,28 +47,42 @@ export class AuthService {
   }
 
   async loginStudent(cpf: string, password: string) {
-    const student = await this.studentsService.findByDocument(cpf)
-    if (!student || !student.password_hash || !(await bcrypt.compare(password, student.password_hash))) {
+    const students = await this.studentsService.findAllByDocument(cpf)
+    let matched: typeof students[0] | null = null
+    for (const s of students) {
+      if (s.password_hash && (await bcrypt.compare(password, s.password_hash))) {
+        matched = s
+        break
+      }
+    }
+    if (!matched) {
       throw new UnauthorizedException('CPF ou senha inválidos')
     }
-    const payload = { sub: student.id, role: 'student', document: student.document, school_id: student.school_id }
+    const payload = { sub: matched.id, role: 'student', document: matched.document, school_id: matched.school_id }
     const access_token = this.jwtService.sign(payload)
     return {
       access_token,
-      user: { id: student.id, name: student.name, role: 'student', document: student.document, school_id: student.school_id },
+      user: { id: matched.id, name: matched.name, role: 'student', document: matched.document, school_id: matched.school_id },
     }
   }
 
   async loginTeacher(cpf: string, password: string) {
-    const teacher = await this.teachersService.findByDocument(cpf)
-    if (!teacher || !teacher.password_hash || !(await bcrypt.compare(password, teacher.password_hash))) {
+    const teachers = await this.teachersService.findAllByDocument(cpf)
+    let matched: typeof teachers[0] | null = null
+    for (const t of teachers) {
+      if (t.password_hash && (await bcrypt.compare(password, t.password_hash))) {
+        matched = t
+        break
+      }
+    }
+    if (!matched) {
       throw new UnauthorizedException('CPF ou senha inválidos')
     }
-    const payload = { sub: teacher.id, role: 'teacher', document: teacher.document, school_id: teacher.school_id }
+    const payload = { sub: matched.id, role: 'teacher', document: matched.document, school_id: matched.school_id }
     const access_token = this.jwtService.sign(payload)
     return {
       access_token,
-      user: { id: teacher.id, name: teacher.name, role: 'teacher', document: teacher.document, school_id: teacher.school_id },
+      user: { id: matched.id, name: matched.name, role: 'teacher', document: matched.document, school_id: matched.school_id },
     }
   }
 }

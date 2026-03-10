@@ -1,8 +1,8 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { GradesService } from './grades.service'
-import { ClassesService } from '../classes/classes.service'
 import { CreateGradeDto } from './dto/create-grade.dto'
+import { TeacherScopeService } from '../../common/services/teacher-scope.service'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
 
 @Controller('notas')
@@ -10,23 +10,14 @@ import { SchoolId } from '../../common/decorators/school-id.decorator'
 export class GradesController {
   constructor(
     private service: GradesService,
-    private classesService: ClassesService,
+    private teacherScope: TeacherScopeService,
   ) {}
-
-  private async ensureTeacherCanAccessClass(user: { id: number; role: string }, classId: number) {
-    if (user.role !== 'teacher') return
-    const classEntity = await this.classesService.findOne(classId)
-    if (!classEntity || classEntity.teacher_id !== user.id) {
-      throw new ForbiddenException('Acesso negado a esta turma')
-    }
-  }
 
   @Get()
   async findAll(@Req() req: { user: { id: number; role: string; school_id?: number } }) {
     const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
     if (req.user.role === 'teacher') {
-      const classes = await this.classesService.findByTeacherId(req.user.id, req.user.school_id)
-      const classIds = classes.map((c) => c.id)
+      const classIds = await this.teacherScope.getTeacherClassIds(req.user)
       const all = await this.service.findAll(req.user.school_id)
       return all.filter((g) => classIds.includes(g.turma_id))
     }
@@ -34,7 +25,12 @@ export class GradesController {
   }
 
   @Get('aluno/:alunoId')
-  findByAluno(@Param('alunoId') alunoId: string, @SchoolId() schoolId: number | undefined) {
+  async findByAluno(
+    @Param('alunoId') alunoId: string,
+    @Req() req: { user: { id: number; role: string; school_id?: number } },
+    @SchoolId() schoolId: number | undefined,
+  ) {
+    await this.teacherScope.ensureStudentAccess(req.user, +alunoId)
     return this.service.findByAluno(+alunoId, schoolId)
   }
 
@@ -44,7 +40,7 @@ export class GradesController {
     @Req() req: { user: { id: number; role: string } },
     @SchoolId() schoolId: number | undefined,
   ) {
-    await this.ensureTeacherCanAccessClass(req.user, +turmaId)
+    await this.teacherScope.ensureClassAccess(req.user, +turmaId)
     return this.service.findStudentsByTurma(+turmaId, schoolId)
   }
 
@@ -56,7 +52,7 @@ export class GradesController {
     @Req() req: { user: { id: number; role: string } },
     @SchoolId() schoolId: number | undefined,
   ) {
-    await this.ensureTeacherCanAccessClass(req.user, +turmaId)
+    await this.teacherScope.ensureClassSubjectAccess(req.user, +turmaId, +materiaId)
     return this.service.findByFilters(+turmaId, +materiaId, bimestre, schoolId)
   }
 
@@ -69,10 +65,36 @@ export class GradesController {
     if (!Array.isArray(dtos)) {
       dtos = [dtos]
     }
-    const classIds = [...new Set(dtos.map((d) => d.turma_id))]
-    for (const classId of classIds) {
-      await this.ensureTeacherCanAccessClass(req.user, classId)
+    for (const dto of dtos) {
+      await this.teacherScope.ensureClassSubjectAccess(req.user, dto.turma_id, dto.materia_id)
     }
     return this.service.createBulk(dtos, schoolId)
+  }
+
+  @Put(':id')
+  async updateOne(
+    @Param('id') id: string,
+    @Body() dto: CreateGradeDto,
+    @Req() req: { user: { id: number; role: string } },
+    @SchoolId() schoolId: number | undefined,
+  ) {
+    const existing = await this.service.findOne(+id)
+    if (existing) {
+      await this.teacherScope.ensureClassSubjectAccess(req.user, existing.turma_id, existing.materia_id)
+    }
+    await this.teacherScope.ensureClassSubjectAccess(req.user, dto.turma_id, dto.materia_id)
+    return this.service.updateOne(+id, dto, schoolId)
+  }
+
+  @Delete(':id')
+  async deleteOne(
+    @Param('id') id: string,
+    @Req() req: { user: { id: number; role: string } },
+  ) {
+    const existing = await this.service.findOne(+id)
+    if (existing) {
+      await this.teacherScope.ensureClassSubjectAccess(req.user, existing.turma_id, existing.materia_id)
+    }
+    return this.service.deleteOne(+id)
   }
 }

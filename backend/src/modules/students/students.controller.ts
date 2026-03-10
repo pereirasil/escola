@@ -8,6 +8,7 @@ import { NotificationsService } from '../notifications/notifications.service'
 import { GradesService } from '../grades/grades.service'
 import { AttendanceService } from '../attendance/attendance.service'
 import { SubjectsService } from '../subjects/subjects.service'
+import { TeacherScopeService } from '../../common/services/teacher-scope.service'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
@@ -23,6 +24,7 @@ export class StudentsController {
     private gradesService: GradesService,
     private attendanceService: AttendanceService,
     private subjectsService: SubjectsService,
+    private teacherScope: TeacherScopeService,
   ) {}
 
   @Get()
@@ -136,6 +138,7 @@ export class StudentsController {
     if (req.user.role === 'student' && numId !== req.user.id) {
       throw new ForbiddenException('Acesso negado')
     }
+    await this.teacherScope.ensureStudentAccess(req.user, numId)
     return this.service.findOne(numId)
   }
 
@@ -154,6 +157,9 @@ export class StudentsController {
     @Req() req: { user: { id: number; role: string } },
   ) {
     const numId = +id
+    if (req.user.role === 'teacher') {
+      throw new ForbiddenException('Professor não pode editar dados de alunos')
+    }
     if (req.user.role === 'student' && numId !== req.user.id) {
       throw new ForbiddenException('Acesso negado')
     }

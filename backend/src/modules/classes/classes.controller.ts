@@ -40,26 +40,16 @@ export class ClassesController {
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard('jwt'))
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateClassDto,
-    @Req() req: { user: { id: number; role: string } },
-  ) {
-    const classEntity = await this.service.findOne(+id)
-    if (req.user.role === 'teacher' && classEntity?.teacher_id !== req.user.id) {
-      throw new ForbiddenException('Acesso negado')
-    }
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'school')
+  update(@Param('id') id: string, @Body() dto: UpdateClassDto) {
     return this.service.update(+id, dto)
   }
 
   @Delete(':id')
-  @UseGuards(AuthGuard('jwt'))
-  async remove(@Param('id') id: string, @Req() req: { user: { id: number; role: string } }) {
-    const classEntity = await this.service.findOne(+id)
-    if (req.user.role === 'teacher' && classEntity?.teacher_id !== req.user.id) {
-      throw new ForbiddenException('Acesso negado')
-    }
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'school')
+  remove(@Param('id') id: string) {
     return this.service.remove(+id)
   }
 }

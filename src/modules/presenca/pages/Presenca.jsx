@@ -3,9 +3,12 @@ import { Card, PageHeader, SelectField, FormInput } from '../../../components/ui
 import { turmasService } from '../../../services/turmas.service';
 import { materiasService } from '../../../services/materias.service';
 import { presencasService } from '../../../services/presencas.service';
+import { professoresService } from '../../../services/professores.service';
+import { useAuthStore } from '../../../store/useAuthStore';
 import toast from 'react-hot-toast';
 
 export default function Presenca() {
+  const user = useAuthStore((s) => s.user);
   const [turmas, setTurmas] = useState([]);
   const [materias, setMaterias] = useState([]);
   const [alunos, setAlunos] = useState([]);
@@ -23,11 +26,14 @@ export default function Presenca() {
   useEffect(() => {
     async function loadFiltros() {
       try {
-        const [resT, resM] = await Promise.all([
-          turmasService.listar(),
+        const turmasPromise = user?.role === 'teacher'
+          ? professoresService.minhasTurmas()
+          : turmasService.listar().then((r) => r.data);
+        const [turmasData, resM] = await Promise.all([
+          turmasPromise,
           materiasService.listar()
         ]);
-        setTurmas(resT.data || []);
+        setTurmas(turmasData || []);
         setMaterias(resM.data || []);
       } catch (err) {
         toast.error('Erro ao carregar dados iniciais');

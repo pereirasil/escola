@@ -44,6 +44,11 @@ export class StudentsService {
     return this.repo.findOne({ where: { document: normalized } })
   }
 
+  findAllByDocument(cpf: string): Promise<Student[]> {
+    const normalized = normalizeCpf(cpf)
+    return this.repo.find({ where: { document: normalized } })
+  }
+
   async create(dto: CreateStudentDto, schoolId?: number) {
     const normalizedDoc = normalizeCpf(dto.document)
     const where: any = { document: normalizedDoc }
@@ -58,7 +63,9 @@ export class StudentsService {
   }
 
   update(id: number, dto: UpdateStudentDto) {
-    return this.repo.update(id, dto as Partial<Student>).then(() => this.findOne(id))
+    const data = { ...dto } as any
+    if (data.document) data.document = normalizeCpf(data.document)
+    return this.repo.update(id, data as Partial<Student>).then(() => this.findOne(id))
   }
 
   remove(id: number) {

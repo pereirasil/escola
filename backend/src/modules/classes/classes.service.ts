@@ -18,9 +18,14 @@ export class ClassesService {
   }
 
   findByTeacherId(teacherId: number, schoolId?: number) {
-    const where: any = { teacher_id: teacherId }
-    if (schoolId) where.school_id = schoolId
-    return this.repo.find({ where, order: { name: 'ASC' } })
+    const qb = this.repo.createQueryBuilder('c')
+      .where(
+        '(c.teacher_id = :tid OR c.id IN ' +
+        '(SELECT s.class_id FROM schedules s WHERE s.teacher_id = :tid))',
+        { tid: teacherId },
+      )
+    if (schoolId) qb.andWhere('c.school_id = :sid', { sid: schoolId })
+    return qb.orderBy('c.name', 'ASC').getMany()
   }
 
   findOne(id: number) {

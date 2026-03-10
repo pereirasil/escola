@@ -72,17 +72,10 @@ export class TeachersController {
   }
 
   @Put(':id')
-  @UseGuards(AuthGuard('jwt'))
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateTeacherDto,
-    @Req() req: { user: { id: number; role: string } },
-  ) {
-    const numId = +id
-    if (req.user.role === 'teacher' && numId !== req.user.id) {
-      throw new ForbiddenException('Acesso negado')
-    }
-    return this.service.update(numId, dto)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'school')
+  update(@Param('id') id: string, @Body() dto: UpdateTeacherDto) {
+    return this.service.update(+id, dto)
   }
 
   @Post(':id/photo')

@@ -41,6 +41,19 @@ export class GradesService {
     return this.repo.find({ where })
   }
 
+  findOne(id: number) {
+    return this.repo.findOne({ where: { id } })
+  }
+
+  async updateOne(id: number, dto: CreateGradeDto, schoolId?: number) {
+    await this.repo.update(id, { ...dto, school_id: schoolId } as Partial<Grade>)
+    return this.findOne(id)
+  }
+
+  deleteOne(id: number) {
+    return this.repo.delete(id)
+  }
+
   async createBulk(dtos: CreateGradeDto[], schoolId?: number) {
     if (dtos.length > 0) {
       const { turma_id, materia_id, bimestre } = dtos[0];

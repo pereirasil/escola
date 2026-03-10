@@ -40,6 +40,12 @@ export class SchedulesService {
     return this.repo.save(this.repo.create({ ...createScheduleDto, school_id: schoolId }));
   }
 
+  findByTeacherId(teacherId: number, schoolId?: number) {
+    const where: any = { teacher_id: teacherId }
+    if (schoolId) where.school_id = schoolId
+    return this.repo.find({ where, order: { day_of_week: 'ASC', start_time: 'ASC' } })
+  }
+
   findAll(classId?: number, schoolId?: number) {
     const where: any = {};
     if (classId) where.class_id = classId;

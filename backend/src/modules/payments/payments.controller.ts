@@ -3,10 +3,13 @@ import { AuthGuard } from '@nestjs/passport'
 import { PaymentsService } from './payments.service'
 import { CreatePaymentDto } from './dto/create-payment.dto'
 import { UpdatePaymentDto } from './dto/update-payment.dto'
+import { RolesGuard } from '../../common/guards/roles.guard'
+import { Roles } from '../../common/decorators/roles.decorator'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
 
 @Controller('payments')
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(AuthGuard('jwt'), RolesGuard)
+@Roles('admin', 'school')
 export class PaymentsController {
   constructor(private service: PaymentsService) {}
 

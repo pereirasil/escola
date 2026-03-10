@@ -5,13 +5,12 @@ import { AttendanceService } from './attendance.service'
 import { AttendanceController } from './attendance.controller'
 import { Student } from '../students/entities/student.entity'
 import { Class } from '../classes/entities/class.entity'
-import { ClassesModule } from '../classes/classes.module'
+import { TeacherScopeModule } from '../../common/services/teacher-scope.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Attendance, Student, Class]), ClassesModule],
+  imports: [TypeOrmModule.forFeature([Attendance, Student, Class]), TeacherScopeModule],
   controllers: [AttendanceController],
   providers: [AttendanceService],
   exports: [AttendanceService],
 })
 export class AttendanceModule {}
-

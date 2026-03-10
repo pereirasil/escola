@@ -3,9 +3,12 @@ import { Link } from 'react-router-dom';
 import { Card, PageHeader, DataTable, SelectField, Spinner } from '../../../components/ui';
 import { turmasService } from '../../../services/turmas.service';
 import { presencasService } from '../../../services/presencas.service';
+import { professoresService } from '../../../services/professores.service';
+import { useAuthStore } from '../../../store/useAuthStore';
 import toast from 'react-hot-toast';
 
 export default function RelatorioPresenca() {
+  const user = useAuthStore((s) => s.user);
   const [turmas, setTurmas] = useState([]);
   const [turmaId, setTurmaId] = useState('');
   const [relatorio, setRelatorio] = useState([]);
@@ -14,8 +17,10 @@ export default function RelatorioPresenca() {
   useEffect(() => {
     async function loadFiltros() {
       try {
-        const resT = await turmasService.listar();
-        setTurmas(resT.data || []);
+        const turmasData = user?.role === 'teacher'
+          ? await professoresService.minhasTurmas()
+          : (await turmasService.listar()).data || [];
+        setTurmas(turmasData || []);
       } catch (err) {
         toast.error('Erro ao carregar turmas');
       }

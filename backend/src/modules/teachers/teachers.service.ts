@@ -44,6 +44,11 @@ export class TeachersService {
     return this.repo.findOne({ where: { document: normalized } })
   }
 
+  findAllByDocument(cpf: string): Promise<Teacher[]> {
+    const normalized = normalizeCpf(cpf)
+    return this.repo.find({ where: { document: normalized } })
+  }
+
   async create(dto: CreateTeacherDto, schoolId?: number) {
     const normalizedDoc = normalizeCpf(dto.document)
     const where: any = { document: normalizedDoc }
@@ -61,6 +66,7 @@ export class TeachersService {
 
   async update(id: number, dto: UpdateTeacherDto) {
     const { class_ids: _, ...data } = dto as any
+    if (data.document) data.document = normalizeCpf(data.document)
     await this.repo.update(id, data as Partial<Teacher>)
     return this.findOne(id)
   }
