@@ -20,6 +20,9 @@ export class Teacher extends BaseEntity {
   subject: string
 
   @Column({ nullable: true })
+  class_id: number
+
+  @Column({ nullable: true })
   @Exclude()
   password_hash: string
 }

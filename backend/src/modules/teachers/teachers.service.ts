@@ -46,7 +46,8 @@ export class TeachersService {
   }
 
   async update(id: number, dto: UpdateTeacherDto) {
-    await this.repo.update(id, dto as Partial<Teacher>)
+    const { class_ids: _, ...data } = dto as any
+    await this.repo.update(id, data as Partial<Teacher>)
     return this.findOne(id)
   }
 

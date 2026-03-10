@@ -10,7 +10,7 @@ export default function Professores() {
   const [turmas, setTurmas] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [form, setForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '', class_id: '' });
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editId, setEditId] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', class_id: '' });
@@ -43,10 +43,10 @@ export default function Professores() {
       return;
     }
     try {
-      const { confirmPassword, ...payload } = form;
-      await professoresService.criar(payload);
+      const { confirmPassword, class_id, ...payload } = form;
+      await professoresService.criar({ ...payload, class_id: class_id ? Number(class_id) : undefined });
       toast.success('Professor cadastrado com sucesso!');
-      setForm({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '' });
+      setForm({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '', class_id: '' });
       load();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Erro ao salvar professor.');
@@ -54,7 +54,6 @@ export default function Professores() {
   };
 
   const handleEdit = (p) => {
-    const turmaAssociada = turmas.find(t => t.teacher_id === p.id);
     setEditId(p.id);
     setEditForm({
       name: p.name || '',
@@ -62,7 +61,7 @@ export default function Professores() {
       phone: p.phone || '',
       email: p.email || '',
       subject: p.subject || '',
-      class_id: turmaAssociada ? String(turmaAssociada.id) : '',
+      class_id: p.class_id ? String(p.class_id) : '',
     });
     setIsModalOpen(true);
   };
@@ -77,19 +76,11 @@ export default function Professores() {
     e.preventDefault();
     setSaving(true);
     try {
-      const { class_id, ...payload } = editForm;
+      const payload = {
+        ...editForm,
+        class_id: editForm.class_id ? Number(editForm.class_id) : null,
+      };
       await professoresService.atualizar(editId, payload);
-
-      const turmaAnterior = turmas.find(t => t.teacher_id === editId);
-      const novaTurmaId = class_id ? Number(class_id) : null;
-
-      if (turmaAnterior && turmaAnterior.id !== novaTurmaId) {
-        await turmasService.atualizar(turmaAnterior.id, { teacher_id: null });
-      }
-      if (novaTurmaId && (!turmaAnterior || turmaAnterior.id !== novaTurmaId)) {
-        await turmasService.atualizar(novaTurmaId, { teacher_id: editId });
-      }
-
       toast.success('Professor atualizado com sucesso!');
       cancelEdit();
       load();
@@ -127,6 +118,15 @@ export default function Professores() {
             <FormInput label="Telefone" id="phone" placeholder="Ex: (11) 99999-9999" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             <FormInput label="E-mail" id="email" type="email" placeholder="Ex: maria@escola.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             <FormInput label="Materias que leciona" id="subject" placeholder="Ex: Matematica, Fisica" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} />
+            <div className="form-group">
+              <label htmlFor="class_id">Turma</label>
+              <select id="class_id" value={form.class_id} onChange={e => setForm({ ...form, class_id: e.target.value })}>
+                <option value="">Nenhuma</option>
+                {turmas.map(t => (
+                  <option key={t.id} value={String(t.id)}>{t.name}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <button type="submit" className="btn-primary">Salvar Professor</button>
         </form>
@@ -140,7 +140,8 @@ export default function Professores() {
             renderRow={(p) => {
               const fromSchedules = schedules.filter(s => s.teacher_id === p.id).map(s => s.class_id);
               const fromClasses = turmas.filter(t => t.teacher_id === p.id).map(t => t.id);
-              const classIds = [...new Set([...fromSchedules, ...fromClasses])];
+              const fromTeacher = p.class_id ? [p.class_id] : [];
+              const classIds = [...new Set([...fromSchedules, ...fromClasses, ...fromTeacher])];
               const nomesTurmas = classIds.map(cid => turmas.find(t => t.id === cid)?.name).filter(Boolean);
               return (
               <tr key={p.id}>

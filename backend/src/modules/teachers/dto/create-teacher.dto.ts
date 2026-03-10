@@ -24,6 +24,10 @@ export class CreateTeacherDto {
   subject?: string
 
   @IsOptional()
+  @IsNumber()
+  class_id?: number
+
+  @IsOptional()
   @IsArray()
   @IsNumber({}, { each: true })
   class_ids?: number[]
