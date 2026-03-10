@@ -8,6 +8,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { publicRoutes } from './PublicRoutes';
 import { privateRoutes } from './PrivateRoutes';
 import MeusDados from '../modules/aluno/pages/MeusDados';
+import HistoricoEscolar from '../modules/aluno/pages/HistoricoEscolar';
 import Notificacoes from '../modules/aluno/pages/Notificacoes';
 import AlterarSenha from '../modules/aluno/pages/AlterarSenha';
 import MinhasTurmas from '../modules/professor/pages/MinhasTurmas';
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
             children: [
               { index: true, element: <Navigate to="/aluno/dados" replace /> },
               { path: 'dados', element: <MeusDados /> },
+              { path: 'historico', element: <HistoricoEscolar /> },
               { path: 'notificacoes', element: <Notificacoes /> },
               { path: 'alterar-senha', element: <AlterarSenha /> },
             ],

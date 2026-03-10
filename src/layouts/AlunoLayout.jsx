@@ -26,6 +26,7 @@ export default function AlunoLayout() {
       <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
         <nav className="sidebar-nav">
           <NavLink to="/aluno/dados" className={linkClass} onClick={handleLinkClick}>Meus dados</NavLink>
+          <NavLink to="/aluno/historico" className={linkClass} onClick={handleLinkClick}>Historico</NavLink>
           <NavLink to="/aluno/notificacoes" className={linkClass} onClick={handleLinkClick}>Notificacoes</NavLink>
           <NavLink to="/aluno/alterar-senha" className={linkClass} onClick={handleLinkClick}>Alterar senha</NavLink>
         </nav>

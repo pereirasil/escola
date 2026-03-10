@@ -11,6 +11,7 @@ import { ClassesModule } from '../classes/classes.module'
   imports: [TypeOrmModule.forFeature([Attendance, Student, Class]), ClassesModule],
   controllers: [AttendanceController],
   providers: [AttendanceService],
+  exports: [AttendanceService],
 })
 export class AttendanceModule {}
 

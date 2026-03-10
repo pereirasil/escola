@@ -2,6 +2,9 @@ import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, 
 import { AuthGuard } from '@nestjs/passport'
 import { StudentsService } from './students.service'
 import { NotificationsService } from '../notifications/notifications.service'
+import { GradesService } from '../grades/grades.service'
+import { AttendanceService } from '../attendance/attendance.service'
+import { SubjectsService } from '../subjects/subjects.service'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
@@ -14,6 +17,9 @@ export class StudentsController {
   constructor(
     private service: StudentsService,
     private notificationsService: NotificationsService,
+    private gradesService: GradesService,
+    private attendanceService: AttendanceService,
+    private subjectsService: SubjectsService,
   ) {}
 
   @Get()
@@ -57,6 +63,60 @@ export class StudentsController {
   @Roles('student')
   changePassword(@Req() req: { user: { id: number } }, @Body() dto: ChangePasswordDto) {
     return this.service.updatePassword(req.user.id, dto.currentPassword, dto.newPassword)
+  }
+
+  @Get('me/historico')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  async getHistorico(@Req() req: { user: { id: number; school_id?: number } }) {
+    const alunoId = req.user.id
+    const schoolId = req.user.school_id
+
+    const [notas, historicoPresenca, materias] = await Promise.all([
+      this.gradesService.findByAluno(alunoId, schoolId),
+      this.attendanceService.getHistoricoAluno(alunoId, schoolId),
+      this.subjectsService.findAll(schoolId),
+    ])
+
+    const materiasMap = new Map(materias.map((m) => [m.id, m.name]))
+
+    const presencasPorMateria = new Map<number, { presencas: number; faltas: number }>()
+    for (const p of historicoPresenca.presencas) {
+      const entry = presencasPorMateria.get(p.subject_id) || { presencas: 0, faltas: 0 }
+      if (p.status === 'F') {
+        entry.faltas++
+      } else {
+        entry.presencas++
+      }
+      presencasPorMateria.set(p.subject_id, entry)
+    }
+
+    const notasPorMateria = new Map<number, { bimestre: string; nota: number }[]>()
+    for (const n of notas) {
+      const arr = notasPorMateria.get(n.materia_id) || []
+      arr.push({ bimestre: n.bimestre, nota: n.nota })
+      notasPorMateria.set(n.materia_id, arr)
+    }
+
+    const materiaIds = new Set([
+      ...notasPorMateria.keys(),
+      ...presencasPorMateria.keys(),
+    ])
+
+    const historico = Array.from(materiaIds).map((materiaId) => ({
+      materia_id: materiaId,
+      materia: materiasMap.get(materiaId) || `Materia ${materiaId}`,
+      notas: (notasPorMateria.get(materiaId) || []).sort((a, b) => a.bimestre.localeCompare(b.bimestre)),
+      presencas: presencasPorMateria.get(materiaId)?.presencas || 0,
+      faltas: presencasPorMateria.get(materiaId)?.faltas || 0,
+    }))
+
+    historico.sort((a, b) => a.materia.localeCompare(b.materia))
+
+    return {
+      historico,
+      resumo: historicoPresenca.resumo,
+    }
   }
 
   @Get(':id')

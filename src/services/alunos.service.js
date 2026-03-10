@@ -10,6 +10,7 @@ export const alunosService = {
   minhasNotificacoes: () => api.get('/students/me/notifications').then((r) => r.data),
   contarNotificacoesNaoLidas: () => api.get('/students/me/notifications/count').then((r) => r.data),
   marcarNotificacoesComoLidas: () => api.patch('/students/me/notifications/read').then((r) => r.data),
+  meuHistorico: () => api.get('/students/me/historico').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>
     api.patch('/students/me/password', { currentPassword, newPassword }).then((r) => r.data),
 }
