@@ -1161,4 +1161,80 @@ button:focus-visible {
   .historico-resumo-item {
     background: #f5f5f5;
   }
+  .photo-upload-placeholder {
+    background: #f5f5f5;
+    border-color: #ccc;
+    color: #999;
+  }
+}
+
+/* Photo Upload */
+.photo-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.photo-upload-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #444;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.photo-upload-preview:hover {
+  opacity: 0.8;
+}
+
+.photo-upload-placeholder {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 2px dashed #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  background: #2a2a2a;
+  transition: border-color 0.2s;
+}
+
+.photo-upload-placeholder:hover {
+  border-color: #646cff;
+}
+
+/* Aluno Detalhes Header */
+.aluno-detalhes-header {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.aluno-detalhes-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #646cff;
+  flex-shrink: 0;
+}
+
+.aluno-detalhes-photo-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #646cff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
+  flex-shrink: 0;
 }

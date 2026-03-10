@@ -68,7 +68,20 @@ export default function AlunoDetalhes() {
         { label: aluno.name }
       ]} />
 
-      <PageHeader title={aluno.name} description={`Matricula/CPF: ${aluno.document || 'Nao informado'}`} />
+      <div className="aluno-detalhes-header">
+        {aluno.photo ? (
+          <img
+            src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/uploads/${aluno.photo}`}
+            alt={aluno.name}
+            className="aluno-detalhes-photo"
+          />
+        ) : (
+          <div className="aluno-detalhes-photo-placeholder">
+            {aluno.name?.charAt(0)?.toUpperCase()}
+          </div>
+        )}
+        <PageHeader title={aluno.name} description={`Matricula/CPF: ${aluno.document || 'Nao informado'}`} />
+      </div>
 
       <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
         <Card>

@@ -69,6 +69,11 @@ export class TeachersService {
     return this.repo.delete(id)
   }
 
+  async updatePhoto(id: number, filename: string) {
+    await this.repo.update(id, { photo: filename })
+    return this.findOne(id)
+  }
+
   async updatePassword(teacherId: number, currentPassword: string, newPassword: string) {
     const teacher = await this.findOne(teacherId)
     if (!teacher || !teacher.password_hash) {

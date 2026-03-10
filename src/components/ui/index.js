@@ -7,3 +7,4 @@ export { ConfirmModal } from './ConfirmModal';
 export { Spinner } from './Spinner';
 export { Breadcrumb } from './Breadcrumb';
 export { NotificationBell } from './NotificationBell';
+export { PhotoUpload } from './PhotoUpload';

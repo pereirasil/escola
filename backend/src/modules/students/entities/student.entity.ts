@@ -44,6 +44,15 @@ export class Student extends BaseEntity {
   complement: string
 
   @Column({ nullable: true })
+  cep: string
+
+  @Column({ nullable: true })
+  guardian_document: string
+
+  @Column({ nullable: true })
+  photo: string
+
+  @Column({ nullable: true })
   class_id: number
 
   @Column({ nullable: true })

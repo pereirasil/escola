@@ -44,6 +44,12 @@ export class Teacher extends BaseEntity {
   complement: string
 
   @Column({ nullable: true })
+  cep: string
+
+  @Column({ nullable: true })
+  photo: string
+
+  @Column({ nullable: true })
   @Exclude()
   password_hash: string
 }

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, Spinner } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, Spinner, PhotoUpload } from '../../../components/ui';
 import { alunosService } from '../../../services/alunos.service';
 import { turmasService } from '../../../services/turmas.service';
 import { presencasService } from '../../../services/presencas.service';
+import { maskCpf, maskPhone, maskCep, fetchAddressByCep } from '../../../utils/masks';
 import toast from 'react-hot-toast';
 
 export default function Alunos() {
@@ -11,7 +12,8 @@ export default function Alunos() {
   const [turmas, setTurmas] = useState([]);
   const [ranking, setRanking] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [form, setForm] = useState({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
+  const [form, setForm] = useState({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
+  const [photoFile, setPhotoFile] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const [filtroNome, setFiltroNome] = useState('');
@@ -39,6 +41,18 @@ export default function Alunos() {
 
   useEffect(() => { load(page) }, [page]);
 
+  const handleCepChange = async (value) => {
+    const masked = maskCep(value);
+    setForm(prev => ({ ...prev, cep: masked }));
+    const digits = masked.replace(/\D/g, '');
+    if (digits.length === 8) {
+      const addr = await fetchAddressByCep(digits);
+      if (addr) {
+        setForm(prev => ({ ...prev, ...addr }));
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -48,9 +62,14 @@ export default function Alunos() {
       }
       const { confirmPassword, ...payload } = form;
       const classId = form.class_id ? Number(form.class_id) : null;
-      await alunosService.criar({ ...payload, class_id: classId });
+      const res = await alunosService.criar({ ...payload, class_id: classId });
+      const alunoId = res.data?.id;
+      if (photoFile && alunoId) {
+        await alunosService.uploadFoto(alunoId, photoFile);
+      }
       toast.success('Aluno cadastrado com sucesso!');
-      setForm({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
+      setForm({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
+      setPhotoFile(null);
       load();
     } catch (error) {
       toast.error('Erro ao salvar aluno.');
@@ -82,14 +101,17 @@ export default function Alunos() {
       
       <Card title="Cadastrar Novo Aluno">
         <form onSubmit={handleSubmit}>
+          <PhotoUpload onFileSelect={setPhotoFile} label="Foto do aluno" />
           <div className="form-grid">
             <FormInput label="Nome do aluno" id="name" placeholder="Ex: Joao da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <FormInput label="Data de nascimento" id="birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />
-            <FormInput label="CPF (usuario de acesso)" id="document" placeholder="Ex: 123.456.789-00" required value={form.document} onChange={e => setForm({ ...form, document: e.target.value })} />
+            <FormInput label="CPF (usuario de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
             <FormInput label="Senha" id="password" type="password" placeholder="Minimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
             <FormInput label="Confirmar senha" id="confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
             <FormInput label="Nome do Responsavel" id="guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
-            <FormInput label="Telefone do Responsavel" id="guardian_phone" placeholder="Ex: (11) 99999-9999" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: e.target.value })} />
+            <FormInput label="CPF do Responsavel" id="guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
+            <FormInput label="Telefone do Responsavel" id="guardian_phone" placeholder="(00) 00000-0000" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })} maxLength={15} />
+            <FormInput label="CEP" id="cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
             <FormInput label="Estado" id="state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
             <FormInput label="Cidade" id="city" placeholder="Ex: Sao Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
             <FormInput label="Bairro" id="neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />

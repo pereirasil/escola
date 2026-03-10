@@ -7,6 +7,11 @@ export const professoresService = {
   criar: (data) => api.post('/teachers', data),
   atualizar: (id, data) => api.put(`/teachers/${id}`, data),
   excluir: (id) => api.delete(`/teachers/${id}`),
+  uploadFoto: (id, file) => {
+    const form = new FormData()
+    form.append('photo', file)
+    return api.post(`/teachers/${id}/photo`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
   me: () => api.get('/teachers/me').then((r) => r.data),
   minhasTurmas: () => api.get('/teachers/me/classes').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>

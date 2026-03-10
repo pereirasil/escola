@@ -7,6 +7,11 @@ export const alunosService = {
   criar: (data) => api.post('/students', data),
   atualizar: (id, data) => api.put(`/students/${id}`, data),
   excluir: (id) => api.delete(`/students/${id}`),
+  uploadFoto: (id, file) => {
+    const form = new FormData()
+    form.append('photo', file)
+    return api.post(`/students/${id}/photo`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+  },
   me: () => api.get('/students/me').then((r) => r.data),
   minhasNotificacoes: () => api.get('/students/me/notifications').then((r) => r.data),
   contarNotificacoesNaoLidas: () => api.get('/students/me/notifications/count').then((r) => r.data),

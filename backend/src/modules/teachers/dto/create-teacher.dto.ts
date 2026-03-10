@@ -55,4 +55,8 @@ export class CreateTeacherDto {
   @IsOptional()
   @IsString()
   complement?: string
+
+  @IsOptional()
+  @IsString()
+  cep?: string
 }

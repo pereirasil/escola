@@ -1,5 +1,8 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { diskStorage } from 'multer'
+import { extname, join } from 'path'
 import { StudentsService } from './students.service'
 import { NotificationsService } from '../notifications/notifications.service'
 import { GradesService } from '../grades/grades.service'
@@ -155,6 +158,33 @@ export class StudentsController {
       throw new ForbiddenException('Acesso negado')
     }
     return this.service.update(numId, dto)
+  }
+
+  @Post(':id/photo')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'school')
+  @UseInterceptors(FileInterceptor('photo', {
+    storage: diskStorage({
+      destination: join(process.cwd(), 'uploads'),
+      filename: (_req, file, cb) => {
+        const unique = Date.now() + '-' + Math.round(Math.random() * 1e9)
+        cb(null, `student-${unique}${extname(file.originalname)}`)
+      },
+    }),
+    fileFilter: (_req, file, cb) => {
+      if (/\.(jpg|jpeg|png|webp)$/i.test(file.originalname)) {
+        cb(null, true)
+      } else {
+        cb(new Error('Apenas imagens JPG, PNG ou WEBP'), false)
+      }
+    },
+    limits: { fileSize: 5 * 1024 * 1024 },
+  }))
+  async uploadPhoto(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.service.updatePhoto(+id, file.filename)
   }
 
   @Delete(':id')

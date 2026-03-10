@@ -52,6 +52,14 @@ export class CreateStudentDto {
   complement?: string
 
   @IsOptional()
+  @IsString()
+  cep?: string
+
+  @IsOptional()
+  @IsString()
+  guardian_document?: string
+
+  @IsOptional()
   @IsNumber()
   class_id?: number
 }
