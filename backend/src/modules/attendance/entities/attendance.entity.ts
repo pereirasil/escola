@@ -4,6 +4,9 @@ import { BaseEntity } from '../../../common/base.entity'
 @Entity('presencas')
 @Unique(['student_id', 'subject_id', 'date', 'lesson'])
 export class Attendance extends BaseEntity {
+  @Column({ nullable: true })
+  school_id: number
+
   @Column({ name: 'aluno_id' })
   student_id: number
 

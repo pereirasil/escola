@@ -4,6 +4,9 @@ import { BaseEntity } from '../../../common/base.entity'
 @Entity('notas')
 @Unique(['aluno_id', 'materia_id', 'bimestre'])
 export class Grade extends BaseEntity {
+  @Column({ nullable: true })
+  school_id: number
+
   @Column()
   aluno_id: number
 

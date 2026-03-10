@@ -3,6 +3,9 @@ import { BaseEntity } from '../../../common/base.entity'
 
 @Entity('schedules')
 export class Schedule extends BaseEntity {
+  @Column({ nullable: true })
+  school_id: number
+
   @Column()
   class_id: number
 

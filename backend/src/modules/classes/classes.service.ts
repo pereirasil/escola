@@ -12,20 +12,23 @@ export class ClassesService {
     private repo: Repository<Class>,
   ) {}
 
-  findAll() {
-    return this.repo.find({ order: { name: 'ASC' } })
+  findAll(schoolId?: number) {
+    const where = schoolId ? { school_id: schoolId } : {}
+    return this.repo.find({ where, order: { name: 'ASC' } })
   }
 
-  findByTeacherId(teacherId: number) {
-    return this.repo.find({ where: { teacher_id: teacherId }, order: { name: 'ASC' } })
+  findByTeacherId(teacherId: number, schoolId?: number) {
+    const where: any = { teacher_id: teacherId }
+    if (schoolId) where.school_id = schoolId
+    return this.repo.find({ where, order: { name: 'ASC' } })
   }
 
   findOne(id: number) {
     return this.repo.findOne({ where: { id } })
   }
 
-  create(dto: CreateClassDto) {
-    return this.repo.save(this.repo.create(dto))
+  create(dto: CreateClassDto, schoolId?: number) {
+    return this.repo.save(this.repo.create({ ...dto, school_id: schoolId }))
   }
 
   update(id: number, dto: UpdateClassDto) {

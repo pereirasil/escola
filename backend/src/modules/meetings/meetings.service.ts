@@ -13,13 +13,14 @@ export class MeetingsService {
     private notificationsService: NotificationsService,
   ) {}
 
-  findAll() {
-    return this.repo.find({ order: { scheduled_at: 'DESC' } })
+  findAll(schoolId?: number) {
+    const where = schoolId ? { school_id: schoolId } : {}
+    return this.repo.find({ where, order: { scheduled_at: 'DESC' } })
   }
 
-  async create(dto: CreateMeetingDto) {
-    const meeting = await this.repo.save(this.repo.create(dto))
-    await this.notificationsService.createForMeeting(meeting)
+  async create(dto: CreateMeetingDto, schoolId?: number) {
+    const meeting = await this.repo.save(this.repo.create({ ...dto, school_id: schoolId }))
+    await this.notificationsService.createForMeeting(meeting, schoolId)
     return meeting
   }
 

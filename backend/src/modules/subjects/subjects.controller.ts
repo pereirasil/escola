@@ -1,20 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { SubjectsService } from './subjects.service';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
+import { SchoolId } from '../../common/decorators/school-id.decorator';
 
 @Controller('subjects')
+@UseGuards(AuthGuard('jwt'))
 export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
 
   @Post()
-  create(@Body() createSubjectDto: CreateSubjectDto) {
-    return this.subjectsService.create(createSubjectDto);
+  create(@Body() createSubjectDto: CreateSubjectDto, @SchoolId() schoolId: number | undefined) {
+    return this.subjectsService.create(createSubjectDto, schoolId);
   }
 
   @Get()
-  findAll() {
-    return this.subjectsService.findAll();
+  findAll(@SchoolId() schoolId: number | undefined) {
+    return this.subjectsService.findAll(schoolId);
   }
 
   @Get(':id')

@@ -14,42 +14,42 @@ export class GradesService {
     private studentRepo: Repository<Student>,
   ) {}
 
-  findAll() {
-    return this.repo.find({ order: { id: 'DESC' } })
+  findAll(schoolId?: number) {
+    const where = schoolId ? { school_id: schoolId } : {}
+    return this.repo.find({ where, order: { id: 'DESC' } })
   }
 
-  // Busca alunos de uma turma específica
-  findStudentsByTurma(turmaId: number) {
-    return this.studentRepo.find({ where: { class_id: turmaId }, order: { name: 'ASC' } })
+  findStudentsByTurma(turmaId: number, schoolId?: number) {
+    const where: any = { class_id: turmaId }
+    if (schoolId) where.school_id = schoolId
+    return this.studentRepo.find({ where, order: { name: 'ASC' } })
   }
 
-  // Busca notas por turma, matéria e bimestre para preencher a tela de lançamento
-  findByFilters(turmaId: number, materiaId: number, bimestre: string) {
-    return this.repo.find({
-      where: {
-        turma_id: turmaId,
-        materia_id: materiaId,
-        bimestre: bimestre
-      }
-    })
+  findByFilters(turmaId: number, materiaId: number, bimestre: string, schoolId?: number) {
+    const where: any = {
+      turma_id: turmaId,
+      materia_id: materiaId,
+      bimestre: bimestre
+    }
+    if (schoolId) where.school_id = schoolId
+    return this.repo.find({ where })
   }
 
-  // Busca notas de um aluno para o boletim
-  findByAluno(alunoId: number) {
-    return this.repo.find({ where: { aluno_id: alunoId } })
+  findByAluno(alunoId: number, schoolId?: number) {
+    const where: any = { aluno_id: alunoId }
+    if (schoolId) where.school_id = schoolId
+    return this.repo.find({ where })
   }
 
-  async createBulk(dtos: CreateGradeDto[]) {
-    // Como tem Unique['aluno_id', 'materia_id', 'bimestre'], seria bom fazer upsert ou checar antes.
-    // Usaremos upsert ou delete/insert para simplificar.
-    
-    // Deleta as notas anteriores para esta combinação (se existirem) para atualizar
+  async createBulk(dtos: CreateGradeDto[], schoolId?: number) {
     if (dtos.length > 0) {
       const { turma_id, materia_id, bimestre } = dtos[0];
-      await this.repo.delete({ turma_id, materia_id, bimestre });
+      const deleteWhere: any = { turma_id, materia_id, bimestre }
+      if (schoolId) deleteWhere.school_id = schoolId
+      await this.repo.delete(deleteWhere);
     }
 
-    const entities = dtos.map(dto => this.repo.create(dto));
+    const entities = dtos.map(dto => this.repo.create({ ...dto, school_id: schoolId }));
     return this.repo.save(entities);
   }
 }

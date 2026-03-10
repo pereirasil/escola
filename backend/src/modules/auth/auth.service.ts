@@ -26,8 +26,9 @@ export class AuthService {
     if (!isAdmin && user.approved !== 1) {
       throw new UnauthorizedException('Cadastro ainda não aprovado. Aguarde o administrador.')
     }
-    const payload = { sub: user.id, email: user.email, role: user.role }
-    return { access_token: this.jwtService.sign(payload), user: { id: user.id, email: user.email, name: user.name, role: user.role } }
+    const school_id = user.role === 'school' ? user.id : null
+    const payload = { sub: user.id, email: user.email, role: user.role, school_id }
+    return { access_token: this.jwtService.sign(payload), user: { id: user.id, email: user.email, name: user.name, role: user.role, school_id } }
   }
 
   async register(dto: RegisterDto) {
@@ -50,11 +51,11 @@ export class AuthService {
     if (!student || !student.password_hash || !(await bcrypt.compare(password, student.password_hash))) {
       throw new UnauthorizedException('CPF ou senha inválidos')
     }
-    const payload = { sub: student.id, role: 'student', document: student.document }
+    const payload = { sub: student.id, role: 'student', document: student.document, school_id: student.school_id }
     const access_token = this.jwtService.sign(payload)
     return {
       access_token,
-      user: { id: student.id, name: student.name, role: 'student', document: student.document },
+      user: { id: student.id, name: student.name, role: 'student', document: student.document, school_id: student.school_id },
     }
   }
 
@@ -63,11 +64,11 @@ export class AuthService {
     if (!teacher || !teacher.password_hash || !(await bcrypt.compare(password, teacher.password_hash))) {
       throw new UnauthorizedException('CPF ou senha inválidos')
     }
-    const payload = { sub: teacher.id, role: 'teacher', document: teacher.document }
+    const payload = { sub: teacher.id, role: 'teacher', document: teacher.document, school_id: teacher.school_id }
     const access_token = this.jwtService.sign(payload)
     return {
       access_token,
-      user: { id: teacher.id, name: teacher.name, role: 'teacher', document: teacher.document },
+      user: { id: teacher.id, name: teacher.name, role: 'teacher', document: teacher.document, school_id: teacher.school_id },
     }
   }
 }

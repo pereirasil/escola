@@ -18,15 +18,18 @@ export class AttendanceService {
     private classRepo: Repository<Class>,
   ) {}
 
-  findAll() {
-    return this.repo.find({ order: { date: 'DESC' } })
+  findAll(schoolId?: number) {
+    const where = schoolId ? { school_id: schoolId } : {}
+    return this.repo.find({ where, order: { date: 'DESC' } })
   }
 
-  findStudentsByTurma(turmaId: number) {
-    return this.studentRepo.find({ where: { class_id: turmaId }, order: { name: 'ASC' } })
+  findStudentsByTurma(turmaId: number, schoolId?: number) {
+    const where: any = { class_id: turmaId }
+    if (schoolId) where.school_id = schoolId
+    return this.studentRepo.find({ where, order: { name: 'ASC' } })
   }
 
-  async createBulk(dtos: CreateAttendanceDto[]) {
+  async createBulk(dtos: CreateAttendanceDto[], schoolId?: number) {
     const entities = dtos.map(dto => this.repo.create({
       student_id: dto.aluno_id,
       class_id: dto.turma_id,
@@ -35,17 +38,16 @@ export class AttendanceService {
       lesson: dto.aula,
       status: dto.status,
       observation: dto.observacao,
+      school_id: schoolId,
     }));
     return this.repo.save(entities);
   }
 
-  // --- Relatórios e Histórico ---
-
-  async getHistoricoAluno(alunoId: number) {
-    // Traz o histórico detalhado do aluno (JOIN manual usando queryBuilder se necessário ou lookup manual)
-    // Para simplificar, buscamos as presenças e agregamos:
+  async getHistoricoAluno(alunoId: number, schoolId?: number) {
+    const where: any = { student_id: alunoId }
+    if (schoolId) where.school_id = schoolId
     const presencas = await this.repo.find({
-      where: { student_id: alunoId },
+      where,
       order: { date: 'DESC' }
     });
 
@@ -65,10 +67,13 @@ export class AttendanceService {
     };
   }
 
-  async getFaltasPorTurma(turmaId: number) {
-    // Agrupa faltas e presenças de todos os alunos de uma turma
-    const alunos = await this.studentRepo.find({ where: { class_id: turmaId } });
-    const presencasTurma = await this.repo.find({ where: { class_id: turmaId } });
+  async getFaltasPorTurma(turmaId: number, schoolId?: number) {
+    const alunosWhere: any = { class_id: turmaId }
+    if (schoolId) alunosWhere.school_id = schoolId
+    const alunos = await this.studentRepo.find({ where: alunosWhere });
+    const presencasWhere: any = { class_id: turmaId }
+    if (schoolId) presencasWhere.school_id = schoolId
+    const presencasTurma = await this.repo.find({ where: presencasWhere });
 
     return alunos.map(aluno => {
       const presencasAluno = presencasTurma.filter(p => p.student_id === aluno.id);
@@ -87,10 +92,11 @@ export class AttendanceService {
     });
   }
 
-  async getRankingFaltas() {
-    // Traz o ranking geral de faltas de toda a escola
-    const alunos = await this.studentRepo.find();
-    const todasPresencas = await this.repo.find();
+  async getRankingFaltas(schoolId?: number) {
+    const alunosWhere = schoolId ? { school_id: schoolId } : {}
+    const alunos = await this.studentRepo.find({ where: alunosWhere });
+    const presencasWhere = schoolId ? { school_id: schoolId } : {}
+    const todasPresencas = await this.repo.find({ where: presencasWhere });
 
     const relatorio = alunos.map(aluno => {
       const presencasAluno = todasPresencas.filter(p => p.student_id === aluno.id);
@@ -103,16 +109,20 @@ export class AttendanceService {
       };
     });
 
-    // Ordena de quem tem mais faltas para quem tem menos
     return relatorio.sort((a, b) => b.faltas - a.faltas).filter(r => r.faltas > 0);
   }
 
-  async getRankingFaltasByTeacherId(teacherId: number) {
-    const classes = await this.classRepo.find({ where: { teacher_id: teacherId } })
+  async getRankingFaltasByTeacherId(teacherId: number, schoolId?: number) {
+    const classesWhere: any = { teacher_id: teacherId }
+    if (schoolId) classesWhere.school_id = schoolId
+    const classes = await this.classRepo.find({ where: classesWhere })
     const classIds = classes.map((c) => c.id)
     if (classIds.length === 0) return []
-    const alunosFiltered = await this.studentRepo.find({ where: { class_id: In(classIds) } })
-    const todasPresencas = await this.repo.find()
+    const alunosWhere: any = { class_id: In(classIds) }
+    if (schoolId) alunosWhere.school_id = schoolId
+    const alunosFiltered = await this.studentRepo.find({ where: alunosWhere })
+    const presencasWhere = schoolId ? { school_id: schoolId } : {}
+    const todasPresencas = await this.repo.find({ where: presencasWhere })
     const relatorio = alunosFiltered.map((aluno) => {
       const presencasAluno = todasPresencas.filter((p) => p.student_id === aluno.id)
       const faltas = presencasAluno.filter((p) => p.status === 'F').length

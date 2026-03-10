@@ -5,6 +5,7 @@ import { CreateClassDto } from './dto/create-class.dto'
 import { UpdateClassDto } from './dto/update-class.dto'
 import { RolesGuard } from '../../common/guards/roles.guard'
 import { Roles } from '../../common/decorators/roles.decorator'
+import { SchoolId } from '../../common/decorators/school-id.decorator'
 
 @Controller('classes')
 export class ClassesController {
@@ -12,11 +13,12 @@ export class ClassesController {
 
   @Get()
   @UseGuards(AuthGuard('jwt'))
-  async findAll(@Req() req: { user: { id: number; role: string } }) {
+  async findAll(@Req() req: { user: { id: number; role: string; school_id?: number } }) {
     if (req.user.role === 'teacher') {
-      return this.service.findByTeacherId(req.user.id)
+      return this.service.findByTeacherId(req.user.id, req.user.school_id)
     }
-    return this.service.findAll()
+    const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
+    return this.service.findAll(schoolId)
   }
 
   @Get(':id')
@@ -33,8 +35,8 @@ export class ClassesController {
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'school')
-  create(@Body() dto: CreateClassDto) {
-    return this.service.create(dto)
+  create(@Body() dto: CreateClassDto, @SchoolId() schoolId: number | undefined) {
+    return this.service.create(dto, schoolId)
   }
 
   @Put(':id')

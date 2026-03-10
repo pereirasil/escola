@@ -1,15 +1,18 @@
-import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Put, UseGuards } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
 import { PaymentsService } from './payments.service'
 import { CreatePaymentDto } from './dto/create-payment.dto'
 import { UpdatePaymentDto } from './dto/update-payment.dto'
+import { SchoolId } from '../../common/decorators/school-id.decorator'
 
 @Controller('payments')
+@UseGuards(AuthGuard('jwt'))
 export class PaymentsController {
   constructor(private service: PaymentsService) {}
 
   @Get()
-  findAll() {
-    return this.service.findAll()
+  findAll(@SchoolId() schoolId: number | undefined) {
+    return this.service.findAll(schoolId)
   }
 
   @Get(':id')
@@ -18,8 +21,8 @@ export class PaymentsController {
   }
 
   @Post()
-  create(@Body() dto: CreatePaymentDto) {
-    return this.service.create(dto)
+  create(@Body() dto: CreatePaymentDto, @SchoolId() schoolId: number | undefined) {
+    return this.service.create(dto, schoolId)
   }
 
   @Put(':id')

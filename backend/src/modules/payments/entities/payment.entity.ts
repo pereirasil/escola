@@ -3,6 +3,9 @@ import { BaseEntity } from '../../../common/base.entity'
 
 @Entity('payments')
 export class Payment extends BaseEntity {
+  @Column({ nullable: true })
+  school_id: number
+
   @Column()
   student_id: number
 

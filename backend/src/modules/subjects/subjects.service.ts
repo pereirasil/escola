@@ -12,12 +12,13 @@ export class SubjectsService {
     private repo: Repository<Subject>,
   ) {}
 
-  create(createSubjectDto: CreateSubjectDto) {
-    return this.repo.save(this.repo.create(createSubjectDto));
+  create(createSubjectDto: CreateSubjectDto, schoolId?: number) {
+    return this.repo.save(this.repo.create({ ...createSubjectDto, school_id: schoolId }));
   }
 
-  findAll() {
-    return this.repo.find({ order: { name: 'ASC' } });
+  findAll(schoolId?: number) {
+    const where = schoolId ? { school_id: schoolId } : {};
+    return this.repo.find({ where, order: { name: 'ASC' } });
   }
 
   findOne(id: number) {

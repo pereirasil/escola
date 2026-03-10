@@ -4,6 +4,9 @@ import { BaseEntity } from '../../../common/base.entity'
 
 @Entity('students')
 export class Student extends BaseEntity {
+  @Column({ nullable: true })
+  school_id: number
+
   @Column()
   name: string
 

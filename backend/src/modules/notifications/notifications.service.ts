@@ -21,9 +21,11 @@ export class NotificationsService {
     })
   }
 
-  async createForMeeting(meeting: Meeting) {
+  async createForMeeting(meeting: Meeting, schoolId?: number) {
     if (!meeting.class_id) return
-    const students = await this.studentRepo.find({ where: { class_id: meeting.class_id } })
+    const where: any = { class_id: meeting.class_id }
+    if (schoolId) where.school_id = schoolId
+    const students = await this.studentRepo.find({ where })
     const notifications = students.map((s) =>
       this.notificationRepo.create({
         student_id: s.id,
@@ -31,6 +33,7 @@ export class NotificationsService {
         message: meeting.description ?? `Reunião agendada para ${meeting.scheduled_at ?? 'data a definir'}.`,
         type: 'meeting',
         reference_id: meeting.id,
+        school_id: schoolId,
       }),
     )
     if (notifications.length) {

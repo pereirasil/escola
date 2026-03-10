@@ -12,16 +12,17 @@ export class PaymentsService {
     private repo: Repository<Payment>,
   ) {}
 
-  findAll() {
-    return this.repo.find({ order: { due_date: 'DESC' } })
+  findAll(schoolId?: number) {
+    const where = schoolId ? { school_id: schoolId } : {}
+    return this.repo.find({ where, order: { due_date: 'DESC' } })
   }
 
   findOne(id: number) {
     return this.repo.findOne({ where: { id } })
   }
 
-  create(dto: CreatePaymentDto) {
-    return this.repo.save(this.repo.create(dto))
+  create(dto: CreatePaymentDto, schoolId?: number) {
+    return this.repo.save(this.repo.create({ ...dto, school_id: schoolId }))
   }
 
   update(id: number, dto: UpdatePaymentDto) {

@@ -19,8 +19,9 @@ export class StudentsService {
     private repo: Repository<Student>,
   ) {}
 
-  findAll() {
-    return this.repo.find({ order: { name: 'ASC' } })
+  findAll(schoolId?: number) {
+    const where = schoolId ? { school_id: schoolId } : {}
+    return this.repo.find({ where, order: { name: 'ASC' } })
   }
 
   findOne(id: number) {
@@ -32,15 +33,17 @@ export class StudentsService {
     return this.repo.findOne({ where: { document: normalized } })
   }
 
-  async create(dto: CreateStudentDto) {
+  async create(dto: CreateStudentDto, schoolId?: number) {
     const normalizedDoc = normalizeCpf(dto.document)
-    const existing = await this.repo.findOne({ where: { document: normalizedDoc } })
+    const where: any = { document: normalizedDoc }
+    if (schoolId) where.school_id = schoolId
+    const existing = await this.repo.findOne({ where })
     if (existing) {
       throw new ConflictException('CPF já cadastrado')
     }
     const hash = await bcrypt.hash(dto.password, SALT_ROUNDS)
     const { password: _, ...rest } = dto
-    return this.repo.save(this.repo.create({ ...rest, document: normalizedDoc, password_hash: hash }))
+    return this.repo.save(this.repo.create({ ...rest, document: normalizedDoc, password_hash: hash, school_id: schoolId }))
   }
 
   update(id: number, dto: UpdateStudentDto) {

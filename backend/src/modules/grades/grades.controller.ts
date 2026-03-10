@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport'
 import { GradesService } from './grades.service'
 import { ClassesService } from '../classes/classes.service'
 import { CreateGradeDto } from './dto/create-grade.dto'
+import { SchoolId } from '../../common/decorators/school-id.decorator'
 
 @Controller('notas')
 @UseGuards(AuthGuard('jwt'))
@@ -21,25 +22,30 @@ export class GradesController {
   }
 
   @Get()
-  async findAll(@Req() req: { user: { id: number; role: string } }) {
+  async findAll(@Req() req: { user: { id: number; role: string; school_id?: number } }) {
+    const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
     if (req.user.role === 'teacher') {
-      const classes = await this.classesService.findByTeacherId(req.user.id)
+      const classes = await this.classesService.findByTeacherId(req.user.id, req.user.school_id)
       const classIds = classes.map((c) => c.id)
-      const all = await this.service.findAll()
+      const all = await this.service.findAll(req.user.school_id)
       return all.filter((g) => classIds.includes(g.turma_id))
     }
-    return this.service.findAll()
+    return this.service.findAll(schoolId)
   }
 
   @Get('aluno/:alunoId')
-  findByAluno(@Param('alunoId') alunoId: string) {
-    return this.service.findByAluno(+alunoId)
+  findByAluno(@Param('alunoId') alunoId: string, @SchoolId() schoolId: number | undefined) {
+    return this.service.findByAluno(+alunoId, schoolId)
   }
 
   @Get('turma/:turmaId/alunos')
-  async findStudentsByTurma(@Param('turmaId') turmaId: string, @Req() req: { user: { id: number; role: string } }) {
+  async findStudentsByTurma(
+    @Param('turmaId') turmaId: string,
+    @Req() req: { user: { id: number; role: string } },
+    @SchoolId() schoolId: number | undefined,
+  ) {
     await this.ensureTeacherCanAccessClass(req.user, +turmaId)
-    return this.service.findStudentsByTurma(+turmaId)
+    return this.service.findStudentsByTurma(+turmaId, schoolId)
   }
 
   @Get('filtros')
@@ -48,13 +54,18 @@ export class GradesController {
     @Query('materiaId') materiaId: string,
     @Query('bimestre') bimestre: string,
     @Req() req: { user: { id: number; role: string } },
+    @SchoolId() schoolId: number | undefined,
   ) {
     await this.ensureTeacherCanAccessClass(req.user, +turmaId)
-    return this.service.findByFilters(+turmaId, +materiaId, bimestre)
+    return this.service.findByFilters(+turmaId, +materiaId, bimestre, schoolId)
   }
 
   @Post()
-  async createBulk(@Body() dtos: CreateGradeDto[], @Req() req: { user: { id: number; role: string } }) {
+  async createBulk(
+    @Body() dtos: CreateGradeDto[],
+    @Req() req: { user: { id: number; role: string } },
+    @SchoolId() schoolId: number | undefined,
+  ) {
     if (!Array.isArray(dtos)) {
       dtos = [dtos]
     }
@@ -62,6 +73,6 @@ export class GradesController {
     for (const classId of classIds) {
       await this.ensureTeacherCanAccessClass(req.user, classId)
     }
-    return this.service.createBulk(dtos)
+    return this.service.createBulk(dtos, schoolId)
   }
 }
