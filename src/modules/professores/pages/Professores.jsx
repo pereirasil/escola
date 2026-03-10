@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, DataTable, FormInput, ConfirmModal, Spinner } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, Spinner } from '../../../components/ui';
 import { professoresService } from '../../../services/professores.service';
 import { turmasService } from '../../../services/turmas.service';
 import { horariosService } from '../../../services/horarios.service';
@@ -16,6 +16,8 @@ export default function Professores() {
   const [editForm, setEditForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', class_id: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [filtroNome, setFiltroNome] = useState('');
+  const [filtroTurma, setFiltroTurma] = useState('');
 
   const load = async () => {
     try {
@@ -145,10 +147,35 @@ export default function Professores() {
       </Card>
 
       <Card title="Lista de Professores">
+        <div className="form-grid" style={{ marginBottom: '1rem' }}>
+          <FormInput
+            label="Filtrar por nome"
+            id="filtroNomeProfessor"
+            placeholder="Digite o nome..."
+            value={filtroNome}
+            onChange={e => setFiltroNome(e.target.value)}
+          />
+          <SelectField
+            label="Filtrar por turma"
+            id="filtroTurmaProfessor"
+            value={filtroTurma}
+            onChange={e => setFiltroTurma(e.target.value)}
+            options={turmas.map(t => ({ value: t.id, label: t.name }))}
+          />
+        </div>
         {loadingData ? <Spinner /> : (
           <DataTable
             columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Materias', 'Turma', 'Acoes']}
-            data={professores}
+            data={professores.filter(p => {
+              const matchNome = p.name.toLowerCase().includes(filtroNome.toLowerCase());
+              if (!matchNome) return false;
+              if (!filtroTurma) return true;
+              const fromSchedules = schedules.filter(s => s.teacher_id === p.id).map(s => s.class_id);
+              const fromClasses = turmas.filter(t => t.teacher_id === p.id).map(t => t.id);
+              const fromTeacher = p.class_id ? [p.class_id] : [];
+              const classIds = [...new Set([...fromSchedules, ...fromClasses, ...fromTeacher])];
+              return classIds.includes(Number(filtroTurma));
+            })}
             renderRow={(p) => {
               const fromSchedules = schedules.filter(s => s.teacher_id === p.id).map(s => s.class_id);
               const fromClasses = turmas.filter(t => t.teacher_id === p.id).map(t => t.id);
