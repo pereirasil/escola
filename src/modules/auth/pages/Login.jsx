@@ -52,38 +52,84 @@ export default function Login() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
-        <h1>Gestão Escolar</h1>
-        <h2>Entrar</h2>
-        <form onSubmit={handleSubmit} className="auth-form">
-          <label>
-            E-mail ou CPF
-            <input
-              type="text"
-              placeholder="E-mail (gestão) ou CPF (aluno)"
-              value={usuario}
-              onChange={(e) => setUsuario(e.target.value)}
-              required
-              autoComplete="username"
-            />
-          </label>
-          <label style={{ marginBottom: '0.25rem' }}>
-            Senha
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-          </label>
-          <div style={{ textAlign: 'right', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
-            <Link to="/cadastro" style={{ color: '#646cff', textDecoration: 'none' }}>Cadastre-se</Link>
+      <div className="auth-hero">
+        <div className="auth-hero-content">
+          <h1 className="auth-hero-title">Gestao Escolar</h1>
+          <p className="auth-hero-subtitle">
+            A plataforma completa para transformar a administracao da sua escola.
+          </p>
+
+          <div className="auth-hero-features">
+            <div className="auth-hero-feature">
+              <span className="auth-hero-feature-icon">&#9670;</span>
+              <div>
+                <strong>Gestao Integrada</strong>
+                <p>Controle de turmas, materias, horarios e financeiro em um so lugar.</p>
+              </div>
+            </div>
+            <div className="auth-hero-feature">
+              <span className="auth-hero-feature-icon">&#9670;</span>
+              <div>
+                <strong>Acompanhamento em Tempo Real</strong>
+                <p>Notas, presenca e desempenho dos alunos atualizados instantaneamente.</p>
+              </div>
+            </div>
+            <div className="auth-hero-feature">
+              <span className="auth-hero-feature-icon">&#9670;</span>
+              <div>
+                <strong>Comunicacao Eficiente</strong>
+                <p>Professores, alunos e gestores conectados em uma unica plataforma.</p>
+              </div>
+            </div>
+            <div className="auth-hero-feature">
+              <span className="auth-hero-feature-icon">&#9670;</span>
+              <div>
+                <strong>Relatorios Inteligentes</strong>
+                <p>Dashboards e graficos que facilitam a tomada de decisao.</p>
+              </div>
+            </div>
           </div>
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Entrando...' : 'Entrar'}
-          </button>
-        </form>
+
+          <p className="auth-hero-footer-text">
+            Usado por escolas que buscam eficiencia, organizacao e resultados.
+          </p>
+        </div>
+      </div>
+
+      <div className="auth-login-side">
+        <div className="auth-card">
+          <h2>Entrar</h2>
+          <p className="auth-card-subtitle">Acesse sua conta para continuar</p>
+          <form onSubmit={handleSubmit} className="auth-form">
+            <label>
+              E-mail ou CPF
+              <input
+                type="text"
+                placeholder="E-mail (gestao) ou CPF (aluno)"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
+                required
+                autoComplete="username"
+              />
+            </label>
+            <label style={{ marginBottom: '0.25rem' }}>
+              Senha
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </label>
+            <div style={{ textAlign: 'right', marginBottom: '1.5rem', fontSize: '0.85rem' }}>
+              <Link to="/cadastro" style={{ color: '#646cff', textDecoration: 'none' }}>Cadastre-se</Link>
+            </div>
+            <button type="submit" className="btn-primary" disabled={loading}>
+              {loading ? 'Entrando...' : 'Entrar'}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )
