@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { Schedule } from './entities/schedule.entity';
@@ -12,7 +12,27 @@ export class SchedulesService {
     private repo: Repository<Schedule>,
   ) {}
 
-  create(createScheduleDto: CreateScheduleDto) {
+  private async checkRoomConflict(dto: CreateScheduleDto | UpdateScheduleDto, excludeId?: number) {
+    if (!dto.room || !dto.day_of_week || !dto.start_time || !dto.end_time) return;
+
+    const query = this.repo.createQueryBuilder('s')
+      .where('s.room = :room', { room: dto.room })
+      .andWhere('s.day_of_week = :day', { day: dto.day_of_week })
+      .andWhere('s.start_time < :end', { end: dto.end_time })
+      .andWhere('s.end_time > :start', { start: dto.start_time });
+
+    if (excludeId) {
+      query.andWhere('s.id != :id', { id: excludeId });
+    }
+
+    const conflict = await query.getOne();
+    if (conflict) {
+      throw new ConflictException('Ja existe uma aula nesta sala, no mesmo dia e horario.');
+    }
+  }
+
+  async create(createScheduleDto: CreateScheduleDto) {
+    await this.checkRoomConflict(createScheduleDto);
     return this.repo.save(this.repo.create(createScheduleDto));
   }
 
@@ -25,8 +45,12 @@ export class SchedulesService {
     return this.repo.findOne({ where: { id } });
   }
 
-  update(id: number, updateScheduleDto: UpdateScheduleDto) {
-    return this.repo.update(id, updateScheduleDto as Partial<Schedule>).then(() => this.findOne(id));
+  async update(id: number, updateScheduleDto: UpdateScheduleDto) {
+    const existing = await this.findOne(id);
+    const merged = { ...existing, ...updateScheduleDto };
+    await this.checkRoomConflict(merged as CreateScheduleDto, id);
+    await this.repo.update(id, updateScheduleDto as Partial<Schedule>);
+    return this.findOne(id);
   }
 
   remove(id: number) {

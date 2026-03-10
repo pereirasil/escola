@@ -207,6 +207,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1rem;
+  min-width: max-content;
 }
 
 /* UX Classes */
@@ -313,10 +314,15 @@ body {
   padding: 0.5rem 0.75rem;
   text-align: left;
   border-bottom: 1px solid #333;
+  white-space: nowrap;
 }
 
 .data-table th {
   font-weight: 600;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .data-table button {
@@ -745,6 +751,9 @@ button:focus-visible {
   .data-table td {
     border-bottom-color: #eee;
   }
+  .data-table th {
+    color: rgba(0, 0, 0, 0.5);
+  }
   .card {
     background-color: #fff;
     border-color: #ddd;
@@ -766,6 +775,21 @@ button:focus-visible {
     color: #888;
     background-color: #f9f9f9;
     border-color: #ddd;
+  }
+  .btn-secondary {
+    color: #333;
+    border-color: #ccc;
+  }
+  .btn-secondary:hover {
+    background-color: #f0f0f0;
+    border-color: #999;
+  }
+  .btn-danger {
+    color: #dc2626;
+    border-color: #dc2626;
+  }
+  .btn-danger:hover {
+    background-color: rgba(220, 38, 38, 0.08);
   }
   .pagination {
     border-top-color: #eee;

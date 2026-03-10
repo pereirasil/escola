@@ -1,9 +1,8 @@
 import * as bcrypt from 'bcrypt'
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In } from 'typeorm'
+import { Repository } from 'typeorm'
 import { Teacher } from './entities/teacher.entity'
-import { Class } from '../classes/entities/class.entity'
 import { CreateTeacherDto } from './dto/create-teacher.dto'
 import { UpdateTeacherDto } from './dto/update-teacher.dto'
 
@@ -18,8 +17,6 @@ export class TeachersService {
   constructor(
     @InjectRepository(Teacher)
     private repo: Repository<Teacher>,
-    @InjectRepository(Class)
-    private classRepo: Repository<Class>,
   ) {}
 
   findAll() {
@@ -42,18 +39,15 @@ export class TeachersService {
       throw new ConflictException('CPF já cadastrado')
     }
     const hash = await bcrypt.hash(dto.password, SALT_ROUNDS)
-    const { password: _, class_ids, ...rest } = dto
-    const teacher = await this.repo.save(
+    const { password: _, class_ids: _ci, ...rest } = dto
+    return this.repo.save(
       this.repo.create({ ...rest, document: normalizedDoc, password_hash: hash }),
     )
-    if (class_ids?.length) {
-      await this.classRepo.update({ id: In(class_ids) }, { teacher_id: teacher.id })
-    }
-    return teacher
   }
 
-  update(id: number, dto: UpdateTeacherDto) {
-    return this.repo.update(id, dto as Partial<Teacher>).then(() => this.findOne(id))
+  async update(id: number, dto: UpdateTeacherDto) {
+    await this.repo.update(id, dto as Partial<Teacher>)
+    return this.findOne(id)
   }
 
   remove(id: number) {

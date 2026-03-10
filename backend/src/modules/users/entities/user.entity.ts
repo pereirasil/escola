@@ -17,4 +17,13 @@ export class User extends BaseEntity {
 
   @Column({ type: 'integer', default: 0 })
   approved: number
+
+  @Column({ nullable: true })
+  responsible_name: string
+
+  @Column({ nullable: true })
+  cnpj: string
+
+  @Column({ nullable: true })
+  phone: string
 }

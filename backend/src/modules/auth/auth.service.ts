@@ -35,7 +35,14 @@ export class AuthService {
     if (existing) {
       throw new ConflictException('E-mail já cadastrado')
     }
-    return this.usersService.createSchool(dto.name, dto.email, dto.password)
+    return this.usersService.createSchool({
+      name: dto.name,
+      email: dto.email,
+      password: dto.password,
+      responsible_name: dto.responsible_name,
+      cnpj: dto.cnpj,
+      phone: dto.phone,
+    })
   }
 
   async loginStudent(cpf: string, password: string) {

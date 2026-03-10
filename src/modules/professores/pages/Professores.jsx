@@ -1,24 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, Spinner } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, ConfirmModal, Spinner } from '../../../components/ui';
 import { professoresService } from '../../../services/professores.service';
 import { turmasService } from '../../../services/turmas.service';
+import { horariosService } from '../../../services/horarios.service';
 import toast from 'react-hot-toast';
 
 export default function Professores() {
   const [professores, setProfessores] = useState([]);
   const [turmas, setTurmas] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [form, setForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '', class_id: '' });
+  const [form, setForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '' });
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [editId, setEditId] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', class_id: '' });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const load = async () => {
     try {
-      const [resP, resT] = await Promise.all([
+      const [resP, resT, resS] = await Promise.all([
         professoresService.listar(),
-        turmasService.listar()
+        turmasService.listar(),
+        horariosService.listar()
       ]);
       setProfessores(resP.data || []);
       setTurmas(resT.data || []);
+      setSchedules(resS.data || []);
     } catch (error) {
       toast.error('Erro ao carregar dados.');
     } finally {
@@ -35,14 +43,60 @@ export default function Professores() {
       return;
     }
     try {
-      const { confirmPassword, class_id, ...payload } = form;
-      if (class_id) payload.class_ids = [Number(class_id)];
+      const { confirmPassword, ...payload } = form;
       await professoresService.criar(payload);
       toast.success('Professor cadastrado com sucesso!');
-      setForm({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '', class_id: '' });
+      setForm({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '' });
       load();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Erro ao salvar professor.');
+    }
+  };
+
+  const handleEdit = (p) => {
+    const turmaAssociada = turmas.find(t => t.teacher_id === p.id);
+    setEditId(p.id);
+    setEditForm({
+      name: p.name || '',
+      document: p.document || '',
+      phone: p.phone || '',
+      email: p.email || '',
+      subject: p.subject || '',
+      class_id: turmaAssociada ? String(turmaAssociada.id) : '',
+    });
+    setIsModalOpen(true);
+  };
+
+  const cancelEdit = () => {
+    setEditId(null);
+    setEditForm({ name: '', document: '', phone: '', email: '', subject: '', class_id: '' });
+    setIsModalOpen(false);
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const { class_id, ...payload } = editForm;
+      await professoresService.atualizar(editId, payload);
+
+      const turmaAnterior = turmas.find(t => t.teacher_id === editId);
+      const novaTurmaId = class_id ? Number(class_id) : null;
+
+      if (turmaAnterior && turmaAnterior.id !== novaTurmaId) {
+        await turmasService.atualizar(turmaAnterior.id, { teacher_id: null });
+      }
+      if (novaTurmaId && (!turmaAnterior || turmaAnterior.id !== novaTurmaId)) {
+        await turmasService.atualizar(novaTurmaId, { teacher_id: editId });
+      }
+
+      toast.success('Professor atualizado com sucesso!');
+      cancelEdit();
+      load();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Erro ao atualizar professor.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -73,13 +127,6 @@ export default function Professores() {
             <FormInput label="Telefone" id="phone" placeholder="Ex: (11) 99999-9999" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             <FormInput label="E-mail" id="email" type="email" placeholder="Ex: maria@escola.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             <FormInput label="Materias que leciona" id="subject" placeholder="Ex: Matematica, Fisica" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} />
-            <SelectField
-              label="Turma"
-              id="class_id"
-              value={form.class_id}
-              onChange={e => setForm({ ...form, class_id: e.target.value })}
-              options={turmas.map(t => ({ value: t.id, label: t.name }))}
-            />
           </div>
           <button type="submit" className="btn-primary">Salvar Professor</button>
         </form>
@@ -88,23 +135,63 @@ export default function Professores() {
       <Card title="Lista de Professores">
         {loadingData ? <Spinner /> : (
           <DataTable
-            columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Materias', 'Acoes']}
+            columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Materias', 'Turma', 'Acoes']}
             data={professores}
-            renderRow={(p) => (
+            renderRow={(p) => {
+              const fromSchedules = schedules.filter(s => s.teacher_id === p.id).map(s => s.class_id);
+              const fromClasses = turmas.filter(t => t.teacher_id === p.id).map(t => t.id);
+              const classIds = [...new Set([...fromSchedules, ...fromClasses])];
+              const nomesTurmas = classIds.map(cid => turmas.find(t => t.id === cid)?.name).filter(Boolean);
+              return (
               <tr key={p.id}>
                 <td>{p.name}</td>
                 <td>{p.document}</td>
                 <td>{p.phone}</td>
                 <td>{p.email}</td>
                 <td>{p.subject}</td>
+                <td>{nomesTurmas.length > 0 ? nomesTurmas.join(', ') : '-'}</td>
                 <td>
-                  <button className="btn-danger" onClick={() => setDeleteTarget(p.id)}>Excluir</button>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button className="btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleEdit(p)}>Editar</button>
+                    <button className="btn-danger" onClick={() => setDeleteTarget(p.id)}>Excluir</button>
+                  </div>
                 </td>
               </tr>
-            )}
+              );
+            }}
           />
         )}
       </Card>
+
+      {isModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Editar Professor</h3>
+            <form onSubmit={handleEditSubmit}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <FormInput label="Nome" id="edit-name" required value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} />
+                <FormInput label="CPF" id="edit-document" required value={editForm.document} onChange={e => setEditForm({ ...editForm, document: e.target.value })} />
+                <FormInput label="Telefone" id="edit-phone" value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
+                <FormInput label="E-mail" id="edit-email" type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
+                <FormInput label="Materias" id="edit-subject" value={editForm.subject} onChange={e => setEditForm({ ...editForm, subject: e.target.value })} />
+                <div className="form-group">
+                  <label htmlFor="edit-class_id">Turma</label>
+                  <select id="edit-class_id" value={editForm.class_id} onChange={e => setEditForm({ ...editForm, class_id: e.target.value })}>
+                    <option value="">Nenhuma</option>
+                    {turmas.map(t => (
+                      <option key={t.id} value={String(t.id)}>{t.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn-secondary" onClick={cancelEdit} disabled={saving}>Cancelar</button>
+                <button type="submit" className="btn-primary" disabled={saving}>{saving ? 'Salvando...' : 'Atualizar Professor'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         open={!!deleteTarget}

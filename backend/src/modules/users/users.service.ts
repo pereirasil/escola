@@ -17,14 +17,17 @@ export class UsersService {
     return this.repo.findOne({ where: { email } })
   }
 
-  async createSchool(name: string, email: string, password: string): Promise<User> {
-    const password_hash = await bcrypt.hash(password, SALT_ROUNDS)
+  async createSchool(data: { name: string; email: string; password: string; responsible_name: string; cnpj?: string; phone: string }): Promise<User> {
+    const password_hash = await bcrypt.hash(data.password, SALT_ROUNDS)
     const user = this.repo.create({
-      name,
-      email,
+      name: data.name,
+      email: data.email,
       password_hash,
       role: 'school',
       approved: 0,
+      responsible_name: data.responsible_name,
+      cnpj: data.cnpj || undefined,
+      phone: data.phone,
     })
     return this.repo.save(user)
   }
