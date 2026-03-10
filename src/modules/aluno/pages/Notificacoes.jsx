@@ -9,6 +9,7 @@ export default function Notificacoes() {
 
   useEffect(() => {
     alunosService.minhasNotificacoes().then(setLista).catch(() => toast.error('Erro ao carregar notificacoes.')).finally(() => setLoading(false))
+    alunosService.marcarNotificacoesComoLidas().catch(() => {})
   }, [])
 
   return (

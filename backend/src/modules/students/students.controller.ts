@@ -37,6 +37,21 @@ export class StudentsController {
     return this.notificationsService.findByStudentId(req.user.id)
   }
 
+  @Get('me/notifications/count')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  async countUnreadNotifications(@Req() req: { user: { id: number } }) {
+    const count = await this.notificationsService.countUnread(req.user.id)
+    return { count }
+  }
+
+  @Patch('me/notifications/read')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  markNotificationsAsRead(@Req() req: { user: { id: number } }) {
+    return this.notificationsService.markAllAsRead(req.user.id)
+  }
+
   @Patch('me/password')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('student')

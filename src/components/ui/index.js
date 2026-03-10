@@ -6,3 +6,4 @@ export { SelectField } from './SelectField';
 export { ConfirmModal } from './ConfirmModal';
 export { Spinner } from './Spinner';
 export { Breadcrumb } from './Breadcrumb';
+export { NotificationBell } from './NotificationBell';

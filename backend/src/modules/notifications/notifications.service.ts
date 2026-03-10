@@ -21,6 +21,21 @@ export class NotificationsService {
     })
   }
 
+  countUnread(studentId: number) {
+    return this.notificationRepo.count({
+      where: { student_id: studentId, read_at: null as any },
+    })
+  }
+
+  async markAllAsRead(studentId: number) {
+    await this.notificationRepo
+      .createQueryBuilder()
+      .update()
+      .set({ read_at: new Date().toISOString() })
+      .where('student_id = :studentId AND read_at IS NULL', { studentId })
+      .execute()
+  }
+
   async createForMeeting(meeting: Meeting, schoolId?: number) {
     if (!meeting.class_id) return
     const where: any = { class_id: meeting.class_id }

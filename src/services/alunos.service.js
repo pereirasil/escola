@@ -8,6 +8,8 @@ export const alunosService = {
   excluir: (id) => api.delete(`/students/${id}`),
   me: () => api.get('/students/me').then((r) => r.data),
   minhasNotificacoes: () => api.get('/students/me/notifications').then((r) => r.data),
+  contarNotificacoesNaoLidas: () => api.get('/students/me/notifications/count').then((r) => r.data),
+  marcarNotificacoesComoLidas: () => api.patch('/students/me/notifications/read').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>
     api.patch('/students/me/password', { currentPassword, newPassword }).then((r) => r.data),
 }

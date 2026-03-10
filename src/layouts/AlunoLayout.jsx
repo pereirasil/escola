@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet, useNavigate, NavLink, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
+import { NotificationBell } from '../components/ui'
 
 export default function AlunoLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -38,6 +39,7 @@ export default function AlunoLayout() {
             <h1 className="header-title">Area do Aluno</h1>
           </div>
           <div className="header-actions">
+            <NotificationBell />
             <span className="header-user">{user?.name || 'Aluno'}</span>
             <button type="button" className="header-logout" onClick={handleLogout}>
               Sair

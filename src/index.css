@@ -439,6 +439,41 @@ body {
   font-size: 0.85rem;
 }
 
+/* Notification bell */
+.notification-bell {
+  position: relative;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.notification-bell:hover {
+  color: #fff;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 9999px;
+  padding: 0 4px;
+  pointer-events: none;
+}
+
 /* Page */
 .page h2 {
   margin-top: 0;
@@ -961,6 +996,12 @@ button:focus-visible {
   .form-group textarea {
     border-color: #ccc;
     background-color: #fff;
+    color: #213547;
+  }
+  .notification-bell {
+    color: rgba(0, 0, 0, 0.5);
+  }
+  .notification-bell:hover {
     color: #213547;
   }
 }
