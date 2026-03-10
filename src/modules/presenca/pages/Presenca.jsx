@@ -59,10 +59,9 @@ export default function Presenca() {
       const listaAlunos = res.data || [];
       setAlunos(listaAlunos);
       
-      // Inicializar a chamada com status P (Presente) para todos
       const chamadaInicial = {};
       listaAlunos.forEach(aluno => {
-        chamadaInicial[aluno.id] = { status: 'P', observacao: '' };
+        chamadaInicial[aluno.id] = { status: '', observacao: '' };
       });
       setChamada(chamadaInicial);
       
@@ -80,10 +79,13 @@ export default function Presenca() {
   };
 
   const handleStatusChange = (alunoId, status) => {
-    setChamada(prev => ({
-      ...prev,
-      [alunoId]: { ...prev[alunoId], status }
-    }));
+    setChamada(prev => {
+      const atual = prev[alunoId]?.status;
+      return {
+        ...prev,
+        [alunoId]: { ...prev[alunoId], status: atual === status ? '' : status }
+      };
+    });
   };
 
   const handleObsChange = (alunoId, observacao) => {
@@ -100,6 +102,11 @@ export default function Presenca() {
 
     if (alunos.length === 0) {
       return toast.error('Nenhum aluno para registrar presença.');
+    }
+
+    const semStatus = alunos.filter(a => !chamada[a.id]?.status);
+    if (semStatus.length > 0) {
+      return toast.error(`Marque o status de todos os alunos. ${semStatus.length === 1 ? 'Falta' : 'Faltam'} ${semStatus.length}.`);
     }
 
     const payload = alunos.map(aluno => ({
@@ -186,7 +193,7 @@ export default function Presenca() {
                   </thead>
                   <tbody>
                     {alunos.map(aluno => {
-                      const statusAtual = chamada[aluno.id]?.status || 'P';
+                      const statusAtual = chamada[aluno.id]?.status || '';
                       const obsAtual = chamada[aluno.id]?.observacao || '';
 
                       return (
@@ -197,7 +204,8 @@ export default function Presenca() {
                               type="radio" 
                               name={`status-${aluno.id}`} 
                               checked={statusAtual === 'P'} 
-                              onChange={() => handleStatusChange(aluno.id, 'P')}
+                              onChange={() => {}}
+                              onClick={() => handleStatusChange(aluno.id, 'P')}
                               style={{ transform: 'scale(1.5)', cursor: 'pointer' }}
                             />
                           </td>
@@ -206,7 +214,8 @@ export default function Presenca() {
                               type="radio" 
                               name={`status-${aluno.id}`} 
                               checked={statusAtual === 'F'} 
-                              onChange={() => handleStatusChange(aluno.id, 'F')}
+                              onChange={() => {}}
+                              onClick={() => handleStatusChange(aluno.id, 'F')}
                               style={{ transform: 'scale(1.5)', cursor: 'pointer' }}
                             />
                           </td>
@@ -215,7 +224,8 @@ export default function Presenca() {
                               type="radio" 
                               name={`status-${aluno.id}`} 
                               checked={statusAtual === 'A'} 
-                              onChange={() => handleStatusChange(aluno.id, 'A')}
+                              onChange={() => {}}
+                              onClick={() => handleStatusChange(aluno.id, 'A')}
                               style={{ transform: 'scale(1.5)', cursor: 'pointer' }}
                             />
                           </td>
@@ -224,7 +234,8 @@ export default function Presenca() {
                               type="radio" 
                               name={`status-${aluno.id}`} 
                               checked={statusAtual === 'J'} 
-                              onChange={() => handleStatusChange(aluno.id, 'J')}
+                              onChange={() => {}}
+                              onClick={() => handleStatusChange(aluno.id, 'J')}
                               style={{ transform: 'scale(1.5)', cursor: 'pointer' }}
                             />
                           </td>
