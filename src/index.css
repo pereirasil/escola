@@ -440,6 +440,10 @@ body {
 }
 
 /* Notification bell */
+.notification-wrapper {
+  position: relative;
+}
+
 .notification-bell {
   position: relative;
   background: none;
@@ -472,6 +476,93 @@ body {
   border-radius: 9999px;
   padding: 0 4px;
   pointer-events: none;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  background: #1e1e2e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.notification-dropdown-header {
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-bottom: 1px solid #333;
+}
+
+.notification-dropdown-body {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.notification-dropdown-empty {
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: #888;
+  font-size: 0.85rem;
+}
+
+.notification-dropdown-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #2a2a3a;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.notification-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.notification-dropdown-item:hover {
+  background: #2a2a3a;
+}
+
+.notification-dropdown-item strong {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+.notification-dropdown-item p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #aaa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notification-dropdown-item small {
+  color: #666;
+  font-size: 0.7rem;
+}
+
+.notification-dropdown-footer {
+  border-top: 1px solid #333;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.notification-dropdown-footer button {
+  background: none;
+  border: none;
+  color: #646cff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+}
+
+.notification-dropdown-footer button:hover {
+  text-decoration: underline;
 }
 
 /* Page */
@@ -1003,5 +1094,29 @@ button:focus-visible {
   }
   .notification-bell:hover {
     color: #213547;
+  }
+  .notification-dropdown {
+    background: #fff;
+    border-color: #ddd;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+  .notification-dropdown-header {
+    border-bottom-color: #eee;
+    color: #213547;
+  }
+  .notification-dropdown-item {
+    border-bottom-color: #f0f0f0;
+  }
+  .notification-dropdown-item:hover {
+    background: #f5f5f5;
+  }
+  .notification-dropdown-item p {
+    color: #666;
+  }
+  .notification-dropdown-item small {
+    color: #999;
+  }
+  .notification-dropdown-footer {
+    border-top-color: #eee;
   }
 }
