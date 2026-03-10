@@ -62,7 +62,7 @@ export class AuthService {
     const access_token = this.jwtService.sign(payload)
     return {
       access_token,
-      user: { id: matched.id, name: matched.name, role: 'student', document: matched.document, school_id: matched.school_id },
+      user: { id: matched.id, name: matched.name, role: 'student', document: matched.document, school_id: matched.school_id, photo: matched.photo },
     }
   }
 
@@ -82,7 +82,20 @@ export class AuthService {
     const access_token = this.jwtService.sign(payload)
     return {
       access_token,
-      user: { id: matched.id, name: matched.name, role: 'teacher', document: matched.document, school_id: matched.school_id },
+      user: { id: matched.id, name: matched.name, role: 'teacher', document: matched.document, school_id: matched.school_id, photo: matched.photo },
     }
+  }
+
+  async getAvatarByCpf(cpf: string) {
+    const students = await this.studentsService.findAllByDocument(cpf)
+    if (students.length > 0 && students[0].photo) {
+      return { photo: students[0].photo, name: students[0].name }
+    }
+    const teachers = await this.teachersService.findAllByDocument(cpf)
+    if (teachers.length > 0 && teachers[0].photo) {
+      return { photo: teachers[0].photo, name: teachers[0].name }
+    }
+    const studentWithName = students[0] || teachers[0]
+    return { photo: null, name: studentWithName?.name || null }
   }
 }

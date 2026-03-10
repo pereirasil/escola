@@ -47,6 +47,33 @@ export class TeachersController {
     return this.classesService.findByTeacherId(req.user.id, req.user.school_id)
   }
 
+  @Post('me/photo')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  @UseInterceptors(FileInterceptor('photo', {
+    storage: diskStorage({
+      destination: join(process.cwd(), 'uploads'),
+      filename: (_req, file, cb) => {
+        const unique = Date.now() + '-' + Math.round(Math.random() * 1e9)
+        cb(null, `teacher-${unique}${extname(file.originalname)}`)
+      },
+    }),
+    fileFilter: (_req, file, cb) => {
+      if (/\.(jpg|jpeg|png|webp)$/i.test(file.originalname)) {
+        cb(null, true)
+      } else {
+        cb(new Error('Apenas imagens JPG, PNG ou WEBP'), false)
+      }
+    },
+    limits: { fileSize: 5 * 1024 * 1024 },
+  }))
+  async uploadMyPhoto(
+    @Req() req: { user: { id: number } },
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.service.updatePhoto(req.user.id, file.filename)
+  }
+
   @Patch('me/password')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('teacher')

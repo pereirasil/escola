@@ -1,14 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authService } from '../../../services/auth.service'
 import { useAuthStore } from '../../../store/useAuthStore'
 import toast from 'react-hot-toast'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export default function Login() {
   const [usuario, setUsuario] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [avatar, setAvatar] = useState(null)
+  const avatarTimeout = useRef(null)
   const navigate = useNavigate()
   const { login, isAuthenticated } = useAuthStore()
 
@@ -19,6 +23,21 @@ export default function Login() {
       navigate(target, { replace: true })
     }
   }, [navigate, isAuthenticated])
+
+  useEffect(() => {
+    clearTimeout(avatarTimeout.current)
+    const cpfDigits = usuario.replace(/\D/g, '')
+    if (cpfDigits.length >= 11 && !usuario.includes('@')) {
+      avatarTimeout.current = setTimeout(() => {
+        authService.getAvatarByCpf(cpfDigits)
+          .then((data) => setAvatar(data))
+          .catch(() => setAvatar(null))
+      }, 500)
+    } else {
+      setAvatar(null)
+    }
+    return () => clearTimeout(avatarTimeout.current)
+  }, [usuario])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -101,6 +120,38 @@ export default function Login() {
         <div className="auth-card">
           <h2>Entrar</h2>
           <p className="auth-card-subtitle">Acesse sua conta para continuar</p>
+          {avatar && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1rem' }}>
+              {avatar.photo ? (
+                <img
+                  src={avatar.photo.startsWith('http') ? avatar.photo : `${API_URL}/uploads/${avatar.photo}`}
+                  alt={avatar.name || ''}
+                  style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '3px solid #646cff' }}
+                />
+              ) : (
+                <span
+                  style={{
+                    width: 80,
+                    height: 80,
+                    borderRadius: '50%',
+                    background: '#5c6bc0',
+                    color: '#fff',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 600,
+                    fontSize: 28,
+                    border: '3px solid #646cff',
+                  }}
+                >
+                  {(avatar.name || '?').split(' ').map(p => p[0]).slice(0, 2).join('').toUpperCase()}
+                </span>
+              )}
+              {avatar.name && (
+                <span style={{ marginTop: '0.5rem', fontWeight: 500, color: '#334155' }}>{avatar.name}</span>
+              )}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="auth-form">
             <label>
               E-mail ou CPF

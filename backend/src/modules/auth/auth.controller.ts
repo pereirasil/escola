@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post } from '@nestjs/common'
 import { AuthService } from './auth.service'
 import { LoginDto } from './dto/login.dto'
 import { LoginStudentDto } from './dto/login-student.dto'
@@ -26,5 +26,10 @@ export class AuthController {
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.authService.register(dto)
+  }
+
+  @Get('avatar/:cpf')
+  getAvatarByCpf(@Param('cpf') cpf: string) {
+    return this.authService.getAvatarByCpf(cpf)
   }
 }

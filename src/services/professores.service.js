@@ -16,4 +16,9 @@ export const professoresService = {
   minhasTurmas: () => api.get('/teachers/me/classes').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>
     api.patch('/teachers/me/password', { currentPassword, newPassword }).then((r) => r.data),
+  uploadMinhaFoto: (file) => {
+    const form = new FormData()
+    form.append('photo', file)
+    return api.post('/teachers/me/photo', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then((r) => r.data)
+  },
 }

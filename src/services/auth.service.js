@@ -12,4 +12,7 @@ export const authService = {
 
   register: (data) =>
     api.post('/auth/register', data),
+
+  getAvatarByCpf: (cpf) =>
+    api.get(`/auth/avatar/${cpf.replace(/\D/g, '')}`).then((res) => res.data),
 }

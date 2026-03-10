@@ -19,4 +19,9 @@ export const alunosService = {
   meuHistorico: () => api.get('/students/me/historico').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>
     api.patch('/students/me/password', { currentPassword, newPassword }).then((r) => r.data),
+  uploadMinhaFoto: (file) => {
+    const form = new FormData()
+    form.append('photo', file)
+    return api.post('/students/me/photo', form, { headers: { 'Content-Type': 'multipart/form-data' } }).then((r) => r.data)
+  },
 }
