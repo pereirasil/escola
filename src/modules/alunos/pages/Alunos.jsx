@@ -11,7 +11,7 @@ export default function Alunos() {
   const [turmas, setTurmas] = useState([]);
   const [ranking, setRanking] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [form, setForm] = useState({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', address: '', class_id: '' });
+  const [form, setForm] = useState({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const [filtroNome, setFiltroNome] = useState('');
@@ -47,7 +47,7 @@ export default function Alunos() {
       const classId = form.class_id ? Number(form.class_id) : null;
       await alunosService.criar({ ...payload, class_id: classId });
       toast.success('Aluno cadastrado com sucesso!');
-      setForm({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', address: '', class_id: '' });
+      setForm({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
       load();
     } catch (error) {
       toast.error('Erro ao salvar aluno.');
@@ -87,7 +87,12 @@ export default function Alunos() {
             <FormInput label="Confirmar senha" id="confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
             <FormInput label="Nome do Responsavel" id="guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
             <FormInput label="Telefone do Responsavel" id="guardian_phone" placeholder="Ex: (11) 99999-9999" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: e.target.value })} />
-            <FormInput label="Endereco" id="address" placeholder="Rua, numero, bairro" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} />
+            <FormInput label="Estado" id="state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
+            <FormInput label="Cidade" id="city" placeholder="Ex: Sao Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+            <FormInput label="Bairro" id="neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
+            <FormInput label="Rua" id="street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
+            <FormInput label="Numero" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
+            <FormInput label="Complemento" id="complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
             <SelectField
               label="Turma"
               id="class_id"

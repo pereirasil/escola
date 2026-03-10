@@ -25,7 +25,12 @@ export default function MeusDados() {
         birth_date: dados.birth_date,
         guardian_name: dados.guardian_name,
         guardian_phone: dados.guardian_phone,
-        address: dados.address,
+        state: dados.state,
+        city: dados.city,
+        neighborhood: dados.neighborhood,
+        street: dados.street,
+        number: dados.number,
+        complement: dados.complement,
       })
       toast.success('Dados atualizados.')
     } catch {
@@ -49,7 +54,12 @@ export default function MeusDados() {
             <FormInput label="Data de nascimento" id="birth_date" type="date" value={dados.birth_date ?? ''} onChange={(e) => setDados({ ...dados, birth_date: e.target.value })} />
             <FormInput label="Nome do responsável" id="guardian_name" value={dados.guardian_name ?? ''} onChange={(e) => setDados({ ...dados, guardian_name: e.target.value })} />
             <FormInput label="Telefone do responsável" id="guardian_phone" value={dados.guardian_phone ?? ''} onChange={(e) => setDados({ ...dados, guardian_phone: e.target.value })} />
-            <FormInput label="Endereço" id="address" value={dados.address ?? ''} onChange={(e) => setDados({ ...dados, address: e.target.value })} />
+            <FormInput label="Estado" id="state" value={dados.state ?? ''} onChange={(e) => setDados({ ...dados, state: e.target.value })} />
+            <FormInput label="Cidade" id="city" value={dados.city ?? ''} onChange={(e) => setDados({ ...dados, city: e.target.value })} />
+            <FormInput label="Bairro" id="neighborhood" value={dados.neighborhood ?? ''} onChange={(e) => setDados({ ...dados, neighborhood: e.target.value })} />
+            <FormInput label="Rua" id="street" value={dados.street ?? ''} onChange={(e) => setDados({ ...dados, street: e.target.value })} />
+            <FormInput label="Numero" id="number" value={dados.number ?? ''} onChange={(e) => setDados({ ...dados, number: e.target.value })} />
+            <FormInput label="Complemento" id="complement" value={dados.complement ?? ''} onChange={(e) => setDados({ ...dados, complement: e.target.value })} />
           </div>
           <button type="submit" className="btn-primary" disabled={saving}>
             {saving ? 'Salvando...' : 'Salvar'}

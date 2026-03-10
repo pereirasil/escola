@@ -10,10 +10,10 @@ export default function Professores() {
   const [turmas, setTurmas] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [form, setForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '', class_id: '' });
+  const [form, setForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '', class_id: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '' });
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [editId, setEditId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', class_id: '' });
+  const [editForm, setEditForm] = useState({ name: '', document: '', phone: '', email: '', subject: '', class_id: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '' });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -46,7 +46,7 @@ export default function Professores() {
       const { confirmPassword, class_id, ...payload } = form;
       await professoresService.criar({ ...payload, class_id: class_id ? Number(class_id) : undefined });
       toast.success('Professor cadastrado com sucesso!');
-      setForm({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '', class_id: '' });
+      setForm({ name: '', document: '', phone: '', email: '', subject: '', password: '', confirmPassword: '', class_id: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '' });
       load();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Erro ao salvar professor.');
@@ -62,13 +62,19 @@ export default function Professores() {
       email: p.email || '',
       subject: p.subject || '',
       class_id: p.class_id ? String(p.class_id) : '',
+      state: p.state || '',
+      city: p.city || '',
+      neighborhood: p.neighborhood || '',
+      street: p.street || '',
+      number: p.number || '',
+      complement: p.complement || '',
     });
     setIsModalOpen(true);
   };
 
   const cancelEdit = () => {
     setEditId(null);
-    setEditForm({ name: '', document: '', phone: '', email: '', subject: '', class_id: '' });
+    setEditForm({ name: '', document: '', phone: '', email: '', subject: '', class_id: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '' });
     setIsModalOpen(false);
   };
 
@@ -118,6 +124,12 @@ export default function Professores() {
             <FormInput label="Telefone" id="phone" placeholder="Ex: (11) 99999-9999" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
             <FormInput label="E-mail" id="email" type="email" placeholder="Ex: maria@escola.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             <FormInput label="Materias que leciona" id="subject" placeholder="Ex: Matematica, Fisica" value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} />
+            <FormInput label="Estado" id="state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
+            <FormInput label="Cidade" id="city" placeholder="Ex: Sao Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+            <FormInput label="Bairro" id="neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
+            <FormInput label="Rua" id="street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
+            <FormInput label="Numero" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
+            <FormInput label="Complemento" id="complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
             <div className="form-group">
               <label htmlFor="class_id">Turma</label>
               <select id="class_id" value={form.class_id} onChange={e => setForm({ ...form, class_id: e.target.value })}>
@@ -175,6 +187,12 @@ export default function Professores() {
                 <FormInput label="Telefone" id="edit-phone" value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} />
                 <FormInput label="E-mail" id="edit-email" type="email" value={editForm.email} onChange={e => setEditForm({ ...editForm, email: e.target.value })} />
                 <FormInput label="Materias" id="edit-subject" value={editForm.subject} onChange={e => setEditForm({ ...editForm, subject: e.target.value })} />
+                <FormInput label="Estado" id="edit-state" value={editForm.state} onChange={e => setEditForm({ ...editForm, state: e.target.value })} />
+                <FormInput label="Cidade" id="edit-city" value={editForm.city} onChange={e => setEditForm({ ...editForm, city: e.target.value })} />
+                <FormInput label="Bairro" id="edit-neighborhood" value={editForm.neighborhood} onChange={e => setEditForm({ ...editForm, neighborhood: e.target.value })} />
+                <FormInput label="Rua" id="edit-street" value={editForm.street} onChange={e => setEditForm({ ...editForm, street: e.target.value })} />
+                <FormInput label="Numero" id="edit-number" value={editForm.number} onChange={e => setEditForm({ ...editForm, number: e.target.value })} />
+                <FormInput label="Complemento" id="edit-complement" value={editForm.complement} onChange={e => setEditForm({ ...editForm, complement: e.target.value })} />
                 <div className="form-group">
                   <label htmlFor="edit-class_id">Turma</label>
                   <select id="edit-class_id" value={editForm.class_id} onChange={e => setEditForm({ ...editForm, class_id: e.target.value })}>

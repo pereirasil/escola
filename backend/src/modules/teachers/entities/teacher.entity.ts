@@ -26,6 +26,24 @@ export class Teacher extends BaseEntity {
   class_id: number
 
   @Column({ nullable: true })
+  state: string
+
+  @Column({ nullable: true })
+  city: string
+
+  @Column({ nullable: true })
+  neighborhood: string
+
+  @Column({ nullable: true })
+  street: string
+
+  @Column({ nullable: true })
+  number: string
+
+  @Column({ nullable: true })
+  complement: string
+
+  @Column({ nullable: true })
   @Exclude()
   password_hash: string
 }
