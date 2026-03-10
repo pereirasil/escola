@@ -2,6 +2,7 @@ import { api } from './api'
 
 export const alunosService = {
   listar: () => api.get('/students'),
+  listarPaginado: (page, limit = 10) => api.get(`/students?page=${page}&limit=${limit}`).then((r) => r.data),
   buscarPorId: (id) => api.get(`/students/${id}`),
   criar: (data) => api.post('/students', data),
   atualizar: (id, data) => api.put(`/students/${id}`, data),

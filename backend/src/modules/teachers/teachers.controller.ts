@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put, Query, Req, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { TeachersService } from './teachers.service'
 import { ClassesService } from '../classes/classes.service'
@@ -19,7 +19,14 @@ export class TeachersController {
   @Get()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'school')
-  findAll(@SchoolId() schoolId: number | undefined) {
+  findAll(
+    @SchoolId() schoolId: number | undefined,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    if (page) {
+      return this.service.findAllPaginated(schoolId, +page, +(limit || 10))
+    }
     return this.service.findAll(schoolId)
   }
 

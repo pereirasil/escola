@@ -16,15 +16,18 @@ export default function Alunos() {
 
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroTurma, setFiltroTurma] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const load = async () => {
+  const load = async (p = page) => {
     try {
       const [resA, resT, resR] = await Promise.all([
-        alunosService.listar(),
+        alunosService.listarPaginado(p),
         turmasService.listar(),
         presencasService.rankingFaltas().catch(() => ({ data: [] }))
       ]);
       setAlunos(resA.data || []);
+      setTotalPages(resA.totalPages || 1);
       setTurmas(resT.data || []);
       setRanking(resR.data || []);
     } catch (error) {
@@ -34,7 +37,7 @@ export default function Alunos() {
     }
   };
 
-  useEffect(() => { load() }, []);
+  useEffect(() => { load(page) }, [page]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -124,45 +127,54 @@ export default function Alunos() {
         </div>
 
         {loadingData ? <Spinner /> : (
-          <DataTable
-            columns={['Nome', 'CPF/Matricula', 'Turma', 'Faltas', 'Acoes']}
-            data={alunosFiltrados}
-            renderRow={(a) => {
-              const t = turmas.find(t => t.id === a.class_id);
-              const stats = ranking.find(r => r.aluno_id === a.id);
-              const totalFaltas = stats ? stats.faltas : 0;
-              const alerta = totalFaltas >= 5;
+          <>
+            <DataTable
+              columns={['Nome', 'CPF/Matricula', 'Turma', 'Faltas', 'Acoes']}
+              data={alunosFiltrados}
+              renderRow={(a) => {
+                const t = turmas.find(t => t.id === a.class_id);
+                const stats = ranking.find(r => r.aluno_id === a.id);
+                const totalFaltas = stats ? stats.faltas : 0;
+                const alerta = totalFaltas >= 5;
 
-              return (
-                <tr key={a.id}>
-                  <td>
-                    <Link to={`/alunos/${a.id}`} style={{ color: '#646cff', textDecoration: 'none', fontWeight: 'bold' }}>
-                      {a.name}
-                    </Link>
-                  </td>
-                  <td>{a.document}</td>
-                  <td>{t ? t.name : '-'}</td>
-                  <td>
-                    <span style={{ 
-                      color: alerta ? '#f87171' : (totalFaltas > 0 ? '#fbbf24' : '#4ade80'),
-                      fontWeight: alerta ? 'bold' : 'normal'
-                    }}>
-                      {totalFaltas}
-                    </span>
-                  </td>
-                  <td style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <Link to={`/alunos/${a.id}/editar`}>
-                      <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Editar</button>
-                    </Link>
-                    <Link to={`/alunos/${a.id}`}>
-                      <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Historico</button>
-                    </Link>
-                    <button type="button" className="btn-danger" onClick={() => setDeleteTarget(a.id)}>Excluir</button>
-                  </td>
-                </tr>
-              );
-            }}
-          />
+                return (
+                  <tr key={a.id}>
+                    <td>
+                      <Link to={`/alunos/${a.id}`} style={{ color: '#646cff', textDecoration: 'none', fontWeight: 'bold' }}>
+                        {a.name}
+                      </Link>
+                    </td>
+                    <td>{a.document}</td>
+                    <td>{t ? t.name : '-'}</td>
+                    <td>
+                      <span style={{ 
+                        color: alerta ? '#f87171' : (totalFaltas > 0 ? '#fbbf24' : '#4ade80'),
+                        fontWeight: alerta ? 'bold' : 'normal'
+                      }}>
+                        {totalFaltas}
+                      </span>
+                    </td>
+                    <td style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <Link to={`/alunos/${a.id}/editar`}>
+                        <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Editar</button>
+                      </Link>
+                      <Link to={`/alunos/${a.id}`}>
+                        <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Historico</button>
+                      </Link>
+                      <button type="button" className="btn-danger" onClick={() => setDeleteTarget(a.id)}>Excluir</button>
+                    </td>
+                  </tr>
+                );
+              }}
+            />
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
+                <span className="pagination-info">Pagina {page} de {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Proxima</button>
+              </div>
+            )}
+          </>
         )}
       </Card>
 

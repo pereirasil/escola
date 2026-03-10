@@ -18,15 +18,18 @@ export default function Professores() {
   const [saving, setSaving] = useState(false);
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroTurma, setFiltroTurma] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const load = async () => {
+  const load = async (p = page) => {
     try {
       const [resP, resT, resS] = await Promise.all([
-        professoresService.listar(),
+        professoresService.listarPaginado(p),
         turmasService.listar(),
         horariosService.listar()
       ]);
       setProfessores(resP.data || []);
+      setTotalPages(resP.totalPages || 1);
       setTurmas(resT.data || []);
       setSchedules(resS.data || []);
     } catch (error) {
@@ -36,7 +39,7 @@ export default function Professores() {
     }
   };
 
-  useEffect(() => { load() }, []);
+  useEffect(() => { load(page) }, [page]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -164,42 +167,51 @@ export default function Professores() {
           />
         </div>
         {loadingData ? <Spinner /> : (
-          <DataTable
-            columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Materias', 'Turma', 'Acoes']}
-            data={professores.filter(p => {
-              const matchNome = p.name.toLowerCase().includes(filtroNome.toLowerCase());
-              if (!matchNome) return false;
-              if (!filtroTurma) return true;
-              const fromSchedules = schedules.filter(s => s.teacher_id === p.id).map(s => s.class_id);
-              const fromClasses = turmas.filter(t => t.teacher_id === p.id).map(t => t.id);
-              const fromTeacher = p.class_id ? [p.class_id] : [];
-              const classIds = [...new Set([...fromSchedules, ...fromClasses, ...fromTeacher])];
-              return classIds.includes(Number(filtroTurma));
-            })}
-            renderRow={(p) => {
-              const fromSchedules = schedules.filter(s => s.teacher_id === p.id).map(s => s.class_id);
-              const fromClasses = turmas.filter(t => t.teacher_id === p.id).map(t => t.id);
-              const fromTeacher = p.class_id ? [p.class_id] : [];
-              const classIds = [...new Set([...fromSchedules, ...fromClasses, ...fromTeacher])];
-              const nomesTurmas = classIds.map(cid => turmas.find(t => t.id === cid)?.name).filter(Boolean);
-              return (
-              <tr key={p.id}>
-                <td>{p.name}</td>
-                <td>{p.document}</td>
-                <td>{p.phone}</td>
-                <td>{p.email}</td>
-                <td>{p.subject}</td>
-                <td>{nomesTurmas.length > 0 ? nomesTurmas.join(', ') : '-'}</td>
-                <td>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button className="btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleEdit(p)}>Editar</button>
-                    <button className="btn-danger" onClick={() => setDeleteTarget(p.id)}>Excluir</button>
-                  </div>
-                </td>
-              </tr>
-              );
-            }}
-          />
+          <>
+            <DataTable
+              columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Materias', 'Turma', 'Acoes']}
+              data={professores.filter(p => {
+                const matchNome = p.name.toLowerCase().includes(filtroNome.toLowerCase());
+                if (!matchNome) return false;
+                if (!filtroTurma) return true;
+                const fromSchedules = schedules.filter(s => s.teacher_id === p.id).map(s => s.class_id);
+                const fromClasses = turmas.filter(t => t.teacher_id === p.id).map(t => t.id);
+                const fromTeacher = p.class_id ? [p.class_id] : [];
+                const classIds = [...new Set([...fromSchedules, ...fromClasses, ...fromTeacher])];
+                return classIds.includes(Number(filtroTurma));
+              })}
+              renderRow={(p) => {
+                const fromSchedules = schedules.filter(s => s.teacher_id === p.id).map(s => s.class_id);
+                const fromClasses = turmas.filter(t => t.teacher_id === p.id).map(t => t.id);
+                const fromTeacher = p.class_id ? [p.class_id] : [];
+                const classIds = [...new Set([...fromSchedules, ...fromClasses, ...fromTeacher])];
+                const nomesTurmas = classIds.map(cid => turmas.find(t => t.id === cid)?.name).filter(Boolean);
+                return (
+                <tr key={p.id}>
+                  <td>{p.name}</td>
+                  <td>{p.document}</td>
+                  <td>{p.phone}</td>
+                  <td>{p.email}</td>
+                  <td>{p.subject}</td>
+                  <td>{nomesTurmas.length > 0 ? nomesTurmas.join(', ') : '-'}</td>
+                  <td>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleEdit(p)}>Editar</button>
+                      <button className="btn-danger" onClick={() => setDeleteTarget(p.id)}>Excluir</button>
+                    </div>
+                  </td>
+                </tr>
+                );
+              }}
+            />
+            {totalPages > 1 && (
+              <div className="pagination">
+                <button disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
+                <span className="pagination-info">Pagina {page} de {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Proxima</button>
+              </div>
+            )}
+          </>
         )}
       </Card>
 

@@ -24,6 +24,17 @@ export class StudentsService {
     return this.repo.find({ where, order: { name: 'ASC' } })
   }
 
+  async findAllPaginated(schoolId: number | undefined, page: number, limit: number) {
+    const where = schoolId ? { school_id: schoolId } : {}
+    const [data, total] = await this.repo.findAndCount({
+      where,
+      order: { name: 'ASC' },
+      skip: (page - 1) * limit,
+      take: limit,
+    })
+    return { data, page, limit, total, totalPages: Math.ceil(total / limit) }
+  }
+
   findOne(id: number) {
     return this.repo.findOne({ where: { id } })
   }
