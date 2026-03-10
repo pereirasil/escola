@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { AttendanceService } from './attendance.service'
 import { CreateAttendanceDto } from './dto/create-attendance.dto'
@@ -14,14 +14,20 @@ export class AttendanceController {
   ) {}
 
   @Get()
-  async findAll(@Req() req: { user: { id: number; role: string; school_id?: number } }) {
+  async findAll(
+    @Req() req: { user: { id: number; role: string; school_id?: number } },
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const p = Math.max(1, Number(page) || 1)
+    const l = Math.min(100, Math.max(1, Number(limit) || 50))
     const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
     if (req.user.role === 'teacher') {
       const classIds = await this.teacherScope.getTeacherClassIds(req.user)
-      const all = await this.service.findAll(req.user.school_id)
-      return all.filter((p) => classIds.includes(p.class_id))
+      const all = await this.service.findAll(req.user.school_id, p, l)
+      return all.filter((a) => classIds.includes(a.class_id))
     }
-    return this.service.findAll(schoolId)
+    return this.service.findAll(schoolId, p, l)
   }
 
   @Get('ranking-faltas')
@@ -72,8 +78,12 @@ export class AttendanceController {
     if (!Array.isArray(dtos)) {
       dtos = [dtos]
     }
+    const checked = new Set<string>()
     for (const dto of dtos) {
+      const key = `${dto.turma_id}:${dto.materia_id}`
+      if (checked.has(key)) continue
       await this.teacherScope.ensureClassSubjectAccess(req.user, dto.turma_id, dto.materia_id)
+      checked.add(key)
     }
     return this.service.createBulk(dtos, schoolId)
   }
