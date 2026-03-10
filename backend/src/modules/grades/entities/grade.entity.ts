@@ -16,6 +16,9 @@ export class Grade extends BaseEntity {
   @Column()
   materia_id: number
 
+  @Column({ nullable: true })
+  teacher_id: number
+
   @Column({ type: 'real', default: 0 })
   nota: number
 

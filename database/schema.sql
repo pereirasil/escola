@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS teachers (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   email TEXT,
-  subject TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -70,13 +69,17 @@ CREATE TABLE IF NOT EXISTS enrollments (
 CREATE TABLE IF NOT EXISTS grades (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   student_id INTEGER NOT NULL,
+  class_id INTEGER NOT NULL,
   subject_id INTEGER NOT NULL,
+  teacher_id INTEGER,
   value REAL DEFAULT 0,
   period TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (student_id) REFERENCES students(id),
-  FOREIGN KEY (subject_id) REFERENCES subjects(id)
+  FOREIGN KEY (class_id) REFERENCES classes(id),
+  FOREIGN KEY (subject_id) REFERENCES subjects(id),
+  FOREIGN KEY (teacher_id) REFERENCES teachers(id)
 );
 
 -- Presença
@@ -84,12 +87,18 @@ CREATE TABLE IF NOT EXISTS attendance (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   student_id INTEGER NOT NULL,
   class_id INTEGER NOT NULL,
+  subject_id INTEGER NOT NULL,
+  teacher_id INTEGER,
   date TEXT NOT NULL,
-  present INTEGER DEFAULT 1,
+  lesson TEXT,
+  status VARCHAR(1) DEFAULT 'P',
+  observation TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (student_id) REFERENCES students(id),
-  FOREIGN KEY (class_id) REFERENCES classes(id)
+  FOREIGN KEY (class_id) REFERENCES classes(id),
+  FOREIGN KEY (subject_id) REFERENCES subjects(id),
+  FOREIGN KEY (teacher_id) REFERENCES teachers(id)
 );
 
 -- Reuniões

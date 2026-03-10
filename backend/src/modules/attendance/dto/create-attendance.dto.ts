@@ -10,6 +10,10 @@ export class CreateAttendanceDto {
   @IsNumber()
   materia_id: number
 
+  @IsOptional()
+  @IsNumber()
+  teacher_id?: number
+
   @IsString()
   data: string
 

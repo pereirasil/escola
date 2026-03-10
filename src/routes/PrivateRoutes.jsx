@@ -5,6 +5,7 @@ import Alunos from '../modules/alunos/pages/Alunos';
 import AlunoDetalhes from '../modules/alunos/pages/AlunoDetalhes';
 import AlunoEditar from '../modules/alunos/pages/AlunoEditar';
 import Professores from '../modules/professores/pages/Professores';
+import ProfessorEditar from '../modules/professores/pages/ProfessorEditar';
 import Materias from '../modules/materias/pages/Materias';
 import Turmas from '../modules/turmas/pages/Turmas';
 import Horarios from '../modules/horarios/pages/Horarios';
@@ -26,6 +27,7 @@ export const privateRoutes = {
     { path: 'alunos/:id/editar', element: <AlunoEditar /> },
     { path: 'alunos/:id', element: <AlunoDetalhes /> },
     { path: 'professores', element: <Professores /> },
+    { path: 'professores/:id/editar', element: <ProfessorEditar /> },
     { path: 'materias', element: <Materias /> },
     { path: 'turmas', element: <Turmas /> },
     { path: 'horarios', element: <Horarios /> },

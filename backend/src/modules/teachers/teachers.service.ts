@@ -58,14 +58,14 @@ export class TeachersService {
       throw new ConflictException('CPF já cadastrado')
     }
     const hash = await bcrypt.hash(dto.password, SALT_ROUNDS)
-    const { password: _, class_ids: _ci, ...rest } = dto
+    const { password: _, ...rest } = dto
     return this.repo.save(
       this.repo.create({ ...rest, document: normalizedDoc, password_hash: hash, school_id: schoolId }),
     )
   }
 
   async update(id: number, dto: UpdateTeacherDto) {
-    const { class_ids: _, ...data } = dto as any
+    const data = { ...dto } as any
     if (data.document) data.document = normalizeCpf(data.document)
     await this.repo.update(id, data as Partial<Teacher>)
     return this.findOne(id)

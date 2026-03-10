@@ -20,12 +20,6 @@ export class Teacher extends BaseEntity {
   email: string
 
   @Column({ nullable: true })
-  subject: string
-
-  @Column({ nullable: true })
-  class_id: number
-
-  @Column({ nullable: true })
   state: string
 
   @Column({ nullable: true })

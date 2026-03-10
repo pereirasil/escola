@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEmail, MinLength, IsArray, IsNumber } from 'class-validator'
+import { IsString, IsOptional, IsEmail, MinLength } from 'class-validator'
 
 export class CreateTeacherDto {
   @IsString()
@@ -18,19 +18,6 @@ export class CreateTeacherDto {
   @IsOptional()
   @IsEmail()
   email?: string
-
-  @IsOptional()
-  @IsString()
-  subject?: string
-
-  @IsOptional()
-  @IsNumber()
-  class_id?: number
-
-  @IsOptional()
-  @IsArray()
-  @IsNumber({}, { each: true })
-  class_ids?: number[]
 
   @IsOptional()
   @IsString()

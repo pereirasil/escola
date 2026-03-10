@@ -35,8 +35,32 @@ export class SchedulesService {
     }
   }
 
+  private async checkTeacherConflict(dto: CreateScheduleDto | UpdateScheduleDto, excludeId?: number, schoolId?: number) {
+    if (!dto.teacher_id || !dto.day_of_week || !dto.start_time || !dto.end_time) return;
+
+    const query = this.repo.createQueryBuilder('s')
+      .where('s.teacher_id = :teacherId', { teacherId: dto.teacher_id })
+      .andWhere('s.day_of_week = :day', { day: dto.day_of_week })
+      .andWhere('s.start_time < :end', { end: dto.end_time })
+      .andWhere('s.end_time > :start', { start: dto.start_time });
+
+    if (schoolId) {
+      query.andWhere('s.school_id = :schoolId', { schoolId });
+    }
+
+    if (excludeId) {
+      query.andWhere('s.id != :id', { id: excludeId });
+    }
+
+    const conflict = await query.getOne();
+    if (conflict) {
+      throw new ConflictException('Este professor ja possui uma aula no mesmo dia e horario.');
+    }
+  }
+
   async create(createScheduleDto: CreateScheduleDto, schoolId?: number) {
     await this.checkRoomConflict(createScheduleDto, undefined, schoolId);
+    await this.checkTeacherConflict(createScheduleDto, undefined, schoolId);
     return this.repo.save(this.repo.create({ ...createScheduleDto, school_id: schoolId }));
   }
 
@@ -61,6 +85,7 @@ export class SchedulesService {
     const existing = await this.findOne(id);
     const merged = { ...existing, ...updateScheduleDto };
     await this.checkRoomConflict(merged as CreateScheduleDto, id, schoolId);
+    await this.checkTeacherConflict(merged as CreateScheduleDto, id, schoolId);
     await this.repo.update(id, updateScheduleDto as Partial<Schedule>);
     return this.findOne(id);
   }

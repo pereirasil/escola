@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from 'class-validator'
+import { IsNumber, IsString, IsOptional } from 'class-validator'
 
 export class CreateGradeDto {
   @IsNumber()
@@ -9,6 +9,10 @@ export class CreateGradeDto {
 
   @IsNumber()
   materia_id: number
+
+  @IsOptional()
+  @IsNumber()
+  teacher_id?: number
 
   @IsNumber()
   nota: number

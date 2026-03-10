@@ -16,6 +16,9 @@ export class Attendance extends BaseEntity {
   @Column({ name: 'materia_id' })
   subject_id: number
 
+  @Column({ nullable: true })
+  teacher_id: number
+
   @Column({ type: 'date', name: 'data' })
   date: string
 

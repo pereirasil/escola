@@ -34,6 +34,7 @@ export class AttendanceService {
       student_id: dto.aluno_id,
       class_id: dto.turma_id,
       subject_id: dto.materia_id,
+      teacher_id: dto.teacher_id,
       date: dto.data,
       lesson: dto.aula,
       status: dto.status,
