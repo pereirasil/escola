@@ -61,6 +61,7 @@
   text-decoration: none;
   transition: all 0.2s;
   border: none;
+  box-sizing: border-box;
   cursor: pointer;
 }
 
