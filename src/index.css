@@ -1513,6 +1513,66 @@ button:focus-visible {
   .modal-step-chip.done {
     border-color: #2e8b57;
   }
+  .async-search-panel {
+    background: #fff;
+    border-color: #ddd;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.1);
+  }
+  .async-search-input {
+    background: #f5f5f7;
+    border-bottom-color: #eee;
+    color: #213547;
+  }
+  .async-search-option,
+  .async-search-state {
+    color: #213547;
+  }
+  .async-search-option:hover {
+    background: rgba(100, 108, 255, 0.08);
+  }
+  .async-search-option small,
+  .async-search-state {
+    color: #888;
+  }
+  .async-search-trigger {
+    border-color: #ccc;
+    background-color: #fff;
+    color: #213547;
+  }
+  .async-search-caret {
+    color: #999;
+  }
+  .steps-list-item {
+    background: #f5f5f7;
+    border-color: #ddd;
+    color: #333;
+  }
+  .steps-list-item strong {
+    color: #213547;
+  }
+  .steps-list-item small {
+    color: #888;
+  }
+  .steps-summary-item {
+    background: #f5f5f7;
+    border-color: #ddd;
+    color: #213547;
+  }
+  .steps-summary-label {
+    color: #888;
+  }
+  .modal-step-chip-number {
+    background: #e8e8eb;
+    border-color: #ccc;
+    color: #333;
+  }
+  .step-chip-number {
+    background: #646cff;
+    color: #fff;
+  }
+  .steps-card-header .card-title {
+    color: #213547;
+  }
   .btn-danger {
     color: #dc2626;
     border-color: #dc2626;

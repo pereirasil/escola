@@ -499,12 +499,29 @@ export default function TurmaSteps() {
                     value={turmaForm.name}
                     onChange={(event) => setTurmaForm({ ...turmaForm, name: event.target.value })}
                   />
-                  <FormInput
+                  <SelectField
                     label="Serie / Ano"
                     id="step-class-grade"
-                    placeholder="Ex: 6o Ano (Ensino Fundamental)"
                     value={turmaForm.grade}
                     onChange={(event) => setTurmaForm({ ...turmaForm, grade: event.target.value })}
+                    options={[
+                      { value: 'Maternal', label: 'Maternal' },
+                      { value: 'Jardim I', label: 'Jardim I' },
+                      { value: 'Jardim II', label: 'Jardim II' },
+                      { value: 'Pre-escola', label: 'Pre-escola' },
+                      { value: '1o Ano (Ensino Fundamental)', label: '1o Ano (Ensino Fundamental)' },
+                      { value: '2o Ano (Ensino Fundamental)', label: '2o Ano (Ensino Fundamental)' },
+                      { value: '3o Ano (Ensino Fundamental)', label: '3o Ano (Ensino Fundamental)' },
+                      { value: '4o Ano (Ensino Fundamental)', label: '4o Ano (Ensino Fundamental)' },
+                      { value: '5o Ano (Ensino Fundamental)', label: '5o Ano (Ensino Fundamental)' },
+                      { value: '6o Ano (Ensino Fundamental)', label: '6o Ano (Ensino Fundamental)' },
+                      { value: '7o Ano (Ensino Fundamental)', label: '7o Ano (Ensino Fundamental)' },
+                      { value: '8o Ano (Ensino Fundamental)', label: '8o Ano (Ensino Fundamental)' },
+                      { value: '9o Ano (Ensino Fundamental)', label: '9o Ano (Ensino Fundamental)' },
+                      { value: '1o Ano (Ensino Medio)', label: '1o Ano (Ensino Medio)' },
+                      { value: '2o Ano (Ensino Medio)', label: '2o Ano (Ensino Medio)' },
+                      { value: '3o Ano (Ensino Medio)', label: '3o Ano (Ensino Medio)' },
+                    ]}
                   />
                   <SelectField
                     label="Turno"
