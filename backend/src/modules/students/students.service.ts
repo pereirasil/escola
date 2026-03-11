@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt'
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Brackets, Repository } from 'typeorm'
 import { Student } from './entities/student.entity'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
@@ -22,6 +22,29 @@ export class StudentsService {
   findAll(schoolId?: number) {
     const where = schoolId ? { school_id: schoolId } : {}
     return this.repo.find({ where, order: { name: 'ASC' } })
+  }
+
+  search(schoolId: number | undefined, query = '', limit = 20) {
+    const normalizedQuery = query.trim()
+    const qb = this.repo.createQueryBuilder('student').orderBy('student.name', 'ASC').take(limit)
+
+    if (schoolId) {
+      qb.andWhere('student.school_id = :schoolId', { schoolId })
+    }
+
+    if (normalizedQuery) {
+      const digits = normalizeCpf(normalizedQuery)
+      qb.andWhere(
+        new Brackets((sub) => {
+          sub.where('LOWER(student.name) LIKE LOWER(:name)', { name: `%${normalizedQuery}%` })
+          if (digits) {
+            sub.orWhere('student.document LIKE :document', { document: `%${digits}%` })
+          }
+        }),
+      )
+    }
+
+    return qb.getMany()
   }
 
   async findAllPaginated(schoolId: number | undefined, page: number, limit: number) {

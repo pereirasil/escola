@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { Breadcrumb, Card, FormInput, PageHeader, SelectField, Spinner } from '../../../components/ui';
+import { AsyncSearchSelect, Breadcrumb, Card, FormInput, PageHeader, SelectField, Spinner } from '../../../components/ui';
 import { turmasService } from '../../../services/turmas.service';
 import { professoresService } from '../../../services/professores.service';
 import { alunosService } from '../../../services/alunos.service';
@@ -9,10 +9,50 @@ import { horariosService } from '../../../services/horarios.service';
 import { materiasService } from '../../../services/materias.service';
 import { maskCep, maskCpf, maskPhone, fetchAddressByCep } from '../../../utils/masks';
 
+function Icon({ path, size = 18, strokeWidth = 1.8 }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width={size}
+      height={size}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d={path} />
+    </svg>
+  );
+}
+
+const icons = {
+  turma: 'M3 7.5 12 3l9 4.5-9 4.5L3 7.5Zm0 4.5 9 4.5 9-4.5M3 16.5 12 21l9-4.5',
+  alunos: 'M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm10.5 10v-2a4 4 0 0 0-3-3.87M14.5 3.13a4 4 0 0 1 0 7.75',
+  horarios: 'M8 2v4M16 2v4M3 10h18M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm4 8h3v3H9z',
+  resumo: 'M9 12h6M9 16h6M14 4H6a2 2 0 0 0-2 2v12l4-2 4 2 4-2 4 2V8l-6-4Z',
+  plus: 'M12 5v14M5 12h14',
+  arrowRight: 'M5 12h14M13 5l7 7-7 7',
+  arrowLeft: 'M19 12H5M11 19l-7-7 7-7',
+  close: 'M6 6l12 12M18 6 6 18',
+  check: 'm5 12 5 5L20 7',
+  edit: 'M12 20h9M16.5 3.5a2.12 2.12 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5Z',
+  trash: 'M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14',
+  userPlus: 'M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm10.5 2v6M17 16h6',
+};
+
 const STEP_ITEMS = [
-  { id: 1, title: 'Dados da Turma', description: 'Crie a base da turma' },
-  { id: 2, title: 'Alunos', description: 'Adicione os alunos da turma' },
-  { id: 3, title: 'Horarios', description: 'Monte a grade da turma' },
+  { id: 1, title: 'Dados da Turma', description: 'Preencha os dados principais' },
+  { id: 2, title: 'Alunos', description: 'Monte a lista da turma' },
+  { id: 3, title: 'Horarios', description: 'Defina a grade da turma' },
+  { id: 4, title: 'Resumo', description: 'Revise e conclua tudo' },
+];
+
+const ALUNO_MODAL_STEPS = [
+  { id: 1, title: 'Dados', icon: icons.alunos },
+  { id: 2, title: 'Responsavel', icon: icons.userPlus },
+  { id: 3, title: 'Endereco', icon: icons.turma },
 ];
 
 const diasDaSemana = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta'];
@@ -52,6 +92,15 @@ const initialHorarioForm = {
   room: '',
 };
 
+const STEP_ICONS = {
+  1: icons.turma,
+  2: icons.alunos,
+  3: icons.horarios,
+  4: icons.resumo,
+};
+
+const buildDraftId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
 export default function TurmaSteps() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -62,61 +111,49 @@ export default function TurmaSteps() {
   const [alunoForm, setAlunoForm] = useState(initialAlunoForm);
   const [horarioForm, setHorarioForm] = useState(initialHorarioForm);
 
-  const [turmaAtual, setTurmaAtual] = useState(null);
   const [professores, setProfessores] = useState([]);
-  const [alunos, setAlunos] = useState([]);
   const [materias, setMaterias] = useState([]);
-  const [horarios, setHorarios] = useState([]);
 
-  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [alunosDraft, setAlunosDraft] = useState([]);
+  const [horariosDraft, setHorariosDraft] = useState([]);
+
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedTeacherLabel, setSelectedTeacherLabel] = useState('');
   const [editingHorarioId, setEditingHorarioId] = useState(null);
   const [isAlunoModalOpen, setIsAlunoModalOpen] = useState(false);
+  const [alunoModalStep, setAlunoModalStep] = useState(1);
 
-  const [savingTurma, setSavingTurma] = useState(false);
   const [savingAluno, setSavingAluno] = useState(false);
   const [savingHorario, setSavingHorario] = useState(false);
+  const [finalizing, setFinalizing] = useState(false);
 
-  const turmaId = turmaAtual?.id;
+  const alunosCount = alunosDraft.length;
+  const horariosCount = horariosDraft.length;
 
-  const alunosDaTurma = useMemo(
-    () => alunos.filter((aluno) => String(aluno.class_id) === String(turmaId)),
-    [alunos, turmaId],
-  );
-
-  const alunosDisponiveis = useMemo(
-    () => alunos.filter((aluno) => !aluno.class_id),
-    [alunos],
+  const alunosDraftById = useMemo(
+    () => new Set(alunosDraft.filter((item) => item.source === 'existing').map((item) => item.id)),
+    [alunosDraft],
   );
 
   const horariosDaTurma = useMemo(
     () =>
-      horarios
-        .filter((horario) => String(horario.class_id) === String(turmaId))
-        .sort((a, b) => {
-          if (a.day_of_week === b.day_of_week) return a.start_time.localeCompare(b.start_time);
-          return diasDaSemana.indexOf(a.day_of_week) - diasDaSemana.indexOf(b.day_of_week);
-        }),
-    [horarios, turmaId],
+      [...horariosDraft].sort((a, b) => {
+        if (a.day_of_week === b.day_of_week) return a.start_time.localeCompare(b.start_time);
+        return diasDaSemana.indexOf(a.day_of_week) - diasDaSemana.indexOf(b.day_of_week);
+      }),
+    [horariosDraft],
   );
-
-  const professoresDaTurma = useMemo(() => {
-    const ids = [...new Set(horariosDaTurma.map((horario) => horario.teacher_id).filter(Boolean))];
-    return professores.filter((professor) => ids.includes(professor.id));
-  }, [horariosDaTurma, professores]);
 
   useEffect(() => {
     const loadBaseData = async () => {
       try {
-        const [resProfessores, resAlunos, resMaterias, resHorarios] = await Promise.all([
+        const [resProfessores, , resMaterias] = await Promise.all([
           professoresService.listar(),
           alunosService.listar(),
           materiasService.listar(),
-          horariosService.listar(),
         ]);
         setProfessores(resProfessores.data || []);
-        setAlunos(resAlunos.data || []);
         setMaterias(resMaterias.data || []);
-        setHorarios(resHorarios.data || []);
       } catch {
         toast.error('Erro ao carregar dados do fluxo.');
       } finally {
@@ -127,60 +164,31 @@ export default function TurmaSteps() {
     loadBaseData();
   }, []);
 
-  const ensureTurmaCreated = () => {
-    if (!turmaId) {
-      toast.error('Salve os dados da turma antes de continuar.');
-      return false;
-    }
-    return true;
+  const closeAlunoModal = () => {
+    setIsAlunoModalOpen(false);
+    setAlunoModalStep(1);
+    setAlunoForm(initialAlunoForm);
   };
 
-  const refreshTurma = async (id) => {
-    const response = await turmasService.buscarPorId(id);
-    setTurmaAtual(response.data);
-    return response.data;
+  const searchStudents = async (query) => {
+    const results = await alunosService.buscar(query, 20);
+    return results
+      .filter((aluno) => !alunosDraftById.has(aluno.id))
+      .map((aluno) => ({
+        value: aluno.id,
+        label: aluno.name,
+        description: aluno.document || 'Sem CPF',
+        raw: aluno,
+      }));
   };
 
-  const refreshAlunos = async () => {
-    const response = await alunosService.listar();
-    setAlunos(response.data || []);
-  };
-
-  const refreshHorarios = async () => {
-    const response = await horariosService.listar();
-    setHorarios(response.data || []);
-  };
-
-  const resetHorarioForm = () => {
-    setEditingHorarioId(null);
-    setHorarioForm(initialHorarioForm);
-  };
-
-  const handleSalvarTurma = async (event) => {
-    event.preventDefault();
-    setSavingTurma(true);
-    try {
-      const response = turmaId
-        ? await turmasService.atualizar(turmaId, turmaForm)
-        : await turmasService.criar(turmaForm);
-      const turmaSalva = response.data;
-
-      setTurmaAtual(turmaSalva);
-      setTurmaForm({
-        name: turmaSalva.name || '',
-        grade: turmaSalva.grade || '',
-        shift: turmaSalva.shift || '',
-        room: turmaSalva.room || '',
-        school_year: turmaSalva.school_year || '',
-      });
-      setCompleted(false);
-      toast.success(turmaId ? 'Turma atualizada com sucesso!' : 'Turma criada. Agora adicione os alunos.');
-      setStep(2);
-    } catch {
-      toast.error('Erro ao salvar os dados da turma.');
-    } finally {
-      setSavingTurma(false);
-    }
+  const searchTeachers = async (query) => {
+    const results = await professoresService.buscar(query, 20);
+    return results.map((professor) => ({
+      value: professor.id,
+      label: professor.name,
+      description: professor.email || professor.document || 'Professor',
+    }));
   };
 
   const handleCepChangeAluno = async (value) => {
@@ -195,9 +203,22 @@ export default function TurmaSteps() {
     }
   };
 
+  const validateStep1 = () => {
+    if (!turmaForm.name.trim()) {
+      toast.error('Informe o nome da turma.');
+      return false;
+    }
+    return true;
+  };
+
+  const handleNextFromTurma = (event) => {
+    event.preventDefault();
+    if (!validateStep1()) return;
+    setStep(2);
+  };
+
   const handleCriarAluno = async (event) => {
     event.preventDefault();
-    if (!ensureTurmaCreated()) return;
     if (alunoForm.password !== alunoForm.confirmPassword) {
       toast.error('Senha e confirmacao do aluno nao conferem.');
       return;
@@ -206,94 +227,93 @@ export default function TurmaSteps() {
     setSavingAluno(true);
     try {
       const { confirmPassword: _confirmPassword, ...payload } = alunoForm;
-      await alunosService.criar({ ...payload, class_id: turmaId });
-      await refreshAlunos();
-      setAlunoForm(initialAlunoForm);
-      setIsAlunoModalOpen(false);
+      setAlunosDraft((current) => [
+        ...current,
+        {
+          ...payload,
+          draftId: buildDraftId('new-student'),
+          source: 'new',
+        },
+      ]);
+      closeAlunoModal();
       setCompleted(false);
-      toast.success('Aluno adicionado a turma.');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Erro ao criar aluno.');
+      toast.success('Aluno preparado para criacao no passo final.');
     } finally {
       setSavingAluno(false);
     }
   };
 
-  const handleVincularAlunoExistente = async () => {
-    if (!ensureTurmaCreated()) return;
-    if (!selectedStudentId) {
-      toast.error('Selecione um aluno disponivel.');
+  const handleVincularAlunoExistente = () => {
+    if (!selectedStudent?.raw) {
+      toast.error('Selecione um aluno.');
       return;
     }
 
-    setSavingAluno(true);
-    try {
-      await alunosService.atualizar(selectedStudentId, { class_id: Number(turmaId) });
-      await refreshAlunos();
-      setSelectedStudentId('');
-      setCompleted(false);
-      toast.success('Aluno vinculado a turma.');
-      setStep(3);
-    } catch {
-      toast.error('Erro ao vincular aluno.');
-    } finally {
-      setSavingAluno(false);
-    }
+    setAlunosDraft((current) => [
+      ...current,
+      {
+        ...selectedStudent.raw,
+        source: 'existing',
+      },
+    ]);
+    setSelectedStudent(null);
+    setCompleted(false);
+    toast.success('Aluno adicionado ao rascunho da turma.');
   };
 
-  const handleRemoverAluno = async (alunoId) => {
-    setSavingAluno(true);
-    try {
-      await alunosService.atualizar(alunoId, { class_id: null });
-      await refreshAlunos();
-      setCompleted(false);
-      toast.success('Aluno removido da turma.');
-    } catch {
-      toast.error('Erro ao remover aluno da turma.');
-    } finally {
-      setSavingAluno(false);
-    }
+  const handleRemoverAluno = (alunoKey) => {
+    setAlunosDraft((current) => current.filter((aluno) => (aluno.source === 'new' ? aluno.draftId : aluno.id) !== alunoKey));
+    setCompleted(false);
+    toast.success('Aluno removido do rascunho.');
   };
 
-  const handleCriarHorario = async (event) => {
+  const resetHorarioForm = () => {
+    setEditingHorarioId(null);
+    setHorarioForm(initialHorarioForm);
+    setSelectedTeacherLabel('');
+  };
+
+  const handleSalvarHorario = (event) => {
     event.preventDefault();
-    if (!ensureTurmaCreated()) return;
     if (!horarioForm.teacher_id || !horarioForm.subject_id || !horarioForm.start_time || !horarioForm.end_time) {
       toast.error('Preencha professor, materia, horario inicial e final.');
       return;
     }
 
+    const professor = professores.find((item) => String(item.id) === String(horarioForm.teacher_id));
+    const materia = materias.find((item) => String(item.id) === String(horarioForm.subject_id));
+
     setSavingHorario(true);
     try {
-      const payload = {
-        class_id: Number(turmaId),
+      const draft = {
+        draftId: editingHorarioId || buildDraftId('schedule'),
         teacher_id: Number(horarioForm.teacher_id),
         subject_id: Number(horarioForm.subject_id),
         day_of_week: horarioForm.day_of_week,
         start_time: horarioForm.start_time,
         end_time: horarioForm.end_time,
-        room: horarioForm.room || undefined,
+        room: horarioForm.room || '',
+        teacher_name: professor?.name || selectedTeacherLabel || 'Professor',
+        subject_name: materia?.name || 'Materia',
       };
 
-      if (editingHorarioId) {
-        await horariosService.atualizar(editingHorarioId, payload);
-      } else {
-        await horariosService.criar(payload);
-      }
+      setHorariosDraft((current) => {
+        if (editingHorarioId) {
+          return current.map((item) => (item.draftId === editingHorarioId ? draft : item));
+        }
+        return [...current, draft];
+      });
 
-      await refreshHorarios();
       resetHorarioForm();
       setCompleted(false);
-      toast.success(editingHorarioId ? 'Horario atualizado.' : 'Horario adicionado a turma.');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Erro ao salvar horario.');
+      toast.success(editingHorarioId ? 'Horario atualizado no rascunho.' : 'Horario adicionado ao rascunho.');
     } finally {
       setSavingHorario(false);
     }
   };
 
   const handleEditarHorario = (horario) => {
-    setEditingHorarioId(horario.id);
+    setEditingHorarioId(horario.draftId);
     setHorarioForm({
       teacher_id: horario.teacher_id ? String(horario.teacher_id) : '',
       subject_id: horario.subject_id ? String(horario.subject_id) : '',
@@ -302,50 +322,106 @@ export default function TurmaSteps() {
       end_time: horario.end_time || '',
       room: horario.room || '',
     });
+    setSelectedTeacherLabel(horario.teacher_name || '');
   };
 
-  const handleRemoverHorario = async (horarioId) => {
-    setSavingHorario(true);
-    try {
-      await horariosService.excluir(horarioId);
-      await refreshHorarios();
-      if (editingHorarioId === horarioId) resetHorarioForm();
-      setCompleted(false);
-      toast.success('Horario removido.');
-    } catch {
-      toast.error('Erro ao remover horario.');
-    } finally {
-      setSavingHorario(false);
+  const handleRemoverHorario = (horarioId) => {
+    setHorariosDraft((current) => current.filter((horario) => horario.draftId !== horarioId));
+    if (editingHorarioId === horarioId) resetHorarioForm();
+    setCompleted(false);
+    toast.success('Horario removido do rascunho.');
+  };
+
+  const validateBeforeSummary = () => {
+    if (!validateStep1()) {
+      setStep(1);
+      return false;
     }
+    if (alunosDraft.length === 0) {
+      toast.error('Adicione pelo menos um aluno antes de seguir.');
+      setStep(2);
+      return false;
+    }
+    if (horariosDraft.length === 0) {
+      toast.error('Adicione pelo menos um horario antes de seguir.');
+      setStep(3);
+      return false;
+    }
+    return true;
+  };
+
+  const handleGoToSummary = () => {
+    if (!validateBeforeSummary()) return;
+    setStep(4);
   };
 
   const handleConcluir = async () => {
-    if (!ensureTurmaCreated()) return;
-    if (alunosDaTurma.length === 0) {
-      toast.error('Adicione pelo menos um aluno antes de concluir.');
-      setStep(2);
-      return;
+    if (!validateBeforeSummary()) return;
+
+    setFinalizing(true);
+    try {
+      const turmaResponse = await turmasService.criar(turmaForm);
+      const turmaId = turmaResponse.data?.id;
+
+      for (const aluno of alunosDraft) {
+        const studentId =
+          aluno.source === 'new'
+            ? (
+                await alunosService.criar({
+                  name: aluno.name,
+                  birth_date: aluno.birth_date,
+                  document: aluno.document,
+                  password: aluno.password,
+                  guardian_name: aluno.guardian_name,
+                  guardian_phone: aluno.guardian_phone,
+                  guardian_document: aluno.guardian_document,
+                  cep: aluno.cep,
+                  state: aluno.state,
+                  city: aluno.city,
+                  neighborhood: aluno.neighborhood,
+                  street: aluno.street,
+                  number: aluno.number,
+                  complement: aluno.complement,
+                })
+              ).data?.id
+            : aluno.id;
+
+        await turmasService.matricularAluno(turmaId, studentId);
+      }
+
+      for (const horario of horariosDraft) {
+        await horariosService.criar({
+          class_id: Number(turmaId),
+          teacher_id: Number(horario.teacher_id),
+          subject_id: Number(horario.subject_id),
+          day_of_week: horario.day_of_week,
+          start_time: horario.start_time,
+          end_time: horario.end_time,
+          room: horario.room || undefined,
+        });
+      }
+
+      setCompleted(true);
+      toast.success('Turma criada com alunos e horarios.');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Erro ao concluir a criacao da turma.');
+    } finally {
+      setFinalizing(false);
     }
-    if (horariosDaTurma.length === 0) {
-      toast.error('Adicione pelo menos um horario antes de concluir.');
-      setStep(3);
-      return;
-    }
-    await refreshTurma(turmaId);
-    setCompleted(true);
-    toast.success('Turma concluida com alunos e horarios.');
   };
 
   const handleNovaTurma = () => {
     setStep(1);
     setCompleted(false);
-    setTurmaAtual(null);
     setTurmaForm(initialTurmaForm);
     setAlunoForm(initialAlunoForm);
     setHorarioForm(initialHorarioForm);
-    setSelectedStudentId('');
+    setAlunosDraft([]);
+    setHorariosDraft([]);
+    setSelectedStudent(null);
+    setSelectedTeacherLabel('');
     setEditingHorarioId(null);
-    setIsAlunoModalOpen(false);
+    closeAlunoModal();
   };
 
   if (loading) {
@@ -360,7 +436,7 @@ export default function TurmaSteps() {
     <div className="page">
       <Breadcrumb items={[{ label: 'Turmas', to: '/turmas' }, { label: 'Turma Steps' }]} />
 
-      <PageHeader title="Turma Steps" description="Fluxo guiado para criar a turma com alunos e horarios.">
+      <PageHeader title="Turma Steps" description="Fluxo guiado para montar a turma e salvar tudo apenas no final.">
         <Link to="/turmas" className="btn-secondary">
           Voltar para Turmas
         </Link>
@@ -372,7 +448,7 @@ export default function TurmaSteps() {
             {STEP_ITEMS.map((item) => {
               const isActive = item.id === step;
               const isDone = item.id < step || (completed && item.id <= STEP_ITEMS.length);
-              const isLocked = item.id > 1 && !turmaId;
+              const isLocked = item.id === 4 && (alunosCount === 0 || horariosCount === 0 || !turmaForm.name.trim());
               return (
                 <button
                   key={item.id}
@@ -385,7 +461,12 @@ export default function TurmaSteps() {
                 >
                   <span className="step-chip-number">{isDone ? 'OK' : item.id}</span>
                   <span className="step-chip-content">
-                    <strong>{item.title}</strong>
+                    <strong>
+                      <span className="inline-icon">
+                        <Icon path={STEP_ICONS[item.id]} size={16} />
+                      </span>
+                      {item.title}
+                    </strong>
                     <small>{item.description}</small>
                   </span>
                 </button>
@@ -397,7 +478,7 @@ export default function TurmaSteps() {
         <div className="steps-content">
           {step === 1 && (
             <Card title="1. Dados da Turma">
-              <form onSubmit={handleSalvarTurma}>
+              <form onSubmit={handleNextFromTurma}>
                 <div className="form-grid">
                   <FormInput
                     label="Nome da Turma"
@@ -441,8 +522,9 @@ export default function TurmaSteps() {
                   />
                 </div>
                 <div className="steps-actions">
-                  <button type="submit" className="btn-primary" disabled={savingTurma}>
-                    {savingTurma ? 'Salvando...' : turmaId ? 'Salvar e seguir' : 'Criar turma e seguir'}
+                  <button type="submit" className="btn-primary">
+                    <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
+                    Salvar rascunho e seguir
                   </button>
                 </div>
               </form>
@@ -453,56 +535,62 @@ export default function TurmaSteps() {
             <>
               <Card title="2. Adicionar aluno existente">
                 <div className="form-grid">
-                  <SelectField
-                    label="Alunos sem turma"
-                    id="step-student-existing"
-                    value={selectedStudentId}
-                    onChange={(event) => setSelectedStudentId(event.target.value)}
-                    options={alunosDisponiveis.map((aluno) => ({
-                      value: aluno.id,
-                      label: `${aluno.name} - ${aluno.document || 'Sem CPF'}`,
-                    }))}
+                  <AsyncSearchSelect
+                    label="Buscar aluno"
+                    placeholder="Buscar aluno por nome ou CPF"
+                    selectedLabel={selectedStudent?.label || ''}
+                    onSearch={searchStudents}
+                    onSelect={(option) => setSelectedStudent(option)}
+                    emptyMessage="Nenhum aluno encontrado."
                   />
                 </div>
-                {alunosDisponiveis.length === 0 && (
-                  <div className="empty-state" style={{ marginTop: '1rem' }}>
-                    Nenhum aluno disponivel sem turma no momento.
-                  </div>
-                )}
                 <div className="steps-actions">
                   <button type="button" className="btn-secondary" onClick={() => setStep(1)}>
+                    <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
                     Voltar
                   </button>
                   <button
                     type="button"
                     className="btn-primary"
                     onClick={handleVincularAlunoExistente}
-                    disabled={savingAluno || alunosDisponiveis.length === 0 || !selectedStudentId}
+                    disabled={!selectedStudent}
                   >
-                    {savingAluno ? 'Vinculando...' : 'Adicionar aluno existente'}
+                    <span className="inline-icon"><Icon path={icons.plus} size={16} /></span>
+                    Adicionar aluno existente
                   </button>
                   <button type="button" className="btn-secondary" onClick={() => setIsAlunoModalOpen(true)}>
+                    <span className="inline-icon"><Icon path={icons.userPlus} size={16} /></span>
                     Cadastrar novo aluno
+                  </button>
+                  <button type="button" className="btn-primary" onClick={() => setStep(3)}>
+                    <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
+                    Ir para horarios
                   </button>
                 </div>
               </Card>
 
-              <Card title="Alunos ja vinculados">
-                {alunosDaTurma.length === 0 ? (
-                  <div className="empty-state">Nenhum aluno adicionado a esta turma ainda.</div>
+              <Card title="Alunos no rascunho da turma">
+                {alunosDraft.length === 0 ? (
+                  <div className="empty-state">Nenhum aluno adicionado ainda.</div>
                 ) : (
                   <div className="steps-list">
-                    {alunosDaTurma.map((aluno) => (
-                      <div key={aluno.id} className="steps-list-item">
-                        <div>
-                          <strong>{aluno.name}</strong>
-                          <small>{aluno.document || 'Sem CPF informado'}</small>
+                    {alunosDraft.map((aluno) => {
+                      const alunoKey = aluno.source === 'new' ? aluno.draftId : aluno.id;
+                      return (
+                        <div key={alunoKey} className="steps-list-item">
+                          <div>
+                            <strong>{aluno.name}</strong>
+                            <small>
+                              {aluno.document || 'Sem CPF informado'} {aluno.source === 'new' ? '• Novo cadastro' : '• Existente'}
+                            </small>
+                          </div>
+                          <button type="button" className="btn-danger" onClick={() => handleRemoverAluno(alunoKey)}>
+                            <span className="inline-icon"><Icon path={icons.trash} size={16} /></span>
+                            Remover
+                          </button>
                         </div>
-                        <button type="button" className="btn-danger" onClick={() => handleRemoverAluno(aluno.id)} disabled={savingAluno}>
-                          Remover da turma
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </Card>
@@ -517,88 +605,201 @@ export default function TurmaSteps() {
                     Cadastre ao menos uma materia em <Link to="/materias">Materias</Link> para criar horarios.
                   </div>
                 ) : (
-                  <form onSubmit={handleCriarHorario}>
+                  <form onSubmit={handleSalvarHorario}>
                     <p className="page-description" style={{ marginTop: 0 }}>
-                      {editingHorarioId
-                        ? 'Editando um horario existente desta turma.'
-                        : 'Adicione as aulas da turma. O professor passa a ser definido por aqui.'}
+                      Monte a grade no rascunho. Nada sera salvo no banco antes da confirmacao final.
                     </p>
                     <div className="form-grid">
-                      <SelectField label="Professor" id="step-schedule-teacher" value={horarioForm.teacher_id} onChange={(event) => setHorarioForm({ ...horarioForm, teacher_id: event.target.value })} options={professores.map((professor) => ({ value: professor.id, label: professor.name }))} />
-                      <SelectField label="Materia" id="step-schedule-subject" value={horarioForm.subject_id} onChange={(event) => setHorarioForm({ ...horarioForm, subject_id: event.target.value })} options={materias.map((materia) => ({ value: materia.id, label: materia.name }))} />
-                      <SelectField label="Dia da semana" id="step-schedule-day" value={horarioForm.day_of_week} onChange={(event) => setHorarioForm({ ...horarioForm, day_of_week: event.target.value })} options={diasDaSemana.map((dia) => ({ value: dia, label: dia }))} />
-                      <FormInput label="Inicio" id="step-schedule-start" type="time" value={horarioForm.start_time} onChange={(event) => setHorarioForm({ ...horarioForm, start_time: event.target.value })} />
-                      <FormInput label="Fim" id="step-schedule-end" type="time" value={horarioForm.end_time} onChange={(event) => setHorarioForm({ ...horarioForm, end_time: event.target.value })} />
-                      <FormInput label="Sala" id="step-schedule-room" placeholder="Ex: Sala 4" value={horarioForm.room} onChange={(event) => setHorarioForm({ ...horarioForm, room: event.target.value })} />
+                      <AsyncSearchSelect
+                        label="Professor"
+                        placeholder="Buscar professor por nome, CPF ou e-mail"
+                        selectedLabel={selectedTeacherLabel}
+                        onSearch={searchTeachers}
+                        onSelect={(option) => {
+                          setHorarioForm({ ...horarioForm, teacher_id: String(option.value) });
+                          setSelectedTeacherLabel(option.label);
+                        }}
+                        emptyMessage="Nenhum professor encontrado."
+                      />
+                      <SelectField
+                        label="Materia"
+                        id="step-schedule-subject"
+                        value={horarioForm.subject_id}
+                        onChange={(event) => setHorarioForm({ ...horarioForm, subject_id: event.target.value })}
+                        options={materias.map((materia) => ({ value: materia.id, label: materia.name }))}
+                      />
+                      <SelectField
+                        label="Dia da semana"
+                        id="step-schedule-day"
+                        value={horarioForm.day_of_week}
+                        onChange={(event) => setHorarioForm({ ...horarioForm, day_of_week: event.target.value })}
+                        options={diasDaSemana.map((dia) => ({ value: dia, label: dia }))}
+                      />
+                      <FormInput
+                        label="Inicio"
+                        id="step-schedule-start"
+                        type="time"
+                        value={horarioForm.start_time}
+                        onChange={(event) => setHorarioForm({ ...horarioForm, start_time: event.target.value })}
+                      />
+                      <FormInput
+                        label="Fim"
+                        id="step-schedule-end"
+                        type="time"
+                        value={horarioForm.end_time}
+                        onChange={(event) => setHorarioForm({ ...horarioForm, end_time: event.target.value })}
+                      />
+                      <FormInput
+                        label="Sala"
+                        id="step-schedule-room"
+                        placeholder="Ex: Sala 4"
+                        value={horarioForm.room}
+                        onChange={(event) => setHorarioForm({ ...horarioForm, room: event.target.value })}
+                      />
                     </div>
                     <div className="steps-actions">
                       <button type="button" className="btn-secondary" onClick={() => setStep(2)}>
+                        <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
                         Voltar
                       </button>
                       <button type="submit" className="btn-primary" disabled={savingHorario}>
+                        <span className="inline-icon"><Icon path={editingHorarioId ? icons.edit : icons.plus} size={16} /></span>
                         {savingHorario ? 'Salvando...' : editingHorarioId ? 'Salvar horario' : 'Adicionar horario'}
                       </button>
                       {editingHorarioId && (
                         <button type="button" className="btn-secondary" onClick={resetHorarioForm}>
+                          <span className="inline-icon"><Icon path={icons.close} size={16} /></span>
                           Cancelar edicao
                         </button>
                       )}
-                      <button type="button" className="btn-primary" onClick={handleConcluir}>
-                        Concluir criacao da turma
+                      <button type="button" className="btn-primary" onClick={handleGoToSummary}>
+                        <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
+                        Ir para resumo
                       </button>
                     </div>
                   </form>
                 )}
               </Card>
 
-              <Card title="Horarios da turma">
+              <Card title="Horarios no rascunho">
                 {horariosDaTurma.length === 0 ? (
-                  <div className="empty-state">Nenhum horario definido para esta turma ainda.</div>
+                  <div className="empty-state">Nenhum horario definido ainda.</div>
                 ) : (
                   <div className="steps-list">
-                    {horariosDaTurma.map((horario) => {
-                      const professor = professores.find((item) => item.id === horario.teacher_id);
-                      const materia = materias.find((item) => item.id === horario.subject_id);
-                      return (
-                        <div key={horario.id} className="steps-list-item">
-                          <div>
-                            <strong>
-                              {horario.day_of_week} {horario.start_time} - {horario.end_time}
-                            </strong>
-                            <small>
-                              {materia?.name || 'Materia'} • {professor?.name || 'Professor'}
-                              {horario.room ? ` • Sala ${horario.room}` : ''}
-                            </small>
-                          </div>
-                          <div className="steps-actions" style={{ marginTop: 0 }}>
-                            <button type="button" className="btn-secondary" onClick={() => handleEditarHorario(horario)} disabled={savingHorario}>
-                              Editar horario
-                            </button>
-                            <button type="button" className="btn-danger" onClick={() => handleRemoverHorario(horario.id)} disabled={savingHorario}>
-                              Remover horario
-                            </button>
-                          </div>
+                    {horariosDaTurma.map((horario) => (
+                      <div key={horario.draftId} className="steps-list-item">
+                        <div>
+                          <strong>
+                            {horario.day_of_week} {horario.start_time} - {horario.end_time}
+                          </strong>
+                          <small>
+                            {horario.subject_name} • {horario.teacher_name}
+                            {horario.room ? ` • Sala ${horario.room}` : ''}
+                          </small>
                         </div>
-                      );
-                    })}
+                        <div className="steps-actions" style={{ marginTop: 0 }}>
+                          <button type="button" className="btn-secondary" onClick={() => handleEditarHorario(horario)}>
+                            <span className="inline-icon"><Icon path={icons.edit} size={16} /></span>
+                            Editar
+                          </button>
+                          <button type="button" className="btn-danger" onClick={() => handleRemoverHorario(horario.draftId)}>
+                            <span className="inline-icon"><Icon path={icons.trash} size={16} /></span>
+                            Remover
+                          </button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
+              </Card>
+            </>
+          )}
+
+          {step === 4 && (
+            <>
+              <Card title="4. Resumo da criacao">
+                <div className="steps-list">
+                  <div className="steps-list-item">
+                    <div>
+                      <strong>{turmaForm.name || 'Turma sem nome'}</strong>
+                      <small>
+                        {turmaForm.grade || 'Serie nao informada'} • {turmaForm.shift || 'Turno nao informado'}
+                        {turmaForm.room ? ` • Sala ${turmaForm.room}` : ''}
+                        {turmaForm.school_year ? ` • Ano letivo ${turmaForm.school_year}` : ''}
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </Card>
+
+              <Card title={`Alunos selecionados (${alunosDraft.length})`}>
+                {alunosDraft.length === 0 ? (
+                  <div className="empty-state">Nenhum aluno selecionado.</div>
+                ) : (
+                  <div className="steps-list">
+                    {alunosDraft.map((aluno) => (
+                      <div key={aluno.source === 'new' ? aluno.draftId : aluno.id} className="steps-list-item">
+                        <div>
+                          <strong>{aluno.name}</strong>
+                          <small>{aluno.document || 'Sem CPF informado'}</small>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+
+              <Card title={`Horarios escolhidos (${horariosDaTurma.length})`}>
+                {horariosDaTurma.length === 0 ? (
+                  <div className="empty-state">Nenhum horario selecionado.</div>
+                ) : (
+                  <div className="steps-list">
+                    {horariosDaTurma.map((horario) => (
+                      <div key={horario.draftId} className="steps-list-item">
+                        <div>
+                          <strong>
+                            {horario.subject_name} • {horario.day_of_week}
+                          </strong>
+                          <small>
+                            {horario.start_time} - {horario.end_time} • {horario.teacher_name}
+                            {horario.room ? ` • Sala ${horario.room}` : ''}
+                          </small>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+
+              <Card title="Confirmacao final">
+                <p className="page-description">
+                  Revise os dados acima. A turma, as matriculas e os horarios serao criados somente ao clicar em concluir.
+                </p>
+                <div className="steps-actions">
+                  <button type="button" className="btn-secondary" onClick={() => setStep(3)} disabled={finalizing}>
+                    <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
+                    Voltar para horarios
+                  </button>
+                  <button type="button" className="btn-primary" onClick={handleConcluir} disabled={finalizing}>
+                    <span className="inline-icon"><Icon path={icons.check} size={16} /></span>
+                    {finalizing ? 'Concluindo...' : 'Concluir criacao da turma'}
+                  </button>
+                </div>
               </Card>
 
               {completed && (
                 <Card title="Turma concluida">
                   <p className="page-description">
-                    A turma foi criada com os vinculos principais. Daqui em diante voce pode usar as telas atuais para editar, incluir e excluir normalmente.
+                    Tudo foi salvo no banco com sucesso. Agora voce pode usar as telas atuais para editar, incluir e excluir normalmente.
                   </p>
                   <div className="steps-actions">
                     <button type="button" className="btn-secondary" onClick={handleNovaTurma}>
+                      <span className="inline-icon"><Icon path={icons.plus} size={16} /></span>
                       Criar outra turma
                     </button>
                     <button type="button" className="btn-primary" onClick={() => navigate('/turmas')}>
+                      <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
                       Ir para lista de turmas
-                    </button>
-                    <button type="button" className="btn-secondary" onClick={() => navigate('/horarios')}>
-                      Gerenciar horarios
                     </button>
                   </div>
                 </Card>
@@ -609,34 +810,83 @@ export default function TurmaSteps() {
       </div>
 
       {isAlunoModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsAlunoModalOpen(false)}>
+        <div className="modal-overlay" onClick={closeAlunoModal}>
           <div className="modal-content modal-content-wide" onClick={(event) => event.stopPropagation()}>
             <h3>Cadastrar novo aluno</h3>
             <form onSubmit={handleCriarAluno}>
-              <div className="form-grid">
-                <FormInput label="Nome do aluno" id="modal-student-name" required value={alunoForm.name} onChange={(event) => setAlunoForm({ ...alunoForm, name: event.target.value })} />
-                <FormInput label="Data de nascimento" id="modal-student-birth-date" type="date" value={alunoForm.birth_date} onChange={(event) => setAlunoForm({ ...alunoForm, birth_date: event.target.value })} />
-                <FormInput label="CPF" id="modal-student-document" required maxLength={14} value={alunoForm.document} onChange={(event) => setAlunoForm({ ...alunoForm, document: maskCpf(event.target.value) })} />
-                <FormInput label="Senha" id="modal-student-password" type="password" required value={alunoForm.password} onChange={(event) => setAlunoForm({ ...alunoForm, password: event.target.value })} />
-                <FormInput label="Confirmar senha" id="modal-student-confirm-password" type="password" required value={alunoForm.confirmPassword} onChange={(event) => setAlunoForm({ ...alunoForm, confirmPassword: event.target.value })} />
-                <FormInput label="Nome do responsavel" id="modal-student-guardian-name" value={alunoForm.guardian_name} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_name: event.target.value })} />
-                <FormInput label="Telefone do responsavel" id="modal-student-guardian-phone" maxLength={15} value={alunoForm.guardian_phone} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_phone: maskPhone(event.target.value) })} />
-                <FormInput label="CPF do responsavel" id="modal-student-guardian-document" maxLength={14} value={alunoForm.guardian_document} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_document: maskCpf(event.target.value) })} />
-                <FormInput label="CEP" id="modal-student-cep" maxLength={9} value={alunoForm.cep} onChange={(event) => handleCepChangeAluno(event.target.value)} />
-                <FormInput label="Estado" id="modal-student-state" value={alunoForm.state} onChange={(event) => setAlunoForm({ ...alunoForm, state: event.target.value })} />
-                <FormInput label="Cidade" id="modal-student-city" value={alunoForm.city} onChange={(event) => setAlunoForm({ ...alunoForm, city: event.target.value })} />
-                <FormInput label="Bairro" id="modal-student-neighborhood" value={alunoForm.neighborhood} onChange={(event) => setAlunoForm({ ...alunoForm, neighborhood: event.target.value })} />
-                <FormInput label="Rua" id="modal-student-street" value={alunoForm.street} onChange={(event) => setAlunoForm({ ...alunoForm, street: event.target.value })} />
-                <FormInput label="Numero" id="modal-student-number" value={alunoForm.number} onChange={(event) => setAlunoForm({ ...alunoForm, number: event.target.value })} />
-                <FormInput label="Complemento" id="modal-student-complement" value={alunoForm.complement} onChange={(event) => setAlunoForm({ ...alunoForm, complement: event.target.value })} />
+              <div className="modal-stepper">
+                {ALUNO_MODAL_STEPS.map((item) => {
+                  const active = item.id === alunoModalStep;
+                  const done = item.id < alunoModalStep;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`modal-step-chip${active ? ' active' : ''}${done ? ' done' : ''}`}
+                      onClick={() => setAlunoModalStep(item.id)}
+                    >
+                      <span className="modal-step-chip-number">{done ? 'OK' : item.id}</span>
+                      <span className="modal-step-chip-label">
+                        <span className="inline-icon"><Icon path={item.icon} size={14} /></span>
+                        {item.title}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
+
+              {alunoModalStep === 1 && (
+                <div className="form-grid">
+                  <FormInput label="Nome do aluno" id="modal-student-name" required value={alunoForm.name} onChange={(event) => setAlunoForm({ ...alunoForm, name: event.target.value })} />
+                  <FormInput label="Data de nascimento" id="modal-student-birth-date" type="date" value={alunoForm.birth_date} onChange={(event) => setAlunoForm({ ...alunoForm, birth_date: event.target.value })} />
+                  <FormInput label="CPF" id="modal-student-document" required maxLength={14} value={alunoForm.document} onChange={(event) => setAlunoForm({ ...alunoForm, document: maskCpf(event.target.value) })} />
+                  <FormInput label="Senha" id="modal-student-password" type="password" required value={alunoForm.password} onChange={(event) => setAlunoForm({ ...alunoForm, password: event.target.value })} />
+                  <FormInput label="Confirmar senha" id="modal-student-confirm-password" type="password" required value={alunoForm.confirmPassword} onChange={(event) => setAlunoForm({ ...alunoForm, confirmPassword: event.target.value })} />
+                </div>
+              )}
+
+              {alunoModalStep === 2 && (
+                <div className="form-grid">
+                  <FormInput label="Nome do responsavel" id="modal-student-guardian-name" value={alunoForm.guardian_name} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_name: event.target.value })} />
+                  <FormInput label="Telefone do responsavel" id="modal-student-guardian-phone" maxLength={15} value={alunoForm.guardian_phone} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_phone: maskPhone(event.target.value) })} />
+                  <FormInput label="CPF do responsavel" id="modal-student-guardian-document" maxLength={14} value={alunoForm.guardian_document} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_document: maskCpf(event.target.value) })} />
+                </div>
+              )}
+
+              {alunoModalStep === 3 && (
+                <div className="form-grid">
+                  <FormInput label="CEP" id="modal-student-cep" maxLength={9} value={alunoForm.cep} onChange={(event) => handleCepChangeAluno(event.target.value)} />
+                  <FormInput label="Estado" id="modal-student-state" value={alunoForm.state} onChange={(event) => setAlunoForm({ ...alunoForm, state: event.target.value })} />
+                  <FormInput label="Cidade" id="modal-student-city" value={alunoForm.city} onChange={(event) => setAlunoForm({ ...alunoForm, city: event.target.value })} />
+                  <FormInput label="Bairro" id="modal-student-neighborhood" value={alunoForm.neighborhood} onChange={(event) => setAlunoForm({ ...alunoForm, neighborhood: event.target.value })} />
+                  <FormInput label="Rua" id="modal-student-street" value={alunoForm.street} onChange={(event) => setAlunoForm({ ...alunoForm, street: event.target.value })} />
+                  <FormInput label="Numero" id="modal-student-number" value={alunoForm.number} onChange={(event) => setAlunoForm({ ...alunoForm, number: event.target.value })} />
+                  <FormInput label="Complemento" id="modal-student-complement" value={alunoForm.complement} onChange={(event) => setAlunoForm({ ...alunoForm, complement: event.target.value })} />
+                </div>
+              )}
+
               <div className="modal-actions">
-                <button type="button" className="btn-secondary" onClick={() => setIsAlunoModalOpen(false)} disabled={savingAluno}>
+                <button type="button" className="btn-secondary" onClick={closeAlunoModal} disabled={savingAluno}>
+                  <span className="inline-icon"><Icon path={icons.close} size={16} /></span>
                   Fechar
                 </button>
-                <button type="submit" className="btn-primary" disabled={savingAluno}>
-                  {savingAluno ? 'Salvando...' : 'Criar aluno na turma'}
-                </button>
+                {alunoModalStep > 1 && (
+                  <button type="button" className="btn-secondary" onClick={() => setAlunoModalStep(alunoModalStep - 1)} disabled={savingAluno}>
+                    <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
+                    Voltar
+                  </button>
+                )}
+                {alunoModalStep < ALUNO_MODAL_STEPS.length ? (
+                  <button type="button" className="btn-primary" onClick={() => setAlunoModalStep(alunoModalStep + 1)} disabled={savingAluno}>
+                    <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
+                    Proximo
+                  </button>
+                ) : (
+                  <button type="submit" className="btn-primary" disabled={savingAluno}>
+                    <span className="inline-icon"><Icon path={icons.check} size={16} /></span>
+                    {savingAluno ? 'Salvando...' : 'Adicionar ao rascunho'}
+                  </button>
+                )}
               </div>
             </form>
           </div>

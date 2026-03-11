@@ -74,9 +74,16 @@ export class TeacherScopeService {
   async ensureStudentAccess(user: UserContext, studentId: number): Promise<void> {
     if (user.role !== 'teacher') return
     const student = await this.studentsService.findOne(studentId)
-    if (!student || !student.class_id) {
-      throw new ForbiddenException('Aluno não encontrado ou sem turma')
+    if (!student) {
+      throw new ForbiddenException('Aluno nao encontrado')
     }
-    await this.ensureClassAccess(user, student.class_id)
+    const classIds = await this.classesService.getClassIdsByStudent(studentId, user.school_id)
+    if (classIds.length === 0) {
+      throw new ForbiddenException('Aluno nao encontrado ou sem turma')
+    }
+    const teacherClassIds = await this.getTeacherClassIds(user)
+    if (!classIds.some((classId) => teacherClassIds.includes(classId))) {
+      throw new ForbiddenException('Acesso negado a este aluno')
+    }
   }
 }

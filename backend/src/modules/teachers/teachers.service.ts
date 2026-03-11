@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt'
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Brackets, Repository } from 'typeorm'
 import { Teacher } from './entities/teacher.entity'
 import { CreateTeacherDto } from './dto/create-teacher.dto'
 import { UpdateTeacherDto } from './dto/update-teacher.dto'
@@ -22,6 +22,30 @@ export class TeachersService {
   findAll(schoolId?: number) {
     const where = schoolId ? { school_id: schoolId } : {}
     return this.repo.find({ where, order: { name: 'ASC' } })
+  }
+
+  search(schoolId: number | undefined, query = '', limit = 20) {
+    const normalizedQuery = query.trim()
+    const qb = this.repo.createQueryBuilder('teacher').orderBy('teacher.name', 'ASC').take(limit)
+
+    if (schoolId) {
+      qb.andWhere('teacher.school_id = :schoolId', { schoolId })
+    }
+
+    if (normalizedQuery) {
+      const digits = normalizeCpf(normalizedQuery)
+      qb.andWhere(
+        new Brackets((sub) => {
+          sub.where('LOWER(teacher.name) LIKE LOWER(:name)', { name: `%${normalizedQuery}%` })
+          if (digits) {
+            sub.orWhere('teacher.document LIKE :document', { document: `%${digits}%` })
+          }
+          sub.orWhere('LOWER(teacher.email) LIKE LOWER(:email)', { email: `%${normalizedQuery}%` })
+        }),
+      )
+    }
+
+    return qb.getMany()
   }
 
   async findAllPaginated(schoolId: number | undefined, page: number, limit: number) {

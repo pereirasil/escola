@@ -5,6 +5,7 @@ import { Attendance } from './entities/attendance.entity'
 import { CreateAttendanceDto } from './dto/create-attendance.dto'
 import { Student } from '../students/entities/student.entity'
 import { Class } from '../classes/entities/class.entity'
+import { Enrollment } from '../classes/entities/enrollment.entity'
 
 @Injectable()
 export class AttendanceService {
@@ -28,9 +29,19 @@ export class AttendanceService {
   }
 
   findStudentsByTurma(turmaId: number, schoolId?: number) {
-    const where: any = { class_id: turmaId }
-    if (schoolId) where.school_id = schoolId
-    return this.studentRepo.find({ where, order: { name: 'ASC' } })
+    const qb = this.studentRepo
+      .createQueryBuilder('student')
+      .innerJoin(Enrollment, 'enrollment', 'enrollment.student_id = student.id')
+      .where('enrollment.class_id = :turmaId', { turmaId })
+      .orderBy('student.name', 'ASC')
+      .distinct(true)
+
+    if (schoolId) {
+      qb.andWhere('student.school_id = :schoolId', { schoolId })
+      qb.andWhere('enrollment.school_id = :schoolId', { schoolId })
+    }
+
+    return qb.getMany()
   }
 
   async createBulk(dtos: CreateAttendanceDto[], schoolId?: number) {

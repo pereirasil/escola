@@ -8,3 +8,4 @@ export { Spinner } from './Spinner';
 export { Breadcrumb } from './Breadcrumb';
 export { NotificationBell } from './NotificationBell';
 export { PhotoUpload } from './PhotoUpload';
+export { AsyncSearchSelect } from './AsyncSearchSelect';

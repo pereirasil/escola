@@ -4,6 +4,7 @@ import { Repository } from 'typeorm'
 import { Grade } from './entities/grade.entity'
 import { CreateGradeDto } from './dto/create-grade.dto'
 import { Student } from '../students/entities/student.entity'
+import { Enrollment } from '../classes/entities/enrollment.entity'
 
 @Injectable()
 export class GradesService {
@@ -20,9 +21,19 @@ export class GradesService {
   }
 
   findStudentsByTurma(turmaId: number, schoolId?: number) {
-    const where: any = { class_id: turmaId }
-    if (schoolId) where.school_id = schoolId
-    return this.studentRepo.find({ where, order: { name: 'ASC' } })
+    const qb = this.studentRepo
+      .createQueryBuilder('student')
+      .innerJoin(Enrollment, 'enrollment', 'enrollment.student_id = student.id')
+      .where('enrollment.class_id = :turmaId', { turmaId })
+      .orderBy('student.name', 'ASC')
+      .distinct(true)
+
+    if (schoolId) {
+      qb.andWhere('student.school_id = :schoolId', { schoolId })
+      qb.andWhere('enrollment.school_id = :schoolId', { schoolId })
+    }
+
+    return qb.getMany()
   }
 
   findByFilters(turmaId: number, materiaId: number, bimestre: string, schoolId?: number) {

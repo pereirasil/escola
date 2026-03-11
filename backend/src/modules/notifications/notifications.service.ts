@@ -5,6 +5,7 @@ import { Notification } from './entities/notification.entity'
 import { Student } from '../students/entities/student.entity'
 import { Meeting } from '../meetings/entities/meeting.entity'
 import { Class } from '../classes/entities/class.entity'
+import { Enrollment } from '../classes/entities/enrollment.entity'
 import { CalendarEvent } from '../calendar-events/entities/calendar-event.entity'
 
 @Injectable()
@@ -42,9 +43,18 @@ export class NotificationsService {
 
   async createForMeeting(meeting: Meeting, schoolId?: number) {
     if (!meeting.class_id) return
-    const where: any = { class_id: meeting.class_id }
-    if (schoolId) where.school_id = schoolId
-    const students = await this.studentRepo.find({ where })
+    const studentsQuery = this.studentRepo
+      .createQueryBuilder('student')
+      .innerJoin(Enrollment, 'enrollment', 'enrollment.student_id = student.id')
+      .where('enrollment.class_id = :classId', { classId: meeting.class_id })
+      .distinct(true)
+
+    if (schoolId) {
+      studentsQuery.andWhere('enrollment.school_id = :schoolId', { schoolId })
+      studentsQuery.andWhere('student.school_id = :schoolId', { schoolId })
+    }
+
+    const students = await studentsQuery.getMany()
 
     const existing = await this.notificationRepo.find({
       where: { reference_id: meeting.id, type: 'meeting' },
@@ -78,9 +88,18 @@ export class NotificationsService {
     if (classes.length === 0) return
 
     const classIds = classes.map((c) => c.id)
-    const students = await this.studentRepo.find({
-      where: { class_id: In(classIds), ...(schoolId ? { school_id: schoolId } : {}) },
-    })
+    const qb = this.studentRepo
+      .createQueryBuilder('student')
+      .innerJoin(Enrollment, 'enrollment', 'enrollment.student_id = student.id')
+      .where('enrollment.class_id IN (:...classIds)', { classIds })
+      .distinct(true)
+
+    if (schoolId) {
+      qb.andWhere('student.school_id = :schoolId', { schoolId })
+      qb.andWhere('enrollment.school_id = :schoolId', { schoolId })
+    }
+
+    const students = await qb.getMany()
     if (students.length === 0) return
 
     const existing = await this.notificationRepo.find({

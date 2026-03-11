@@ -34,7 +34,11 @@ export class StudentsController {
     @SchoolId() schoolId: number | undefined,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('q') q?: string,
   ) {
+    if (q !== undefined) {
+      return this.service.search(schoolId, q, +(limit || 20))
+    }
     if (page) {
       return this.service.findAllPaginated(schoolId, +page, +(limit || 10))
     }

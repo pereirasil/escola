@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { In, Repository } from 'typeorm'
 import { CalendarEvent } from './entities/calendar-event.entity'
 import { CreateCalendarEventDto } from './dto/create-calendar-event.dto'
 import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto'
 import { Student } from '../students/entities/student.entity'
 import { Class } from '../classes/entities/class.entity'
+import { Enrollment } from '../classes/entities/enrollment.entity'
 import { NotificationsService } from '../notifications/notifications.service'
 
 @Injectable()
@@ -17,6 +18,8 @@ export class CalendarEventsService {
     private studentRepo: Repository<Student>,
     @InjectRepository(Class)
     private classRepo: Repository<Class>,
+    @InjectRepository(Enrollment)
+    private enrollmentRepo: Repository<Enrollment>,
     private notificationsService: NotificationsService,
   ) {}
 
@@ -57,23 +60,30 @@ export class CalendarEventsService {
     const student = await this.studentRepo.findOne({ where: { id: studentId } })
     if (!student) throw new NotFoundException('Aluno nao encontrado')
 
-    let studentGrade: string | null = null
-    if (student.class_id) {
-      const cls = await this.classRepo.findOne({ where: { id: student.class_id } })
-      if (cls) studentGrade = cls.grade
-    }
+    const enrollmentWhere: any = { student_id: studentId }
+    if (student.school_id) enrollmentWhere.school_id = student.school_id
+    const enrollments = await this.enrollmentRepo.find({ where: enrollmentWhere })
+
+    const classIds = new Set<number>()
+    if (student.class_id) classIds.add(student.class_id)
+    for (const enrollment of enrollments) classIds.add(enrollment.class_id)
+
+    const classes = classIds.size
+      ? await this.classRepo.find({ where: { id: In(Array.from(classIds)) } })
+      : []
+    const studentGrades = new Set(classes.map((item) => item.grade).filter(Boolean))
 
     const where: any = {}
     if (student.school_id) where.school_id = student.school_id
 
     const events = await this.repo.find({ where, order: { date: 'ASC' } })
 
-    if (!studentGrade) return []
+    if (studentGrades.size === 0) return []
 
     return events.filter((event) => {
       try {
         const series: string[] = JSON.parse(event.series)
-        return series.includes(studentGrade!)
+        return series.some((item) => studentGrades.has(item))
       } catch {
         return false
       }

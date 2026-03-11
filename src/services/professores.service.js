@@ -2,6 +2,7 @@ import { api } from './api'
 
 export const professoresService = {
   listar: () => api.get('/teachers'),
+  buscar: (q, limit = 20) => api.get(`/teachers?q=${encodeURIComponent(q || '')}&limit=${limit}`).then((r) => r.data),
   listarPaginado: (page, limit = 10) => api.get(`/teachers?page=${page}&limit=${limit}`).then((r) => r.data),
   buscarPorId: (id) => api.get(`/teachers/${id}`),
   criar: (data) => api.post('/teachers', data),
