@@ -395,31 +395,6 @@ export default function TurmaSteps() {
         </Card>
 
         <div className="steps-content">
-          <Card title="Resumo da criacao">
-            <div className="steps-summary-grid">
-              <div className="steps-summary-item">
-                <span className="steps-summary-label">Turma</span>
-                <strong>{turmaAtual?.name || 'Nao criada ainda'}</strong>
-              </div>
-              <div className="steps-summary-item">
-                <span className="steps-summary-label">Alunos</span>
-                <strong>{alunosDaTurma.length}</strong>
-              </div>
-              <div className="steps-summary-item">
-                <span className="steps-summary-label">Professores na grade</span>
-                <strong>{professoresDaTurma.length}</strong>
-              </div>
-              <div className="steps-summary-item">
-                <span className="steps-summary-label">Horarios</span>
-                <strong>{horariosDaTurma.length}</strong>
-              </div>
-              <div className="steps-summary-item">
-                <span className="steps-summary-label">Status</span>
-                <strong>{completed ? 'Concluida' : 'Em andamento'}</strong>
-              </div>
-            </div>
-          </Card>
-
           {step === 1 && (
             <Card title="1. Dados da Turma">
               <form onSubmit={handleSalvarTurma}>
