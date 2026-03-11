@@ -275,8 +275,9 @@ body {
   width: 34px;
   height: 34px;
   border-radius: 999px;
-  background: #111;
-  border: 1px solid #4a4a4a;
+  background: #646cff;
+  color: #fff;
+  border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -647,6 +648,24 @@ body {
 .btn-secondary:hover {
   background-color: rgba(255, 255, 255, 0.05);
   border-color: #444;
+}
+
+.btn-outline-primary {
+  background-color: transparent;
+  color: #646cff;
+  border: 1px solid #646cff;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.btn-outline-primary:hover {
+  background-color: rgba(100, 108, 255, 0.1);
+  color: #535bf2;
+  border-color: #535bf2;
 }
 
 .empty-state {
@@ -1457,6 +1476,42 @@ button:focus-visible {
   .btn-secondary:hover {
     background-color: #f0f0f0;
     border-color: #999;
+  }
+  .btn-outline-primary {
+    color: #646cff;
+    border-color: #646cff;
+  }
+  .btn-outline-primary:hover {
+    background-color: rgba(100, 108, 255, 0.08);
+    color: #535bf2;
+    border-color: #535bf2;
+  }
+  .step-chip {
+    background: #f5f5f7;
+    border-color: #ddd;
+    color: #333;
+  }
+  .step-chip.active {
+    background: rgba(100, 108, 255, 0.1);
+    border-color: #646cff;
+  }
+  .step-chip.done {
+    border-color: #2e8b57;
+  }
+  .step-chip-content small {
+    color: #888;
+  }
+  .modal-step-chip {
+    background: #f5f5f7;
+    border-color: #ddd;
+    color: #333;
+  }
+  .modal-step-chip.active {
+    background: rgba(100, 108, 255, 0.1);
+    border-color: #646cff;
+  }
+  .modal-step-chip.done {
+    border-color: #2e8b57;
   }
   .btn-danger {
     color: #dc2626;

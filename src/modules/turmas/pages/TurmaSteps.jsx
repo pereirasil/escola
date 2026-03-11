@@ -446,7 +446,8 @@ export default function TurmaSteps() {
       <Breadcrumb items={[{ label: 'Turmas', to: '/turmas' }, { label: 'Montar Turma' }]} />
 
       <PageHeader title="Montar Turma" description="Fluxo guiado para montar a turma e salvar tudo apenas no final.">
-        <Link to="/turmas" className="btn-secondary">
+        <Link to="/turmas" className="btn-outline-primary">
+          <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
           Voltar para Turmas
         </Link>
       </PageHeader>
