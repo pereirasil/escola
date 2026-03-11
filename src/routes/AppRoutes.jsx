@@ -11,6 +11,7 @@ import MeusDados from '../modules/aluno/pages/MeusDados';
 import HistoricoEscolar from '../modules/aluno/pages/HistoricoEscolar';
 import Notificacoes from '../modules/aluno/pages/Notificacoes';
 import AlterarSenha from '../modules/aluno/pages/AlterarSenha';
+import DatasImportantes from '../modules/aluno/pages/DatasImportantes';
 import MinhasTurmas from '../modules/professor/pages/MinhasTurmas';
 import Presenca from '../modules/presenca/pages/Presenca';
 import Notas from '../modules/notas/pages/Notas';
@@ -35,6 +36,7 @@ export const router = createBrowserRouter([
               { path: 'dados', element: <MeusDados /> },
               { path: 'historico', element: <HistoricoEscolar /> },
               { path: 'notificacoes', element: <Notificacoes /> },
+              { path: 'datas', element: <DatasImportantes /> },
               { path: 'alterar-senha', element: <AlterarSenha /> },
             ],
           },

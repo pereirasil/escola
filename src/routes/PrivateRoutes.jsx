@@ -14,6 +14,7 @@ import Presenca from '../modules/presenca/pages/Presenca';
 import RelatorioPresenca from '../modules/presenca/pages/RelatorioPresenca';
 import Financeiro from '../modules/financeiro/pages/Financeiro';
 import Reunioes from '../modules/reunioes/pages/Reunioes';
+import CalendarEventsPage from '../modules/calendar-events/pages/CalendarEventsPage';
 import AprovarEscolas from '../modules/admin/pages/AprovarEscolas';
 import EscolasAprovadas from '../modules/admin/pages/EscolasAprovadas';
 
@@ -36,6 +37,7 @@ export const privateRoutes = {
     { path: 'relatorio-presenca', element: <RelatorioPresenca /> },
     { path: 'financeiro', element: <Financeiro /> },
     { path: 'reunioes', element: <Reunioes /> },
+    { path: 'datas-comemorativas', element: <CalendarEventsPage /> },
     { path: 'aprovar-escolas', element: <AprovarEscolas /> },
     { path: 'escolas-aprovadas', element: <EscolasAprovadas /> },
   ],

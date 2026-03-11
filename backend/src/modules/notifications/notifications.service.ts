@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { IsNull, Repository } from 'typeorm'
+import { In, IsNull, Repository } from 'typeorm'
 import { Notification } from './entities/notification.entity'
 import { Student } from '../students/entities/student.entity'
 import { Meeting } from '../meetings/entities/meeting.entity'
+import { Class } from '../classes/entities/class.entity'
+import { CalendarEvent } from '../calendar-events/entities/calendar-event.entity'
 
 @Injectable()
 export class NotificationsService {
@@ -12,6 +14,8 @@ export class NotificationsService {
     private notificationRepo: Repository<Notification>,
     @InjectRepository(Student)
     private studentRepo: Repository<Student>,
+    @InjectRepository(Class)
+    private classRepo: Repository<Class>,
   ) {}
 
   findByStudentId(studentId: number) {
@@ -57,6 +61,48 @@ export class NotificationsService {
           message: meeting.description ?? `Reunião agendada para ${meeting.scheduled_at ?? 'data a definir'}.`,
           type: 'meeting',
           reference_id: meeting.id,
+          school_id: schoolId,
+        }),
+      )
+    if (notifications.length) {
+      await this.notificationRepo.save(notifications)
+    }
+  }
+
+  async createForCalendarEvent(event: CalendarEvent, series: string[], schoolId?: number) {
+    const where: any = {}
+    if (schoolId) where.school_id = schoolId
+    if (series.length > 0) where.grade = In(series)
+
+    const classes = await this.classRepo.find({ where, select: ['id'] })
+    if (classes.length === 0) return
+
+    const classIds = classes.map((c) => c.id)
+    const students = await this.studentRepo.find({
+      where: { class_id: In(classIds), ...(schoolId ? { school_id: schoolId } : {}) },
+    })
+    if (students.length === 0) return
+
+    const existing = await this.notificationRepo.find({
+      where: { reference_id: event.id, type: 'calendar_event' },
+      select: ['student_id'],
+    })
+    const existingIds = new Set(existing.map((n) => n.student_id))
+
+    const date = event.date || ''
+    const formattedDate = date.includes('-')
+      ? date.split('-').reverse().join('/')
+      : date
+
+    const notifications = students
+      .filter((s) => !existingIds.has(s.id))
+      .map((s) =>
+        this.notificationRepo.create({
+          student_id: s.id,
+          title: event.title,
+          message: event.description || `Data comemorativa: ${event.title} em ${formattedDate}.`,
+          type: 'calendar_event',
+          reference_id: event.id,
           school_id: schoolId,
         }),
       )

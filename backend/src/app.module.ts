@@ -12,6 +12,7 @@ import { PaymentsModule } from './modules/payments/payments.module'
 import { SubjectsModule } from './modules/subjects/subjects.module'
 import { SchedulesModule } from './modules/schedules/schedules.module'
 import { NotificationsModule } from './modules/notifications/notifications.module'
+import { CalendarEventsModule } from './modules/calendar-events/calendar-events.module'
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     SubjectsModule,
     SchedulesModule,
     NotificationsModule,
+    CalendarEventsModule,
   ],
 })
 export class AppModule {}
