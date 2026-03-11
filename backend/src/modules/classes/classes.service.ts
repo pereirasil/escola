@@ -41,14 +41,13 @@ export class ClassesService {
   async findStudentsByClass(id: number, schoolId?: number) {
     const qb = this.studentRepo
       .createQueryBuilder('student')
-      .innerJoin(Enrollment, 'enrollment', 'enrollment.student_id = student.id')
-      .where('enrollment.class_id = :classId', { classId: id })
+      .leftJoin(Enrollment, 'enrollment', 'enrollment.student_id = student.id AND enrollment.class_id = :classId', { classId: id })
+      .where('(enrollment.class_id = :classId OR student.class_id = :classId)', { classId: id })
       .orderBy('student.name', 'ASC')
       .distinct(true)
 
     if (schoolId) {
       qb.andWhere('student.school_id = :schoolId', { schoolId })
-      qb.andWhere('enrollment.school_id = :schoolId', { schoolId })
     }
 
     return qb.getMany()
