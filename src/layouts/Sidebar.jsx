@@ -28,6 +28,7 @@ export default function Sidebar({ open, onClose }) {
           <NavLink to="/professores" className={linkClass} onClick={handleClick}>Professores</NavLink>
           <NavLink to="/materias" className={linkClass} onClick={handleClick}>Materias</NavLink>
           <NavLink to="/turmas" className={linkClass} onClick={handleClick}>Turmas</NavLink>
+          <NavLink to="/turma-steps" className={linkClass} onClick={handleClick}>Turma Steps</NavLink>
           <NavLink to="/horarios" className={linkClass} onClick={handleClick}>Horarios</NavLink>
 
           <div className="sidebar-section-title">Avaliacao</div>

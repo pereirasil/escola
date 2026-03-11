@@ -8,6 +8,7 @@ import Professores from '../modules/professores/pages/Professores';
 import ProfessorEditar from '../modules/professores/pages/ProfessorEditar';
 import Materias from '../modules/materias/pages/Materias';
 import Turmas from '../modules/turmas/pages/Turmas';
+import TurmaSteps from '../modules/turmas/pages/TurmaSteps';
 import Horarios from '../modules/horarios/pages/Horarios';
 import Notas from '../modules/notas/pages/Notas';
 import Presenca from '../modules/presenca/pages/Presenca';
@@ -31,6 +32,7 @@ export const privateRoutes = {
     { path: 'professores/:id/editar', element: <ProfessorEditar /> },
     { path: 'materias', element: <Materias /> },
     { path: 'turmas', element: <Turmas /> },
+    { path: 'turma-steps', element: <TurmaSteps /> },
     { path: 'horarios', element: <Horarios /> },
     { path: 'notas', element: <Notas /> },
     { path: 'presenca', element: <Presenca /> },
