@@ -1,0 +1,29 @@
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /cadastro
+Allow: /sistema-escolar
+Allow: /funcionalidades
+Allow: /precos
+
+Disallow: /dashboard
+Disallow: /alunos
+Disallow: /professores
+Disallow: /materias
+Disallow: /turmas
+Disallow: /turma-steps
+Disallow: /horarios
+Disallow: /notas
+Disallow: /presenca
+Disallow: /relatorio-presenca
+Disallow: /financeiro
+Disallow: /reunioes
+Disallow: /datas-comemorativas
+Disallow: /aprovar-escolas
+Disallow: /escolas-aprovadas
+Disallow: /aluno
+Disallow: /professor
+Disallow: /admin
+Disallow: /painel
+
+Sitemap: https://gestaoescolar.com.br/sitemap.xml

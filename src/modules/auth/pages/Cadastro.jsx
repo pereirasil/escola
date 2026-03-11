@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { authService } from '../../../services/auth.service'
 import toast from 'react-hot-toast'
 
@@ -34,8 +35,20 @@ export default function Cadastro() {
       .finally(() => setLoading(false))
   }
 
+  const helmetBlock = (
+    <Helmet>
+      <title>Cadastrar Escola - Sistema de Gestao Escolar Gratuito</title>
+      <meta name="description" content="Cadastre sua escola gratuitamente no sistema de gestao escolar. Software completo para controle de alunos, professores, notas e financeiro." />
+      <meta property="og:title" content="Cadastrar Escola - Sistema de Gestao Escolar Gratuito" />
+      <meta property="og:description" content="Cadastre sua escola gratuitamente no sistema de gestao escolar. Software completo para controle de alunos, professores, notas e financeiro." />
+      <meta property="og:url" content="https://gestaoescolar.com.br/cadastro" />
+      <link rel="canonical" href="https://gestaoescolar.com.br/cadastro" />
+    </Helmet>
+  )
+
   if (success) {
     return (
+      <>{helmetBlock}
       <div className="auth-page">
         <div className="auth-card">
           <h1>Gestao Escolar</h1>
@@ -48,10 +61,12 @@ export default function Cadastro() {
           </p>
         </div>
       </div>
+      </>
     )
   }
 
   return (
+    <>{helmetBlock}
     <div className="auth-page">
       <div className="auth-card">
         <h1>Gestao Escolar</h1>
@@ -136,5 +151,6 @@ export default function Cadastro() {
         </p>
       </div>
     </div>
+    </>
   )
 }

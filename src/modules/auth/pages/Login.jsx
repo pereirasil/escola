@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { authService } from '../../../services/auth.service'
 import { useAuthStore } from '../../../store/useAuthStore'
 import toast from 'react-hot-toast'
@@ -71,6 +72,15 @@ export default function Login() {
   }
 
   return (
+    <>
+    <Helmet>
+      <title>Entrar - Sistema de Gestao Escolar | Login</title>
+      <meta name="description" content="Acesse o sistema de gestao escolar. Faca login como gestor, professor ou aluno e gerencie sua escola online." />
+      <meta property="og:title" content="Entrar - Sistema de Gestao Escolar" />
+      <meta property="og:description" content="Acesse o sistema de gestao escolar. Faca login como gestor, professor ou aluno." />
+      <meta property="og:url" content="https://gestaoescolar.com.br/login" />
+      <link rel="canonical" href="https://gestaoescolar.com.br/login" />
+    </Helmet>
     <div className="auth-page">
       <div className="auth-hero">
         <div className="auth-hero-content">
@@ -223,5 +233,6 @@ export default function Login() {
         </div>
       </div>
     </div>
+    </>
   )
 }

@@ -1,6 +1,5 @@
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
-import RoleBasedRedirect from './RoleBasedRedirect';
 import Layout from '../layouts/Layout';
 import AlunoLayout from '../layouts/AlunoLayout';
 import ProfessorLayout from '../layouts/ProfessorLayout';
@@ -20,52 +19,50 @@ import AlterarSenhaProfessor from '../modules/professor/pages/AlterarSenhaProfes
 
 export const router = createBrowserRouter([
   ...publicRoutes,
+
+  {
+    path: '/aluno',
+    element: <ProtectedRoute allowedRoles={['student']} />,
+    children: [
+      {
+        element: <AlunoLayout />,
+        children: [
+          { index: true, element: <Navigate to="/aluno/dados" replace /> },
+          { path: 'dados', element: <MeusDados /> },
+          { path: 'historico', element: <HistoricoEscolar /> },
+          { path: 'notificacoes', element: <Notificacoes /> },
+          { path: 'datas', element: <DatasImportantes /> },
+          { path: 'alterar-senha', element: <AlterarSenha /> },
+        ],
+      },
+    ],
+  },
+
+  {
+    path: '/professor',
+    element: <ProtectedRoute allowedRoles={['teacher']} />,
+    children: [
+      {
+        element: <ProfessorLayout />,
+        children: [
+          { index: true, element: <Navigate to="/professor/turmas" replace /> },
+          { path: 'turmas', element: <MinhasTurmas /> },
+          { path: 'faltas', element: <Presenca /> },
+          { path: 'notas', element: <Notas /> },
+          { path: 'historico', element: <RelatorioPresenca /> },
+          { path: 'alterar-senha', element: <AlterarSenhaProfessor /> },
+        ],
+      },
+    ],
+  },
+
   {
     path: '/',
     element: <ProtectedRoute />,
     children: [
-      { index: true, element: <RoleBasedRedirect /> },
       {
-        path: 'aluno',
-        element: <ProtectedRoute allowedRoles={['student']} />,
-        children: [
-          {
-            element: <AlunoLayout />,
-            children: [
-              { index: true, element: <Navigate to="/aluno/dados" replace /> },
-              { path: 'dados', element: <MeusDados /> },
-              { path: 'historico', element: <HistoricoEscolar /> },
-              { path: 'notificacoes', element: <Notificacoes /> },
-              { path: 'datas', element: <DatasImportantes /> },
-              { path: 'alterar-senha', element: <AlterarSenha /> },
-            ],
-          },
-        ],
-      },
-      {
-        path: 'professor',
-        element: <ProtectedRoute allowedRoles={['teacher']} />,
-        children: [
-          {
-            element: <ProfessorLayout />,
-            children: [
-              { index: true, element: <Navigate to="/professor/turmas" replace /> },
-              { path: 'turmas', element: <MinhasTurmas /> },
-              { path: 'faltas', element: <Presenca /> },
-              { path: 'notas', element: <Notas /> },
-              { path: 'historico', element: <RelatorioPresenca /> },
-              { path: 'alterar-senha', element: <AlterarSenhaProfessor /> },
-            ],
-          },
-        ],
-      },
-      {
-        path: '*',
         element: <LayoutWithGuard />,
-        children: [
-          { index: true, element: <Navigate to="/dashboard" replace /> },
-          ...privateRoutes.children,
-        ],
+        children: privateRoutes.children.filter(r => !r.index),
       },
     ],
   },

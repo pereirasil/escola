@@ -3,6 +3,7 @@ import { Outlet, useNavigate, NavLink, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
 import { NotificationBell } from '../components/ui'
 import { alunosService } from '../services/alunos.service'
+import NoIndex from '../components/NoIndex'
 import toast from 'react-hot-toast'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
@@ -39,6 +40,7 @@ export default function AlunoLayout() {
 
   return (
     <div className="layout">
+      <NoIndex />
       {sidebarOpen && <div className="sidebar-overlay sidebar-overlay-visible" onClick={() => setSidebarOpen(false)} />}
       <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
         <nav className="sidebar-nav">
