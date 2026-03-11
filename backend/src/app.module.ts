@@ -17,8 +17,12 @@ import { CalendarEventsModule } from './modules/calendar-events/calendar-events.
 @Module({
   imports: [
     TypeOrmModule.forRoot({
-      type: 'better-sqlite3',
-      database: process.env.DATABASE_PATH ?? 'escola.db',
+      type: 'mysql',
+      host: process.env.DB_HOST ?? 'localhost',
+      port: Number(process.env.DB_PORT) || 3306,
+      username: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
