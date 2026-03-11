@@ -1,0 +1,81 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: host-secrets
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy Backend
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            if [ ! -d /var/www/escola/.git ]; then
+              git clone git@github.com:pereirasil/escola.git /var/www/escola
+            fi
+
+            cd /var/www/escola
+            git fetch --all
+            git reset --hard origin/${{ github.ref_name }}
+
+            cd /var/www/escola/backend
+            rm -rf node_modules
+            npm ci
+            npm run build
+
+            PORT=3003 pm2 restart escola-backend --update-env || PORT=3003 pm2 start dist/main.js --name escola-backend --instances 1
+            pm2 save
+
+      - name: Deploy Frontend
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            if [ ! -d /var/www/escola/.git ]; then
+              git clone git@github.com:pereirasil/escola.git /var/www/escola
+            fi
+
+            cd /var/www/escola
+            git fetch --all
+            git reset --hard origin/${{ github.ref_name }}
+
+            cat > .env.production <<'EOF'
+            VITE_API_URL=https://escola.simplesmente.app/api
+            EOF
+
+            rm -rf node_modules
+            npm ci
+            npm install --no-save @rollup/rollup-linux-x64-gnu@4.59.0
+            npm run build
+
+      - name: Reload Nginx
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            sudo nginx -t
+            sudo systemctl reload nginx
