@@ -101,6 +101,15 @@ const STEP_ICONS = {
 
 const buildDraftId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+function StepCardHeader({ title, action }) {
+  return (
+    <div className="steps-card-header">
+      <h3 className="card-title">{title}</h3>
+      {action ? <div className="steps-card-header-action">{action}</div> : null}
+    </div>
+  );
+}
+
 export default function TurmaSteps() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -477,7 +486,8 @@ export default function TurmaSteps() {
 
         <div className="steps-content">
           {step === 1 && (
-            <Card title="1. Dados da Turma">
+            <Card>
+              <StepCardHeader title="1. Dados da Turma" />
               <form onSubmit={handleNextFromTurma}>
                 <div className="form-grid">
                   <FormInput
@@ -521,10 +531,10 @@ export default function TurmaSteps() {
                     onChange={(event) => setTurmaForm({ ...turmaForm, school_year: event.target.value })}
                   />
                 </div>
-                <div className="steps-actions">
+                <div className="steps-actions steps-actions-end">
                   <button type="submit" className="btn-primary">
                     <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
-                    Salvar rascunho e seguir
+                    Proximo passo
                   </button>
                 </div>
               </form>
@@ -533,38 +543,50 @@ export default function TurmaSteps() {
 
           {step === 2 && (
             <>
-              <Card title="2. Adicionar aluno existente">
-                <div className="form-grid">
-                  <AsyncSearchSelect
-                    label="Buscar aluno"
-                    placeholder="Buscar aluno por nome ou CPF"
-                    selectedLabel={selectedStudent?.label || ''}
-                    onSearch={searchStudents}
-                    onSelect={(option) => setSelectedStudent(option)}
-                    emptyMessage="Nenhum aluno encontrado."
-                  />
-                </div>
-                <div className="steps-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setStep(1)}>
-                    <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
-                    Voltar
-                  </button>
+              <Card>
+                <StepCardHeader
+                  title="2. Alunos da turma"
+                  action={(
+                    <button type="button" className="btn-secondary" onClick={() => setStep(1)}>
+                      <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
+                      Voltar
+                    </button>
+                  )}
+                />
+                <div className="steps-inline-form">
+                  <div className="steps-inline-form-grow">
+                    <AsyncSearchSelect
+                      label="Buscar aluno"
+                      placeholder="Buscar aluno por nome ou CPF"
+                      selectedLabel={selectedStudent?.label || ''}
+                      onSearch={searchStudents}
+                      onSelect={(option) => setSelectedStudent(option)}
+                      emptyMessage="Nenhum aluno encontrado."
+                    />
+                  </div>
                   <button
                     type="button"
-                    className="btn-primary"
+                    className="btn-primary steps-inline-action"
                     onClick={handleVincularAlunoExistente}
                     disabled={!selectedStudent}
                   >
                     <span className="inline-icon"><Icon path={icons.plus} size={16} /></span>
-                    Adicionar aluno existente
+                    Adicionar
                   </button>
-                  <button type="button" className="btn-secondary" onClick={() => setIsAlunoModalOpen(true)}>
-                    <span className="inline-icon"><Icon path={icons.userPlus} size={16} /></span>
-                    Cadastrar novo aluno
+                  <button
+                    type="button"
+                    className="btn-secondary btn-icon"
+                    onClick={() => setIsAlunoModalOpen(true)}
+                    title="Cadastrar novo aluno"
+                    aria-label="Cadastrar novo aluno"
+                  >
+                    <span className="inline-icon"><Icon path={icons.userPlus} size={18} /></span>
                   </button>
+                </div>
+                <div className="steps-actions steps-actions-end">
                   <button type="button" className="btn-primary" onClick={() => setStep(3)}>
                     <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
-                    Ir para horarios
+                    Proximo passo
                   </button>
                 </div>
               </Card>
@@ -599,7 +621,16 @@ export default function TurmaSteps() {
 
           {step === 3 && (
             <>
-              <Card title="3. Montar grade horaria da turma">
+              <Card>
+                <StepCardHeader
+                  title="3. Montar grade horaria da turma"
+                  action={(
+                    <button type="button" className="btn-secondary" onClick={() => setStep(2)}>
+                      <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
+                      Voltar
+                    </button>
+                  )}
+                />
                 {materias.length === 0 ? (
                   <div className="empty-state">
                     Cadastre ao menos uma materia em <Link to="/materias">Materias</Link> para criar horarios.
@@ -609,18 +640,31 @@ export default function TurmaSteps() {
                     <p className="page-description" style={{ marginTop: 0 }}>
                       Monte a grade no rascunho. Nada sera salvo no banco antes da confirmacao final.
                     </p>
+                    <div className="steps-inline-form steps-inline-form-top">
+                      <div className="steps-inline-form-grow">
+                        <AsyncSearchSelect
+                          label="Professor"
+                          placeholder="Buscar professor por nome, CPF ou e-mail"
+                          selectedLabel={selectedTeacherLabel}
+                          onSearch={searchTeachers}
+                          onSelect={(option) => {
+                            setHorarioForm({ ...horarioForm, teacher_id: String(option.value) });
+                            setSelectedTeacherLabel(option.label);
+                          }}
+                          emptyMessage="Nenhum professor encontrado."
+                        />
+                      </div>
+                      <button type="submit" className="btn-primary steps-inline-action" disabled={savingHorario}>
+                        <span className="inline-icon"><Icon path={editingHorarioId ? icons.edit : icons.plus} size={16} /></span>
+                        {savingHorario ? 'Salvando...' : editingHorarioId ? 'Salvar' : 'Adicionar'}
+                      </button>
+                      {editingHorarioId && (
+                        <button type="button" className="btn-secondary btn-icon" onClick={resetHorarioForm} title="Cancelar edicao" aria-label="Cancelar edicao">
+                          <span className="inline-icon"><Icon path={icons.close} size={18} /></span>
+                        </button>
+                      )}
+                    </div>
                     <div className="form-grid">
-                      <AsyncSearchSelect
-                        label="Professor"
-                        placeholder="Buscar professor por nome, CPF ou e-mail"
-                        selectedLabel={selectedTeacherLabel}
-                        onSearch={searchTeachers}
-                        onSelect={(option) => {
-                          setHorarioForm({ ...horarioForm, teacher_id: String(option.value) });
-                          setSelectedTeacherLabel(option.label);
-                        }}
-                        emptyMessage="Nenhum professor encontrado."
-                      />
                       <SelectField
                         label="Materia"
                         id="step-schedule-subject"
@@ -657,24 +701,10 @@ export default function TurmaSteps() {
                         onChange={(event) => setHorarioForm({ ...horarioForm, room: event.target.value })}
                       />
                     </div>
-                    <div className="steps-actions">
-                      <button type="button" className="btn-secondary" onClick={() => setStep(2)}>
-                        <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
-                        Voltar
-                      </button>
-                      <button type="submit" className="btn-primary" disabled={savingHorario}>
-                        <span className="inline-icon"><Icon path={editingHorarioId ? icons.edit : icons.plus} size={16} /></span>
-                        {savingHorario ? 'Salvando...' : editingHorarioId ? 'Salvar horario' : 'Adicionar horario'}
-                      </button>
-                      {editingHorarioId && (
-                        <button type="button" className="btn-secondary" onClick={resetHorarioForm}>
-                          <span className="inline-icon"><Icon path={icons.close} size={16} /></span>
-                          Cancelar edicao
-                        </button>
-                      )}
+                    <div className="steps-actions steps-actions-end">
                       <button type="button" className="btn-primary" onClick={handleGoToSummary}>
                         <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
-                        Ir para resumo
+                        Proximo passo
                       </button>
                     </div>
                   </form>
@@ -717,7 +747,16 @@ export default function TurmaSteps() {
 
           {step === 4 && (
             <>
-              <Card title="4. Resumo da criacao">
+              <Card>
+                <StepCardHeader
+                  title="4. Resumo da criacao"
+                  action={(
+                    <button type="button" className="btn-secondary" onClick={() => setStep(3)} disabled={finalizing}>
+                      <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
+                      Voltar
+                    </button>
+                  )}
+                />
                 <div className="steps-list">
                   <div className="steps-list-item">
                     <div>
@@ -775,11 +814,7 @@ export default function TurmaSteps() {
                 <p className="page-description">
                   Revise os dados acima. A turma, as matriculas e os horarios serao criados somente ao clicar em concluir.
                 </p>
-                <div className="steps-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setStep(3)} disabled={finalizing}>
-                    <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
-                    Voltar para horarios
-                  </button>
+                <div className="steps-actions steps-actions-end">
                   <button type="button" className="btn-primary" onClick={handleConcluir} disabled={finalizing}>
                     <span className="inline-icon"><Icon path={icons.check} size={16} /></span>
                     {finalizing ? 'Concluindo...' : 'Concluir criacao da turma'}
