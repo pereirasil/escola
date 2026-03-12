@@ -21,7 +21,7 @@ export default function Professores() {
   const [viewProfile, setViewProfile] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [filtroNome, setFiltroNome] = useState('');
-  const [filtroTurma, setFiltroTurma] = useState('');
+  const [filtroSerie, setFiltroSerie] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -83,11 +83,11 @@ export default function Professores() {
             onChange={e => setFiltroNome(e.target.value)}
           />
           <SelectField
-            label="Filtrar por turma"
-            id="filtroTurmaProfessor"
-            value={filtroTurma}
-            onChange={e => setFiltroTurma(e.target.value)}
-            options={turmas.map(t => ({ value: t.id, label: t.name }))}
+            label="Filtrar por serie"
+            id="filtroSerieProfessor"
+            value={filtroSerie}
+            onChange={e => setFiltroSerie(e.target.value)}
+            options={[...new Set(turmas.map(t => t.grade).filter(Boolean))].sort().map(g => ({ value: g, label: g }))}
           />
         </div>
         {loadingData ? <Spinner /> : (
@@ -97,9 +97,10 @@ export default function Professores() {
               data={professores.filter(p => {
                 const matchNome = p.name.toLowerCase().includes(filtroNome.toLowerCase());
                 if (!matchNome) return false;
-                if (!filtroTurma) return true;
+                if (!filtroSerie) return true;
                 const classIds = [...new Set(schedules.filter(s => s.teacher_id === p.id).map(s => s.class_id))];
-                return classIds.includes(Number(filtroTurma));
+                const seriesDoProf = classIds.map(cid => turmas.find(t => t.id === cid)?.grade).filter(Boolean);
+                return seriesDoProf.includes(filtroSerie);
               })}
               renderRow={(p) => {
                 const teacherSchedules = schedules.filter(s => s.teacher_id === p.id);
