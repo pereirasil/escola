@@ -39,7 +39,7 @@ export default function TurmaForm({ onSuccess }) {
         />
 
         <div className="form-group">
-          <label htmlFor="modal_turma_grade">Serie / Ano</label>
+          <label htmlFor="modal_turma_grade">Série / Ano</label>
           <input
             id="modal_turma_grade"
             list="modal-grades-list"
@@ -51,7 +51,7 @@ export default function TurmaForm({ onSuccess }) {
             <option value="Maternal" />
             <option value="Jardim I" />
             <option value="Jardim II" />
-            <option value="Pre-escola" />
+            <option value="Pré-escola" />
             <option value="1o Ano (Ensino Fundamental)" />
             <option value="2o Ano (Ensino Fundamental)" />
             <option value="3o Ano (Ensino Fundamental)" />
@@ -61,9 +61,9 @@ export default function TurmaForm({ onSuccess }) {
             <option value="7o Ano (Ensino Fundamental)" />
             <option value="8o Ano (Ensino Fundamental)" />
             <option value="9o Ano (Ensino Fundamental)" />
-            <option value="1o Ano (Ensino Medio)" />
-            <option value="2o Ano (Ensino Medio)" />
-            <option value="3o Ano (Ensino Medio)" />
+            <option value="1o Ano (Ensino Médio)" />
+            <option value="2o Ano (Ensino Médio)" />
+            <option value="3o Ano (Ensino Médio)" />
           </datalist>
         </div>
 
@@ -73,7 +73,7 @@ export default function TurmaForm({ onSuccess }) {
           value={form.shift}
           onChange={e => setForm({ ...form, shift: e.target.value })}
           options={[
-            { value: 'Manha', label: 'Manha' },
+            { value: 'Manhã', label: 'Manhã' },
             { value: 'Tarde', label: 'Tarde' },
             { value: 'Noite', label: 'Noite' }
           ]}

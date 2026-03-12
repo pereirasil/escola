@@ -34,7 +34,7 @@ export default function AlunoForm({ turmas = [], onSuccess }) {
     if (submitting) return;
 
     if (form.password !== form.confirmPassword) {
-      toast.error('Senha e confirmacao nao conferem.');
+      toast.error('Senha e confirmação não conferem.');
       return;
     }
 
@@ -62,23 +62,23 @@ export default function AlunoForm({ turmas = [], onSuccess }) {
     <form onSubmit={handleSubmit}>
       <PhotoUpload onFileSelect={setPhotoFile} label="Foto do aluno" />
       <div className="form-grid">
-        <FormInput label="Nome do aluno" id="modal_name" placeholder="Ex: Joao da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+        <FormInput label="Nome do aluno" id="modal_name" placeholder="Ex: João da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
         <FormInput label="Data de nascimento" id="modal_birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />
-        <FormInput label="CPF (usuario de acesso)" id="modal_document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
-        <FormInput label="Senha" id="modal_password" type="password" placeholder="Minimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+        <FormInput label="CPF (usuário de acesso)" id="modal_document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
+        <FormInput label="Senha" id="modal_password" type="password" placeholder="Mínimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
         <FormInput label="Confirmar senha" id="modal_confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
-        <FormInput label="Nome do Responsavel" id="modal_guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
-        <FormInput label="CPF do Responsavel" id="modal_guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
-        <FormInput label="Telefone do Responsavel" id="modal_guardian_phone" placeholder="(00) 00000-0000" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })} maxLength={15} />
+        <FormInput label="Nome do Responsável" id="modal_guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
+        <FormInput label="CPF do Responsável" id="modal_guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
+        <FormInput label="Telefone do Responsável" id="modal_guardian_phone" placeholder="(00) 00000-0000" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })} maxLength={15} />
         <FormInput label="CEP" id="modal_cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
         <FormInput label="Estado" id="modal_state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
-        <FormInput label="Cidade" id="modal_city" placeholder="Ex: Sao Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+        <FormInput label="Cidade" id="modal_city" placeholder="Ex: São Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
         <FormInput label="Bairro" id="modal_neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
         <FormInput label="Rua" id="modal_street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
-        <FormInput label="Numero" id="modal_number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
+        <FormInput label="Número" id="modal_number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
         <FormInput label="Complemento" id="modal_complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
         <SelectField
-          label="Serie"
+          label="Série"
           id="modal_serie_filter"
           value={form._serie || ''}
           onChange={e => setForm({ ...form, _serie: e.target.value, class_id: '' })}

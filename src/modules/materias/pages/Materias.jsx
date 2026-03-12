@@ -14,7 +14,7 @@ export default function Materias() {
       const res = await materiasService.listar();
       setMaterias(res.data || []);
     } catch (error) {
-      toast.error('Erro ao carregar materias.');
+      toast.error('Erro ao carregar matérias.');
     }
   };
 
@@ -24,10 +24,10 @@ export default function Materias() {
     if (!deleteTarget) return;
     try {
       await materiasService.excluir(deleteTarget);
-      toast.success('Materia excluida com sucesso!');
+      toast.success('Matéria excluída com sucesso!');
       load();
     } catch (error) {
-      toast.error('Erro ao excluir materia.');
+      toast.error('Erro ao excluir matéria.');
     } finally {
       setDeleteTarget(null);
     }
@@ -40,15 +40,15 @@ export default function Materias() {
 
   return (
     <div className="page">
-      <PageHeader title="Materias" description="Cadastro das disciplinas escolares">
+      <PageHeader title="Matérias" description="Cadastro das disciplinas escolares">
         <button type="button" className="btn-primary" onClick={() => setModalOpen(true)}>
           + Adicionar Disciplina
         </button>
       </PageHeader>
 
-      <Card title="Lista de Materias">
+      <Card title="Lista de Matérias">
         <DataTable
-          columns={['Nome', 'Duracao (minutos)', 'Acoes']}
+          columns={['Nome', 'Duração (minutos)', 'Ações']}
           data={materias}
           renderRow={(m) => (
             <tr key={m.id}>
@@ -68,8 +68,8 @@ export default function Materias() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Excluir materia"
-        message="Tem certeza que deseja excluir esta materia? Esta acao nao pode ser desfeita."
+        title="Excluir matéria"
+        message="Tem certeza que deseja excluir esta matéria? Esta ação não pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

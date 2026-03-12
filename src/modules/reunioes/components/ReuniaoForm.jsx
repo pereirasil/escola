@@ -14,7 +14,7 @@ export default function ReuniaoForm({ turmas = [], onSuccess }) {
     if (submitting) return;
 
     if (!form.title) {
-      toast.error('O titulo e obrigatorio.');
+      toast.error('O título é obrigatório.');
       return;
     }
 
@@ -25,11 +25,11 @@ export default function ReuniaoForm({ turmas = [], onSuccess }) {
       payload.class_id = payload.class_id ? Number(payload.class_id) : null;
 
       await reunioesService.criar(payload);
-      toast.success('Reuniao agendada com sucesso!');
+      toast.success('Reunião agendada com sucesso!');
       setForm(INITIAL_FORM);
       onSuccess?.();
     } catch (error) {
-      toast.error('Erro ao agendar reuniao.');
+      toast.error('Erro ao agendar reunião.');
     } finally {
       setSubmitting(false);
     }
@@ -39,10 +39,10 @@ export default function ReuniaoForm({ turmas = [], onSuccess }) {
     <form onSubmit={handleSubmit}>
       <div className="form-grid">
         <FormInput
-          label="Titulo"
+          label="Título"
           id="modal_reuniao_title"
           required
-          placeholder="Ex: Reuniao de Pais"
+          placeholder="Ex: Reunião de Pais"
           value={form.title}
           onChange={e => setForm({ ...form, title: e.target.value })}
         />
@@ -61,10 +61,10 @@ export default function ReuniaoForm({ turmas = [], onSuccess }) {
           onChange={e => setForm({ ...form, scheduled_at: e.target.value })}
         />
         <div className="form-group">
-          <label htmlFor="modal_reuniao_description">Descricao</label>
+          <label htmlFor="modal_reuniao_description">Descrição</label>
           <textarea
             id="modal_reuniao_description"
-            placeholder="Pauta ou detalhes da reuniao"
+            placeholder="Pauta ou detalhes da reunião"
             value={form.description}
             onChange={e => setForm({ ...form, description: e.target.value })}
             rows={3}
@@ -73,7 +73,7 @@ export default function ReuniaoForm({ turmas = [], onSuccess }) {
       </div>
       <div className="modal-actions">
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? 'Agendando...' : 'Agendar Reuniao'}
+          {submitting ? 'Agendando...' : 'Agendar Reunião'}
         </button>
       </div>
     </form>

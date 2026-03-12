@@ -29,11 +29,11 @@ export default function CalendarEventForm({ gradesDisponiveis = [], onSuccess })
     if (submitting) return;
 
     if (!form.title || !form.date) {
-      toast.error('Titulo e data sao obrigatorios.');
+      toast.error('Título e data são obrigatórios.');
       return;
     }
     if (form.series.length === 0) {
-      toast.error('Selecione ao menos uma serie.');
+      toast.error('Selecione ao menos uma série.');
       return;
     }
 
@@ -56,9 +56,9 @@ export default function CalendarEventForm({ gradesDisponiveis = [], onSuccess })
     <form onSubmit={handleSubmit}>
       <div className="form-grid">
         <FormInput
-          label="Titulo"
+          label="Título"
           id="modal_event_title"
-          placeholder="Ex: Dia das Maes"
+          placeholder="Ex: Dia das Mães"
           required
           value={form.title}
           onChange={e => setForm({ ...form, title: e.target.value })}
@@ -73,25 +73,25 @@ export default function CalendarEventForm({ gradesDisponiveis = [], onSuccess })
         />
       </div>
       <div className="form-group" style={{ marginTop: '1rem' }}>
-        <label>Descricao</label>
+        <label>Descrição</label>
         <textarea
-          placeholder="Descricao do evento (opcional)"
+          placeholder="Descrição do evento (opcional)"
           value={form.description}
           onChange={e => setForm({ ...form, description: e.target.value })}
           rows={3}
         />
       </div>
       <div style={{ marginTop: '1rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Series selecionadas</label>
+        <label style={{ display: 'block', marginBottom: '0.5rem' }}>Séries selecionadas</label>
         <div style={{ marginBottom: '0.75rem' }}>
           <div className="form-group">
-            <label htmlFor="modal_event_serie_select">Adicionar serie</label>
+            <label htmlFor="modal_event_serie_select">Adicionar série</label>
             <select
               id="modal_event_serie_select"
               onChange={(e) => { addSerie(e.target.value); e.target.value = ''; }}
               defaultValue=""
             >
-              <option value="">Selecione uma serie...</option>
+              <option value="">Selecione uma série...</option>
               {seriesOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}

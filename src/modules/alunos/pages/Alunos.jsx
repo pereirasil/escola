@@ -44,7 +44,7 @@ export default function Alunos() {
     if (!deleteTarget) return;
     try {
       await alunosService.excluir(deleteTarget);
-      toast.success('Aluno excluido com sucesso!');
+      toast.success('Aluno excluído com sucesso!');
       load();
     } catch (error) {
       toast.error('Erro ao excluir aluno.');
@@ -66,7 +66,7 @@ export default function Alunos() {
 
   return (
     <div className="page">
-      <PageHeader title="Alunos" description="Gerenciamento de alunos e matriculas">
+      <PageHeader title="Alunos" description="Gerenciamento de alunos e matrículas">
         <button type="button" className="btn-primary" onClick={() => setModalOpen(true)}>
           + Adicionar Aluno
         </button>
@@ -93,7 +93,7 @@ export default function Alunos() {
         {loadingData ? <Spinner /> : (
           <>
             <DataTable
-              columns={['Nome', 'CPF/Matricula', 'Serie', 'Sala', 'Faltas', 'Acoes']}
+              columns={['Nome', 'CPF/Matrícula', 'Série', 'Sala', 'Faltas', 'Ações']}
               data={alunosFiltrados}
               renderRow={(a) => {
                 const t = turmas.find(t => t.id === a.class_id);
@@ -124,7 +124,7 @@ export default function Alunos() {
                         <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Editar</button>
                       </Link>
                       <Link to={`/alunos/${a.id}`}>
-                        <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Historico</button>
+                        <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Histórico</button>
                       </Link>
                       <button type="button" className="btn-danger" onClick={() => setDeleteTarget(a.id)}>Excluir</button>
                     </td>
@@ -135,8 +135,8 @@ export default function Alunos() {
             {totalPages > 1 && (
               <div className="pagination">
                 <button disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span className="pagination-info">Pagina {page} de {totalPages}</span>
-                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Proxima</button>
+                <span className="pagination-info">Página {page} de {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Próxima</button>
               </div>
             )}
           </>
@@ -150,7 +150,7 @@ export default function Alunos() {
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir aluno"
-        message="Tem certeza que deseja excluir este aluno? Esta acao nao pode ser desfeita."
+        message="Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

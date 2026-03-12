@@ -7,7 +7,7 @@ import { materiasService } from '../../../services/materias.service';
 import HorarioForm from '../components/HorarioForm';
 import toast from 'react-hot-toast';
 
-const diasDaSemana = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta'];
+const diasDaSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
 export default function Horarios() {
   const [horarios, setHorarios] = useState([]);
@@ -38,7 +38,7 @@ export default function Horarios() {
       setProfessores(resP.data || []);
       setMaterias(resM.data || []);
     } catch (error) {
-      toast.error('Erro ao carregar os dados de dependencia.');
+      toast.error('Erro ao carregar os dados de dependência.');
     }
   };
 
@@ -47,7 +47,7 @@ export default function Horarios() {
       const res = await horariosService.listar();
       setHorarios(res.data || []);
     } catch (error) {
-      toast.error('Erro ao carregar horarios.');
+      toast.error('Erro ao carregar horários.');
     }
   };
 
@@ -65,13 +65,13 @@ export default function Horarios() {
         subject_id: Number(editForm.subject_id)
       };
       await horariosService.atualizar(editId, payload);
-      toast.success('Horario atualizado com sucesso!');
+      toast.success('Horário atualizado com sucesso!');
       setIsEditModalOpen(false);
       setEditId(null);
       setEditForm({ class_id: '', teacher_id: '', subject_id: '', day_of_week: 'Segunda', start_time: '', end_time: '', room: '' });
       loadHorarios();
     } catch (error) {
-      toast.error('Erro ao atualizar horario.');
+      toast.error('Erro ao atualizar horário.');
     } finally {
       setLoading(false);
     }
@@ -101,10 +101,10 @@ export default function Horarios() {
     if (!deleteTarget) return;
     try {
       await horariosService.excluir(deleteTarget);
-      toast.success('Horario removido com sucesso!');
+      toast.success('Horário removido com sucesso!');
       loadHorarios();
     } catch (error) {
-      toast.error('Erro ao remover horario.');
+      toast.error('Erro ao remover horário.');
     } finally {
       setDeleteTarget(null);
     }
@@ -126,31 +126,31 @@ export default function Horarios() {
 
   return (
     <div className="page">
-      <PageHeader title="Grade Horaria" description="Gestao de horarios de aulas e professores">
+      <PageHeader title="Grade Horária" description="Gestão de horários de aulas e professores">
         <button type="button" className="btn-primary" onClick={() => setCreateModalOpen(true)}>
-          + Adicionar Horario
+          + Adicionar Horário
         </button>
       </PageHeader>
 
       <Card title="Grade Semanal">
         <div style={{ marginBottom: '1.5rem', maxWidth: '300px' }}>
           <SelectField
-            label="Visualizar Grade por Serie:"
+            label="Visualizar Grade por Série:"
             id="filtroSerie"
             value={filtroSerie}
             onChange={e => setFiltroSerie(e.target.value)}
-            options={[{ value: '', label: 'Todas as series' }, ...seriesUnicas.map(s => ({ value: s, label: s }))]}
+            options={[{ value: '', label: 'Todas as séries' }, ...seriesUnicas.map(s => ({ value: s, label: s }))]}
           />
         </div>
 
         {horariosFiltrados.length === 0 ? (
-          <div className="empty-state">Nenhum horario encontrado para a serie selecionada.</div>
+          <div className="empty-state">Nenhum horário encontrado para a série selecionada.</div>
         ) : (
           <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #333' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
               <thead>
                 <tr>
-                  <th style={{ padding: '1rem', backgroundColor: '#1a1a1a', borderBottom: '2px solid #333', color: '#888', fontWeight: 600, width: '100px' }}>Horario</th>
+                  <th style={{ padding: '1rem', backgroundColor: '#1a1a1a', borderBottom: '2px solid #333', color: '#888', fontWeight: 600, width: '100px' }}>Horário</th>
                   {diasDaSemana.map(dia => (
                     <th key={dia} style={{ padding: '1rem', backgroundColor: '#1a1a1a', borderBottom: '2px solid #333', color: '#888', fontWeight: 600, textAlign: 'center', width: 'calc(100% / 5)' }}>{dia}</th>
                   ))}
@@ -188,7 +188,7 @@ export default function Horarios() {
                                     onMouseEnter={(e) => e.currentTarget.style.borderColor = '#646cff'}
                                     onMouseLeave={(e) => e.currentTarget.style.borderColor = '#333'}
                                     >
-                                      <strong style={{ color: '#646cff', fontSize: '0.9rem', marginBottom: '0.25rem' }}>{m?.name || 'Materia?'}</strong>
+                                      <strong style={{ color: '#646cff', fontSize: '0.9rem', marginBottom: '0.25rem' }}>{m?.name || 'Matéria?'}</strong>
                                       <span style={{ color: '#aaa', fontSize: '0.8rem', marginBottom: '0.25rem' }}>{p?.name || 'Prof?'}</span>
                                       {aula.room && <span style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.75rem' }}>Sala: {aula.room}</span>}
 
@@ -245,14 +245,14 @@ export default function Horarios() {
         )}
       </Card>
 
-      <FormModal open={createModalOpen} title="Cadastrar Novo Horario" onClose={() => setCreateModalOpen(false)} size="lg">
+      <FormModal open={createModalOpen} title="Cadastrar Novo Horário" onClose={() => setCreateModalOpen(false)} size="lg">
         <HorarioForm turmas={turmas} professores={professores} materias={materias} onSuccess={handleCreateSuccess} />
       </FormModal>
 
       {isEditModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content modal-content-wide">
-            <h3>Editar Horario</h3>
+            <h3>Editar Horário</h3>
             <form onSubmit={handleEditSubmit}>
               <div className="form-grid">
                 <SelectField
@@ -272,7 +272,7 @@ export default function Horarios() {
                   options={professores.map(p => ({ value: p.id, label: p.name }))}
                 />
                 <SelectField
-                  label="Materia"
+                  label="Matéria"
                   id="edit-subject_id"
                   required
                   value={editForm.subject_id}
@@ -287,7 +287,7 @@ export default function Horarios() {
                   onChange={e => setEditForm({ ...editForm, day_of_week: e.target.value })}
                   options={diasDaSemana.map(d => ({ value: d, label: d }))}
                 />
-                <FormInput label="Inicio" id="edit-start_time" type="time" required value={editForm.start_time} onChange={e => setEditForm({ ...editForm, start_time: e.target.value })} />
+                <FormInput label="Início" id="edit-start_time" type="time" required value={editForm.start_time} onChange={e => setEditForm({ ...editForm, start_time: e.target.value })} />
                 <FormInput label="Fim" id="edit-end_time" type="time" required value={editForm.end_time} onChange={e => setEditForm({ ...editForm, end_time: e.target.value })} />
                 <FormInput label="Sala" id="edit-room" placeholder="Ex: Lab 1" value={editForm.room} onChange={e => setEditForm({ ...editForm, room: e.target.value })} />
               </div>
@@ -296,7 +296,7 @@ export default function Horarios() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Salvando...' : 'Atualizar Horario'}
+                  {loading ? 'Salvando...' : 'Atualizar Horário'}
                 </button>
               </div>
             </form>
@@ -306,8 +306,8 @@ export default function Horarios() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Remover horario"
-        message="Tem certeza que deseja remover este horario?"
+        title="Remover horário"
+        message="Tem certeza que deseja remover este horário?"
         confirmLabel="Remover"
         danger
         onConfirm={confirmDelete}

@@ -33,7 +33,7 @@ export default function ProfessorForm({ onSuccess }) {
     if (submitting) return;
 
     if (form.password !== form.confirmPassword) {
-      toast.error('Senha e confirmacao nao conferem.');
+      toast.error('Senha e confirmação não conferem.');
       return;
     }
 
@@ -61,21 +61,21 @@ export default function ProfessorForm({ onSuccess }) {
       <PhotoUpload onFileSelect={setPhotoFile} label="Foto do professor" />
       <div className="form-grid">
         <FormInput label="Nome do Professor" id="modal_prof_name" placeholder="Ex: Maria Souza" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-        <FormInput label="CPF (usuario de acesso)" id="modal_prof_document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
-        <FormInput label="Senha" id="modal_prof_password" type="password" placeholder="Minimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+        <FormInput label="CPF (usuário de acesso)" id="modal_prof_document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
+        <FormInput label="Senha" id="modal_prof_password" type="password" placeholder="Mínimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
         <FormInput label="Confirmar senha" id="modal_prof_confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
         <FormInput label="Telefone" id="modal_prof_phone" placeholder="(00) 00000-0000" value={form.phone} onChange={e => setForm({ ...form, phone: maskPhone(e.target.value) })} maxLength={15} />
         <FormInput label="E-mail" id="modal_prof_email" type="email" placeholder="Ex: maria@escola.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
         <FormInput label="CEP" id="modal_prof_cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
         <FormInput label="Estado" id="modal_prof_state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
-        <FormInput label="Cidade" id="modal_prof_city" placeholder="Ex: Sao Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+        <FormInput label="Cidade" id="modal_prof_city" placeholder="Ex: São Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
         <FormInput label="Bairro" id="modal_prof_neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
         <FormInput label="Rua" id="modal_prof_street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
-        <FormInput label="Numero" id="modal_prof_number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
+        <FormInput label="Número" id="modal_prof_number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
         <FormInput label="Complemento" id="modal_prof_complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
       </div>
       <p style={{ fontSize: '0.875rem', color: '#888', margin: '1rem 0' }}>
-        Para vincular turmas e materias ao professor, utilize a <Link to="/horarios" style={{ color: '#646cff' }}>Grade Horaria</Link> apos o cadastro.
+        Para vincular turmas e matérias ao professor, utilize a <Link to="/horarios" style={{ color: '#646cff' }}>Grade Horária</Link> após o cadastro.
       </p>
       <div className="modal-actions">
         <button type="submit" className="btn-primary" disabled={submitting}>

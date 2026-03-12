@@ -3,7 +3,7 @@ import { FormInput, SelectField } from '../../../components/ui';
 import { horariosService } from '../../../services/horarios.service';
 import toast from 'react-hot-toast';
 
-const diasDaSemana = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta'];
+const diasDaSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
 const INITIAL_FORM = {
   class_id: '', teacher_id: '', subject_id: '',
@@ -27,11 +27,11 @@ export default function HorarioForm({ turmas = [], professores = [], materias = 
         subject_id: Number(form.subject_id)
       };
       await horariosService.criar(payload);
-      toast.success('Horario adicionado com sucesso!');
+      toast.success('Horário adicionado com sucesso!');
       setForm(INITIAL_FORM);
       onSuccess?.();
     } catch (error) {
-      toast.error('Erro ao salvar horario.');
+      toast.error('Erro ao salvar horário.');
     } finally {
       setSubmitting(false);
     }
@@ -57,7 +57,7 @@ export default function HorarioForm({ turmas = [], professores = [], materias = 
           options={professores.map(p => ({ value: p.id, label: p.name }))}
         />
         <SelectField
-          label="Materia"
+          label="Matéria"
           id="modal_horario_subject_id"
           required
           value={form.subject_id}
@@ -72,7 +72,7 @@ export default function HorarioForm({ turmas = [], professores = [], materias = 
           onChange={e => setForm({ ...form, day_of_week: e.target.value })}
           options={diasDaSemana.map(d => ({ value: d, label: d }))}
         />
-        <FormInput label="Inicio" id="modal_horario_start_time" type="time" required value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
+        <FormInput label="Início" id="modal_horario_start_time" type="time" required value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
         <FormInput label="Fim" id="modal_horario_end_time" type="time" required value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} />
         <FormInput label="Sala" id="modal_horario_room" placeholder="Ex: Lab 1" value={form.room} onChange={e => setForm({ ...form, room: e.target.value })} />
       </div>

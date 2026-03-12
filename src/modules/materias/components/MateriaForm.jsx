@@ -19,11 +19,11 @@ export default function MateriaForm({ onSuccess }) {
         ...form,
         duration_minutes: form.duration_minutes ? Number(form.duration_minutes) : null
       });
-      toast.success('Materia cadastrada com sucesso!');
+      toast.success('Matéria cadastrada com sucesso!');
       setForm(INITIAL_FORM);
       onSuccess?.();
     } catch (error) {
-      toast.error('Erro ao salvar materia.');
+      toast.error('Erro ao salvar matéria.');
     } finally {
       setSubmitting(false);
     }
@@ -33,9 +33,9 @@ export default function MateriaForm({ onSuccess }) {
     <form onSubmit={handleSubmit}>
       <div className="form-grid">
         <FormInput
-          label="Nome da materia"
+          label="Nome da matéria"
           id="modal_materia_name"
-          placeholder="Ex: Matematica"
+          placeholder="Ex: Matemática"
           required
           value={form.name}
           onChange={e => setForm({ ...form, name: e.target.value })}
@@ -51,7 +51,7 @@ export default function MateriaForm({ onSuccess }) {
       </div>
       <div className="modal-actions">
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? 'Salvando...' : 'Salvar Materia'}
+          {submitting ? 'Salvando...' : 'Salvar Matéria'}
         </button>
       </div>
     </form>

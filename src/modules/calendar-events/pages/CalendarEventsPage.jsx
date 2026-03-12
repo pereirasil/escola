@@ -52,11 +52,11 @@ export default function CalendarEventsPage() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     if (!editForm.title || !editForm.date) {
-      toast.error('Titulo e data sao obrigatorios.');
+      toast.error('Título e data são obrigatórios.');
       return;
     }
     if (editForm.series.length === 0) {
-      toast.error('Selecione ao menos uma serie.');
+      toast.error('Selecione ao menos uma série.');
       return;
     }
 
@@ -103,7 +103,7 @@ export default function CalendarEventsPage() {
     if (!deleteTarget) return;
     try {
       await calendarEventsService.excluir(deleteTarget);
-      toast.success('Evento excluido com sucesso!');
+      toast.success('Evento excluído com sucesso!');
       carregarDados();
     } catch {
       toast.error('Erro ao excluir evento.');
@@ -139,13 +139,13 @@ export default function CalendarEventsPage() {
     <div>
       <div style={{ marginBottom: '0.75rem' }}>
         <div className="form-group">
-          <label htmlFor={`${prefix}-serie-select`}>Adicionar serie</label>
+          <label htmlFor={`${prefix}-serie-select`}>Adicionar série</label>
           <select
             id={`${prefix}-serie-select`}
             onChange={(e) => { addSerie(e.target.value); e.target.value = ''; }}
             defaultValue=""
           >
-            <option value="">Selecione uma serie...</option>
+            <option value="">Selecione uma série...</option>
             {seriesOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -195,7 +195,7 @@ export default function CalendarEventsPage() {
 
   return (
     <div className="page">
-      <PageHeader title="Datas Comemorativas" description="Gerencie as datas comemorativas do calendario escolar.">
+      <PageHeader title="Datas Comemorativas" description="Gerencie as datas comemorativas do calendário escolar.">
         <button type="button" className="btn-primary" onClick={() => setCreateModalOpen(true)}>
           + Adicionar Evento
         </button>
@@ -203,7 +203,7 @@ export default function CalendarEventsPage() {
 
       <Card title="Eventos Cadastrados">
         <DataTable
-          columns={['Titulo', 'Data', 'Series', 'Descricao', 'Acoes']}
+          columns={['Título', 'Data', 'Séries', 'Descrição', 'Ações']}
           data={eventos}
           renderRow={(item) => (
             <tr key={item.id}>
@@ -245,9 +245,9 @@ export default function CalendarEventsPage() {
             <form onSubmit={handleEditSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <FormInput
-                  label="Titulo"
+                  label="Título"
                   id="edit-title"
-                  placeholder="Ex: Dia das Maes"
+                  placeholder="Ex: Dia das Mães"
                   required
                   value={editForm.title}
                   onChange={e => setEditForm({ ...editForm, title: e.target.value })}
@@ -261,16 +261,16 @@ export default function CalendarEventsPage() {
                   onChange={e => setEditForm({ ...editForm, date: e.target.value })}
                 />
                 <div className="form-group">
-                  <label>Descricao</label>
+                  <label>Descrição</label>
                   <textarea
-                    placeholder="Descricao do evento (opcional)"
+                    placeholder="Descrição do evento (opcional)"
                     value={editForm.description}
                     onChange={e => setEditForm({ ...editForm, description: e.target.value })}
                     rows={3}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>Series selecionadas</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>Séries selecionadas</label>
                   {renderSeriesSelector('edit', editForm.series)}
                 </div>
               </div>
@@ -290,7 +290,7 @@ export default function CalendarEventsPage() {
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir evento"
-        message="Tem certeza que deseja excluir este evento? Esta acao nao pode ser desfeita."
+        message="Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

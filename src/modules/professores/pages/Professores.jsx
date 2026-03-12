@@ -51,7 +51,7 @@ export default function Professores() {
     if (!deleteTarget) return;
     try {
       await professoresService.excluir(deleteTarget);
-      toast.success('Professor excluido com sucesso!');
+      toast.success('Professor excluído com sucesso!');
       load();
     } catch (error) {
       toast.error('Erro ao excluir professor.');
@@ -67,7 +67,7 @@ export default function Professores() {
 
   return (
     <div className="page">
-      <PageHeader title="Professores" description="Gestao do corpo docente">
+      <PageHeader title="Professores" description="Gestão do corpo docente">
         <button type="button" className="btn-primary" onClick={() => setModalOpen(true)}>
           + Adicionar Professor
         </button>
@@ -83,7 +83,7 @@ export default function Professores() {
             onChange={e => setFiltroNome(e.target.value)}
           />
           <SelectField
-            label="Filtrar por serie"
+            label="Filtrar por série"
             id="filtroSerieProfessor"
             value={filtroSerie}
             onChange={e => setFiltroSerie(e.target.value)}
@@ -93,7 +93,7 @@ export default function Professores() {
         {loadingData ? <Spinner /> : (
           <>
             <DataTable
-              columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Materias', 'Serie', 'Sala', 'Acoes']}
+              columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Matérias', 'Série', 'Sala', 'Ações']}
               data={professores.filter(p => {
                 const matchNome = p.name.toLowerCase().includes(filtroNome.toLowerCase());
                 if (!matchNome) return false;
@@ -116,9 +116,9 @@ export default function Professores() {
                   <td>{p.document}</td>
                   <td>{p.phone}</td>
                   <td>{p.email}</td>
-                  <td>{nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}</td>
-                  <td>{series.length > 0 ? series.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}</td>
-                  <td>{salas.length > 0 ? salas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}</td>
+                  <td>{nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
+                  <td>{series.length > 0 ? series.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
+                  <td>{salas.length > 0 ? salas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => setViewProfile(p)}>Ver Perfil</button>
@@ -133,8 +133,8 @@ export default function Professores() {
             {totalPages > 1 && (
               <div className="pagination">
                 <button disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span className="pagination-info">Pagina {page} de {totalPages}</span>
-                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Proxima</button>
+                <span className="pagination-info">Página {page} de {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Próxima</button>
               </div>
             )}
           </>
@@ -175,16 +175,16 @@ export default function Professores() {
                   <div><strong>Cidade:</strong> {p.city || '-'}</div>
                   <div><strong>Bairro:</strong> {p.neighborhood || '-'}</div>
                   <div><strong>Rua:</strong> {p.street || '-'}</div>
-                  <div><strong>Numero:</strong> {p.number || '-'}</div>
+                  <div><strong>Número:</strong> {p.number || '-'}</div>
                   <div style={{ gridColumn: '1 / -1' }}><strong>Complemento:</strong> {p.complement || '-'}</div>
                 </div>
                 <div>
-                  <strong>Materias:</strong>{' '}
-                  {nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}
+                  <strong>Matérias:</strong>{' '}
+                  {nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}
                 </div>
                 <div>
                   <strong>Turmas:</strong>{' '}
-                  {nomesTurmas.length > 0 ? nomesTurmas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}
+                  {nomesTurmas.length > 0 ? nomesTurmas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}
                 </div>
               </div>
               <div className="modal-actions">
@@ -198,7 +198,7 @@ export default function Professores() {
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir professor"
-        message="Tem certeza que deseja excluir este professor? Esta acao nao pode ser desfeita."
+        message="Tem certeza que deseja excluir este professor? Esta ação não pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

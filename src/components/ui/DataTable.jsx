@@ -46,7 +46,7 @@ export function DataTable({ columns, data, emptyMessage = "Nenhum registro encon
             disabled={page >= totalPages - 1}
             onClick={() => setPage(p => p + 1)}
           >
-            Proximo
+            Próximo
           </button>
         </div>
       )}

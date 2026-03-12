@@ -35,7 +35,7 @@ export default function Reunioes() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     if (!editForm.title) {
-      toast.error('O titulo e obrigatorio.');
+      toast.error('O título é obrigatório.');
       return;
     }
 
@@ -46,13 +46,13 @@ export default function Reunioes() {
       payload.class_id = payload.class_id ? Number(payload.class_id) : null;
 
       await reunioesService.atualizar(editId, payload);
-      toast.success('Reuniao atualizada com sucesso!');
+      toast.success('Reunião atualizada com sucesso!');
       setIsEditModalOpen(false);
       setEditId(null);
       setEditForm({ title: '', scheduled_at: '', description: '', class_id: '' });
       carregarDados();
     } catch (error) {
-      toast.error('Erro ao atualizar reuniao.');
+      toast.error('Erro ao atualizar reunião.');
     } finally {
       setLoading(false);
     }
@@ -84,10 +84,10 @@ export default function Reunioes() {
     if (!deleteTarget) return;
     try {
       await reunioesService.excluir(deleteTarget);
-      toast.success('Reuniao excluida com sucesso!');
+      toast.success('Reunião excluída com sucesso!');
       carregarDados();
     } catch (error) {
-      toast.error('Erro ao excluir reuniao.');
+      toast.error('Erro ao excluir reunião.');
     } finally {
       setDeleteTarget(null);
     }
@@ -122,17 +122,17 @@ export default function Reunioes() {
 
   return (
     <div className="page">
-      <PageHeader title="Reunioes" description="Agendamento e gestao de reunioes.">
+      <PageHeader title="Reuniões" description="Agendamento e gestão de reuniões.">
         <button type="button" className="btn-primary" onClick={() => setCreateModalOpen(true)}>
-          + Adicionar Reuniao
+          + Adicionar Reunião
         </button>
       </PageHeader>
 
       <Card title="Agendamentos">
         <DataTable
-          columns={['Titulo', 'Turma(s)', 'Data e Hora', 'Descricao', 'Acoes']}
+          columns={['Título', 'Turma(s)', 'Data e Hora', 'Descrição', 'Ações']}
           data={reunioes}
-          emptyMessage="Nenhuma reuniao agendada."
+          emptyMessage="Nenhuma reunião agendada."
           renderRow={(item) => (
             <tr key={item.id}>
               <td>{item.title}</td>
@@ -173,21 +173,21 @@ export default function Reunioes() {
         />
       </Card>
 
-      <FormModal open={createModalOpen} title="Agendar Nova Reuniao" onClose={() => setCreateModalOpen(false)}>
+      <FormModal open={createModalOpen} title="Agendar Nova Reunião" onClose={() => setCreateModalOpen(false)}>
         <ReuniaoForm turmas={turmas} onSuccess={handleCreateSuccess} />
       </FormModal>
 
       {isEditModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>Editar Reuniao</h3>
+            <h3>Editar Reunião</h3>
             <form onSubmit={handleEditSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <FormInput
-                  label="Titulo"
+                  label="Título"
                   id="edit-title"
                   required
-                  placeholder="Ex: Reuniao de Pais"
+                  placeholder="Ex: Reunião de Pais"
                   value={editForm.title}
                   onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                 />
@@ -208,10 +208,10 @@ export default function Reunioes() {
                   onChange={(e) => setEditForm({ ...editForm, scheduled_at: e.target.value })}
                 />
                 <div className="form-group">
-                  <label htmlFor="edit-description">Descricao</label>
+                  <label htmlFor="edit-description">Descrição</label>
                   <textarea
                     id="edit-description"
-                    placeholder="Pauta ou detalhes da reuniao"
+                    placeholder="Pauta ou detalhes da reunião"
                     value={editForm.description}
                     onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                     rows={3}
@@ -223,7 +223,7 @@ export default function Reunioes() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Salvando...' : 'Atualizar Reuniao'}
+                  {loading ? 'Salvando...' : 'Atualizar Reunião'}
                 </button>
               </div>
             </form>
@@ -233,8 +233,8 @@ export default function Reunioes() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Excluir reuniao"
-        message="Tem certeza que deseja excluir esta reuniao?"
+        title="Excluir reunião"
+        message="Tem certeza que deseja excluir esta reunião?"
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

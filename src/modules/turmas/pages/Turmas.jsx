@@ -63,7 +63,7 @@ export default function Turmas() {
     if (!deleteTarget) return;
     try {
       await turmasService.excluir(deleteTarget);
-      toast.success('Turma excluida com sucesso!');
+      toast.success('Turma excluída com sucesso!');
       load();
     } catch (error) {
       toast.error('Erro ao excluir turma.');
@@ -79,7 +79,7 @@ export default function Turmas() {
 
   return (
     <div className="page">
-      <PageHeader title="Turmas" description="Organizacao das salas de aula">
+      <PageHeader title="Turmas" description="Organização das salas de aula">
         <button type="button" className="btn-primary" onClick={() => setCreateModalOpen(true)}>
           + Adicionar Turma
         </button>
@@ -87,7 +87,7 @@ export default function Turmas() {
 
       <Card title="Lista de Turmas">
         <DataTable
-          columns={['Nome', 'Serie/Ano', 'Turno', 'Sala', 'Ano Letivo', 'Acoes']}
+          columns={['Nome', 'Série/Ano', 'Turno', 'Sala', 'Ano Letivo', 'Ações']}
           data={turmas}
           renderRow={(t) => (
             <tr key={t.id}>
@@ -139,7 +139,7 @@ export default function Turmas() {
                 />
 
                 <div className="form-group">
-                  <label htmlFor="edit-grade">Serie / Ano</label>
+                  <label htmlFor="edit-grade">Série / Ano</label>
                   <input
                     id="edit-grade"
                     list="edit-grades-list"
@@ -151,7 +151,7 @@ export default function Turmas() {
                     <option value="Maternal" />
                     <option value="Jardim I" />
                     <option value="Jardim II" />
-                    <option value="Pre-escola" />
+                    <option value="Pré-escola" />
                     <option value="1o Ano (Ensino Fundamental)" />
                     <option value="2o Ano (Ensino Fundamental)" />
                     <option value="3o Ano (Ensino Fundamental)" />
@@ -161,9 +161,9 @@ export default function Turmas() {
                     <option value="7o Ano (Ensino Fundamental)" />
                     <option value="8o Ano (Ensino Fundamental)" />
                     <option value="9o Ano (Ensino Fundamental)" />
-                    <option value="1o Ano (Ensino Medio)" />
-                    <option value="2o Ano (Ensino Medio)" />
-                    <option value="3o Ano (Ensino Medio)" />
+                    <option value="1o Ano (Ensino Médio)" />
+                    <option value="2o Ano (Ensino Médio)" />
+                    <option value="3o Ano (Ensino Médio)" />
                   </datalist>
                 </div>
 
@@ -173,7 +173,7 @@ export default function Turmas() {
                   value={editForm.shift}
                   onChange={e => setEditForm({ ...editForm, shift: e.target.value })}
                   options={[
-                    { value: 'Manha', label: 'Manha' },
+                    { value: 'Manhã', label: 'Manhã' },
                     { value: 'Tarde', label: 'Tarde' },
                     { value: 'Noite', label: 'Noite' }
                   ]}
@@ -210,7 +210,7 @@ export default function Turmas() {
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir turma"
-        message="Tem certeza que deseja excluir esta turma? Esta acao nao pode ser desfeita."
+        message="Tem certeza que deseja excluir esta turma? Esta ação não pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

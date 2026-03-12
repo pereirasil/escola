@@ -836,7 +836,7 @@ body {
   text-decoration: underline;
 }
 
-/* Historico escolar */
+/* Histórico escolar */
 .historico-resumo {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
