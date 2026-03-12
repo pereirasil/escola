@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, Spinner, PhotoUpload } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, Spinner, FormModal } from '../../../components/ui';
 import { alunosService } from '../../../services/alunos.service';
 import { turmasService } from '../../../services/turmas.service';
 import { presencasService } from '../../../services/presencas.service';
-import { maskCpf, maskPhone, maskCep, fetchAddressByCep } from '../../../utils/masks';
+import AlunoForm from '../components/AlunoForm';
 import toast from 'react-hot-toast';
 
 export default function Alunos() {
@@ -12,9 +12,8 @@ export default function Alunos() {
   const [turmas, setTurmas] = useState([]);
   const [ranking, setRanking] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [form, setForm] = useState({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '', _serie: '' });
-  const [photoFile, setPhotoFile] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroTurma, setFiltroTurma] = useState('');
@@ -41,52 +40,22 @@ export default function Alunos() {
 
   useEffect(() => { load(page) }, [page]);
 
-  const handleCepChange = async (value) => {
-    const masked = maskCep(value);
-    setForm(prev => ({ ...prev, cep: masked }));
-    const digits = masked.replace(/\D/g, '');
-    if (digits.length === 8) {
-      const addr = await fetchAddressByCep(digits);
-      if (addr) {
-        setForm(prev => ({ ...prev, ...addr }));
-      }
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (form.password !== form.confirmPassword) {
-        toast.error('Senha e confirmação não conferem.');
-        return;
-      }
-      const { confirmPassword, _serie, ...payload } = form;
-      const classId = form.class_id ? Number(form.class_id) : null;
-      const res = await alunosService.criar({ ...payload, class_id: classId });
-      const alunoId = res.data?.id;
-      if (photoFile && alunoId) {
-        await alunosService.uploadFoto(alunoId, photoFile);
-      }
-      toast.success('Aluno cadastrado com sucesso!');
-      setForm({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '', _serie: '' });
-      setPhotoFile(null);
-      load();
-    } catch (error) {
-      toast.error('Erro ao salvar aluno.');
-    }
-  };
-
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
       await alunosService.excluir(deleteTarget);
-      toast.success('Aluno excluído com sucesso!');
+      toast.success('Aluno excluido com sucesso!');
       load();
     } catch (error) {
       toast.error('Erro ao excluir aluno.');
     } finally {
       setDeleteTarget(null);
     }
+  };
+
+  const handleFormSuccess = () => {
+    setModalOpen(false);
+    load();
   };
 
   const alunosFiltrados = alunos.filter(a => {
@@ -97,45 +66,11 @@ export default function Alunos() {
 
   return (
     <div className="page">
-      <PageHeader title="Alunos" description="Gerenciamento de alunos e matrículas" />
-      
-      <Card title="Cadastrar Novo Aluno">
-        <form onSubmit={handleSubmit}>
-          <PhotoUpload onFileSelect={setPhotoFile} label="Foto do aluno" />
-          <div className="form-grid">
-            <FormInput label="Nome do aluno" id="name" placeholder="Ex: João da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-            <FormInput label="Data de nascimento" id="birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />
-            <FormInput label="CPF (usuário de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
-            <FormInput label="Senha" id="password" type="password" placeholder="Mínimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-            <FormInput label="Confirmar senha" id="confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
-            <FormInput label="Nome do Responsável" id="guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
-            <FormInput label="CPF do Responsável" id="guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
-            <FormInput label="Telefone do Responsável" id="guardian_phone" placeholder="(00) 00000-0000" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })} maxLength={15} />
-            <FormInput label="CEP" id="cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
-            <FormInput label="Estado" id="state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
-            <FormInput label="Cidade" id="city" placeholder="Ex: São Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
-            <FormInput label="Bairro" id="neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
-            <FormInput label="Rua" id="street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
-            <FormInput label="Número" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
-            <FormInput label="Complemento" id="complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
-            <SelectField
-              label="Série"
-              id="serie_filter"
-              value={form._serie || ''}
-              onChange={e => setForm({ ...form, _serie: e.target.value, class_id: '' })}
-              options={[...new Set(turmas.map(t => t.grade).filter(Boolean))].map(g => ({ value: g, label: g }))}
-            />
-            <SelectField
-              label="Sala"
-              id="class_id"
-              value={form.class_id}
-              onChange={e => setForm({ ...form, class_id: e.target.value })}
-              options={turmas.filter(t => !form._serie || t.grade === form._serie).map(t => ({ value: t.id, label: t.room || t.name }))}
-            />
-          </div>
-          <button type="submit" className="btn-primary">Salvar Aluno</button>
-        </form>
-      </Card>
+      <PageHeader title="Alunos" description="Gerenciamento de alunos e matriculas">
+        <button type="button" className="btn-primary" onClick={() => setModalOpen(true)}>
+          + Adicionar Aluno
+        </button>
+      </PageHeader>
 
       <Card title="Lista de Alunos">
         <div className="form-grid" style={{ marginBottom: '1rem' }}>
@@ -158,7 +93,7 @@ export default function Alunos() {
         {loadingData ? <Spinner /> : (
           <>
             <DataTable
-              columns={['Nome', 'CPF/Matrícula', 'Série', 'Sala', 'Faltas', 'Ações']}
+              columns={['Nome', 'CPF/Matricula', 'Serie', 'Sala', 'Faltas', 'Acoes']}
               data={alunosFiltrados}
               renderRow={(a) => {
                 const t = turmas.find(t => t.id === a.class_id);
@@ -189,7 +124,7 @@ export default function Alunos() {
                         <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Editar</button>
                       </Link>
                       <Link to={`/alunos/${a.id}`}>
-                        <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Histórico</button>
+                        <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Historico</button>
                       </Link>
                       <button type="button" className="btn-danger" onClick={() => setDeleteTarget(a.id)}>Excluir</button>
                     </td>
@@ -200,18 +135,22 @@ export default function Alunos() {
             {totalPages > 1 && (
               <div className="pagination">
                 <button disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span className="pagination-info">Página {page} de {totalPages}</span>
-                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Próxima</button>
+                <span className="pagination-info">Pagina {page} de {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Proxima</button>
               </div>
             )}
           </>
         )}
       </Card>
 
+      <FormModal open={modalOpen} title="Cadastrar Novo Aluno" onClose={() => setModalOpen(false)} size="lg">
+        <AlunoForm turmas={turmas} onSuccess={handleFormSuccess} />
+      </FormModal>
+
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir aluno"
-        message="Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita."
+        message="Tem certeza que deseja excluir este aluno? Esta acao nao pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

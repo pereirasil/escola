@@ -4,6 +4,7 @@ export { DataTable } from './DataTable';
 export { FormInput } from './FormInput';
 export { SelectField } from './SelectField';
 export { ConfirmModal } from './ConfirmModal';
+export { FormModal } from './FormModal';
 export { Spinner } from './Spinner';
 export { Breadcrumb } from './Breadcrumb';
 export { NotificationBell } from './NotificationBell';

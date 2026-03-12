@@ -1045,6 +1045,10 @@ button:focus-visible {
   max-width: 600px;
 }
 
+.modal-content-lg {
+  max-width: 800px;
+}
+
 .modal-content h3 {
   margin-top: 0;
   margin-bottom: 1.5rem;
@@ -1355,7 +1359,8 @@ button:focus-visible {
   }
 
   .modal-content,
-  .modal-content-wide {
+  .modal-content-wide,
+  .modal-content-lg {
     max-width: 95%;
     margin: 0 auto;
     padding: 1.5rem;
