@@ -50,8 +50,8 @@ export default function LandingPage() {
           <span className="landing-stat-label">Acesso a qualquer momento</span>
         </div>
         <div className="reveal reveal-delay-3">
-          <span className="landing-stat-number">Grátis</span>
-          <span className="landing-stat-label">Para começar a usar</span>
+          <span className="landing-stat-number">Fácil</span>
+          <span className="landing-stat-label">De começar a usar</span>
         </div>
       </div>
 
