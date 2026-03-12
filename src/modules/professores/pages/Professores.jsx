@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, Spinner, PhotoUpload } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, Spinner, FormModal } from '../../../components/ui';
 import { professoresService } from '../../../services/professores.service';
 import { turmasService } from '../../../services/turmas.service';
 import { horariosService } from '../../../services/horarios.service';
 import { materiasService } from '../../../services/materias.service';
-import { maskCpf, maskPhone, maskCep, fetchAddressByCep } from '../../../utils/masks';
+import { maskCpf, maskPhone, maskCep } from '../../../utils/masks';
+import ProfessorForm from '../components/ProfessorForm';
 import toast from 'react-hot-toast';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -16,10 +17,9 @@ export default function Professores() {
   const [materias, setMaterias] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [form, setForm] = useState({ name: '', document: '', phone: '', email: '', password: '', confirmPassword: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '' });
-  const [photoFile, setPhotoFile] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [viewProfile, setViewProfile] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroTurma, setFiltroTurma] = useState('');
   const [page, setPage] = useState(1);
@@ -47,45 +47,11 @@ export default function Professores() {
 
   useEffect(() => { load(page) }, [page]);
 
-  const handleCepChange = async (value) => {
-    const masked = maskCep(value);
-    setForm(prev => ({ ...prev, cep: masked }));
-    const digits = masked.replace(/\D/g, '');
-    if (digits.length === 8) {
-      const addr = await fetchAddressByCep(digits);
-      if (addr) {
-        setForm(prev => ({ ...prev, ...addr }));
-      }
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (form.password !== form.confirmPassword) {
-      toast.error('Senha e confirmação não conferem.');
-      return;
-    }
-    try {
-      const { confirmPassword, ...payload } = form;
-      const res = await professoresService.criar(payload);
-      const profId = res.data?.id;
-      if (photoFile && profId) {
-        await professoresService.uploadFoto(profId, photoFile);
-      }
-      toast.success('Professor cadastrado com sucesso!');
-      setForm({ name: '', document: '', phone: '', email: '', password: '', confirmPassword: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '' });
-      setPhotoFile(null);
-      load();
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Erro ao salvar professor.');
-    }
-  };
-
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
       await professoresService.excluir(deleteTarget);
-      toast.success('Professor excluído com sucesso!');
+      toast.success('Professor excluido com sucesso!');
       load();
     } catch (error) {
       toast.error('Erro ao excluir professor.');
@@ -94,34 +60,18 @@ export default function Professores() {
     }
   };
 
+  const handleFormSuccess = () => {
+    setModalOpen(false);
+    load();
+  };
+
   return (
     <div className="page">
-      <PageHeader title="Professores" description="Gestão do corpo docente" />
-      
-      <Card title="Cadastrar Novo Professor">
-        <form onSubmit={handleSubmit}>
-          <PhotoUpload onFileSelect={setPhotoFile} label="Foto do professor" />
-          <div className="form-grid">
-            <FormInput label="Nome do Professor" id="name" placeholder="Ex: Maria Souza" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-            <FormInput label="CPF (usuário de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
-            <FormInput label="Senha" id="password" type="password" placeholder="Mínimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-            <FormInput label="Confirmar senha" id="confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
-            <FormInput label="Telefone" id="phone" placeholder="(00) 00000-0000" value={form.phone} onChange={e => setForm({ ...form, phone: maskPhone(e.target.value) })} maxLength={15} />
-            <FormInput label="E-mail" id="email" type="email" placeholder="Ex: maria@escola.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-            <FormInput label="CEP" id="cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
-            <FormInput label="Estado" id="state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
-            <FormInput label="Cidade" id="city" placeholder="Ex: São Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
-            <FormInput label="Bairro" id="neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
-            <FormInput label="Rua" id="street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
-            <FormInput label="Número" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
-            <FormInput label="Complemento" id="complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
-          </div>
-          <p style={{ fontSize: '0.875rem', color: '#888', margin: '1rem 0' }}>
-            Para vincular turmas e matérias ao professor, utilize a <Link to="/horarios" style={{ color: '#646cff' }}>Grade Horária</Link> após o cadastro.
-          </p>
-          <button type="submit" className="btn-primary">Salvar Professor</button>
-        </form>
-      </Card>
+      <PageHeader title="Professores" description="Gestao do corpo docente">
+        <button type="button" className="btn-primary" onClick={() => setModalOpen(true)}>
+          + Adicionar Professor
+        </button>
+      </PageHeader>
 
       <Card title="Lista de Professores">
         <div className="form-grid" style={{ marginBottom: '1rem' }}>
@@ -143,7 +93,7 @@ export default function Professores() {
         {loadingData ? <Spinner /> : (
           <>
             <DataTable
-              columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Matérias', 'Série', 'Sala', 'Ações']}
+              columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Materias', 'Serie', 'Sala', 'Acoes']}
               data={professores.filter(p => {
                 const matchNome = p.name.toLowerCase().includes(filtroNome.toLowerCase());
                 if (!matchNome) return false;
@@ -165,9 +115,9 @@ export default function Professores() {
                   <td>{p.document}</td>
                   <td>{p.phone}</td>
                   <td>{p.email}</td>
-                  <td>{nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
-                  <td>{series.length > 0 ? series.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
-                  <td>{salas.length > 0 ? salas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
+                  <td>{nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}</td>
+                  <td>{series.length > 0 ? series.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}</td>
+                  <td>{salas.length > 0 ? salas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => setViewProfile(p)}>Ver Perfil</button>
@@ -182,13 +132,17 @@ export default function Professores() {
             {totalPages > 1 && (
               <div className="pagination">
                 <button disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span className="pagination-info">Página {page} de {totalPages}</span>
-                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Próxima</button>
+                <span className="pagination-info">Pagina {page} de {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Proxima</button>
               </div>
             )}
           </>
         )}
       </Card>
+
+      <FormModal open={modalOpen} title="Cadastrar Novo Professor" onClose={() => setModalOpen(false)} size="lg">
+        <ProfessorForm onSuccess={handleFormSuccess} />
+      </FormModal>
 
       {viewProfile && (() => {
         const p = viewProfile;
@@ -220,16 +174,16 @@ export default function Professores() {
                   <div><strong>Cidade:</strong> {p.city || '-'}</div>
                   <div><strong>Bairro:</strong> {p.neighborhood || '-'}</div>
                   <div><strong>Rua:</strong> {p.street || '-'}</div>
-                  <div><strong>Número:</strong> {p.number || '-'}</div>
+                  <div><strong>Numero:</strong> {p.number || '-'}</div>
                   <div style={{ gridColumn: '1 / -1' }}><strong>Complemento:</strong> {p.complement || '-'}</div>
                 </div>
                 <div>
-                  <strong>Matérias:</strong>{' '}
-                  {nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}
+                  <strong>Materias:</strong>{' '}
+                  {nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}
                 </div>
                 <div>
                   <strong>Turmas:</strong>{' '}
-                  {nomesTurmas.length > 0 ? nomesTurmas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}
+                  {nomesTurmas.length > 0 ? nomesTurmas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}
                 </div>
               </div>
               <div className="modal-actions">
@@ -243,7 +197,7 @@ export default function Professores() {
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir professor"
-        message="Tem certeza que deseja excluir este professor? Esta ação não pode ser desfeita."
+        message="Tem certeza que deseja excluir este professor? Esta acao nao pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

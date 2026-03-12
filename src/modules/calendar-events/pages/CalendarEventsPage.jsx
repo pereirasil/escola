@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, FormModal } from '../../../components/ui';
 import { calendarEventsService } from '../../../services/calendarEvents.service';
 import { turmasService } from '../../../services/turmas.service';
+import CalendarEventForm from '../components/CalendarEventForm';
 import toast from 'react-hot-toast';
 
 export default function CalendarEventsPage() {
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ title: '', description: '', date: '', series: [] });
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ title: '', description: '', date: '', series: [] });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [gradesDisponiveis, setGradesDisponiveis] = useState([]);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const carregarDados = async () => {
     try {
@@ -34,45 +36,40 @@ export default function CalendarEventsPage() {
 
   const addSerie = (grade) => {
     if (!grade) return;
-    setForm(prev => {
+    setEditForm(prev => {
       if (prev.series.includes(grade)) return prev;
       return { ...prev, series: [...prev.series, grade] };
     });
   };
 
   const removeSerie = (grade) => {
-    setForm(prev => ({
+    setEditForm(prev => ({
       ...prev,
       series: prev.series.filter(s => s !== grade),
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title || !form.date) {
-      toast.error('Título e data são obrigatórios.');
+    if (!editForm.title || !editForm.date) {
+      toast.error('Titulo e data sao obrigatorios.');
       return;
     }
-    if (form.series.length === 0) {
-      toast.error('Selecione ao menos uma série.');
+    if (editForm.series.length === 0) {
+      toast.error('Selecione ao menos uma serie.');
       return;
     }
 
     setLoading(true);
     try {
-      if (editId) {
-        await calendarEventsService.atualizar(editId, form);
-        toast.success('Evento atualizado com sucesso!');
-        setIsModalOpen(false);
-      } else {
-        await calendarEventsService.criar(form);
-        toast.success('Evento criado com sucesso!');
-      }
-      setForm({ title: '', description: '', date: '', series: [] });
+      await calendarEventsService.atualizar(editId, editForm);
+      toast.success('Evento atualizado com sucesso!');
+      setIsEditModalOpen(false);
       setEditId(null);
+      setEditForm({ title: '', description: '', date: '', series: [] });
       carregarDados();
     } catch {
-      toast.error(editId ? 'Erro ao atualizar evento.' : 'Erro ao criar evento.');
+      toast.error('Erro ao atualizar evento.');
     } finally {
       setLoading(false);
     }
@@ -87,32 +84,37 @@ export default function CalendarEventsPage() {
     }
 
     setEditId(item.id);
-    setForm({
+    setEditForm({
       title: item.title || '',
       description: item.description || '',
       date: item.date || '',
       series,
     });
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
   const cancelEdit = () => {
-    setForm({ title: '', description: '', date: '', series: [] });
+    setEditForm({ title: '', description: '', date: '', series: [] });
     setEditId(null);
-    setIsModalOpen(false);
+    setIsEditModalOpen(false);
   };
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
       await calendarEventsService.excluir(deleteTarget);
-      toast.success('Evento excluído com sucesso!');
+      toast.success('Evento excluido com sucesso!');
       carregarDados();
     } catch {
       toast.error('Erro ao excluir evento.');
     } finally {
       setDeleteTarget(null);
     }
+  };
+
+  const handleCreateSuccess = () => {
+    setCreateModalOpen(false);
+    carregarDados();
   };
 
   const formatarData = (dataString) => {
@@ -137,13 +139,13 @@ export default function CalendarEventsPage() {
     <div>
       <div style={{ marginBottom: '0.75rem' }}>
         <div className="form-group">
-          <label htmlFor={`${prefix}-serie-select`}>Adicionar série</label>
+          <label htmlFor={`${prefix}-serie-select`}>Adicionar serie</label>
           <select
             id={`${prefix}-serie-select`}
             onChange={(e) => { addSerie(e.target.value); e.target.value = ''; }}
             defaultValue=""
           >
-            <option value="">Selecione uma série...</option>
+            <option value="">Selecione uma serie...</option>
             {seriesOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
@@ -193,50 +195,15 @@ export default function CalendarEventsPage() {
 
   return (
     <div className="page">
-      <PageHeader title="Datas Comemorativas" description="Gerencie as datas comemorativas do calendário escolar." />
-
-      <Card title="Nova Data Comemorativa">
-        <form onSubmit={(e) => { setEditId(null); handleSubmit(e); }}>
-          <div className="form-grid">
-            <FormInput
-              label="Título"
-              id="new-title"
-              placeholder="Ex: Dia das Mães"
-              required
-              value={!editId ? form.title : ''}
-              onChange={e => !editId && setForm({ ...form, title: e.target.value })}
-            />
-            <FormInput
-              label="Data"
-              id="new-date"
-              type="date"
-              required
-              value={!editId ? form.date : ''}
-              onChange={e => !editId && setForm({ ...form, date: e.target.value })}
-            />
-          </div>
-          <div className="form-group" style={{ marginTop: '1rem' }}>
-            <label>Descrição</label>
-            <textarea
-              placeholder="Descrição do evento (opcional)"
-              value={!editId ? form.description : ''}
-              onChange={e => !editId && setForm({ ...form, description: e.target.value })}
-              rows={3}
-            />
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem' }}>Séries selecionadas</label>
-            {!editId && renderSeriesSelector('new', form.series)}
-          </div>
-          <button type="submit" className="btn-primary" disabled={loading || editId} style={{ marginTop: '1rem' }}>
-            {loading && !editId ? 'Salvando...' : 'Salvar Evento'}
-          </button>
-        </form>
-      </Card>
+      <PageHeader title="Datas Comemorativas" description="Gerencie as datas comemorativas do calendario escolar.">
+        <button type="button" className="btn-primary" onClick={() => setCreateModalOpen(true)}>
+          + Adicionar Evento
+        </button>
+      </PageHeader>
 
       <Card title="Eventos Cadastrados">
         <DataTable
-          columns={['Título', 'Data', 'Séries', 'Descrição', 'Ações']}
+          columns={['Titulo', 'Data', 'Series', 'Descricao', 'Acoes']}
           data={eventos}
           renderRow={(item) => (
             <tr key={item.id}>
@@ -267,40 +234,44 @@ export default function CalendarEventsPage() {
         />
       </Card>
 
-      {isModalOpen && (
+      <FormModal open={createModalOpen} title="Nova Data Comemorativa" onClose={() => setCreateModalOpen(false)}>
+        <CalendarEventForm gradesDisponiveis={gradesDisponiveis} onSuccess={handleCreateSuccess} />
+      </FormModal>
+
+      {isEditModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Editar Evento</h3>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleEditSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <FormInput
-                  label="Título"
+                  label="Titulo"
                   id="edit-title"
-                  placeholder="Ex: Dia das Mães"
+                  placeholder="Ex: Dia das Maes"
                   required
-                  value={form.title}
-                  onChange={e => setForm({ ...form, title: e.target.value })}
+                  value={editForm.title}
+                  onChange={e => setEditForm({ ...editForm, title: e.target.value })}
                 />
                 <FormInput
                   label="Data"
                   id="edit-date"
                   type="date"
                   required
-                  value={form.date}
-                  onChange={e => setForm({ ...form, date: e.target.value })}
+                  value={editForm.date}
+                  onChange={e => setEditForm({ ...editForm, date: e.target.value })}
                 />
                 <div className="form-group">
                   <label>Descricao</label>
                   <textarea
                     placeholder="Descricao do evento (opcional)"
-                    value={form.description}
-                    onChange={e => setForm({ ...form, description: e.target.value })}
+                    value={editForm.description}
+                    onChange={e => setEditForm({ ...editForm, description: e.target.value })}
                     rows={3}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>Séries selecionadas</label>
-                  {renderSeriesSelector('edit', form.series)}
+                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>Series selecionadas</label>
+                  {renderSeriesSelector('edit', editForm.series)}
                 </div>
               </div>
               <div className="modal-actions">
@@ -319,7 +290,7 @@ export default function CalendarEventsPage() {
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir evento"
-        message="Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita."
+        message="Tem certeza que deseja excluir este evento? Esta acao nao pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

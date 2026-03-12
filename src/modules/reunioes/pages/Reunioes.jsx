@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormInput, SelectField, ConfirmModal, FormModal } from '../../../components/ui';
 import { reunioesService } from '../../../services/reunioes.service';
 import { turmasService } from '../../../services/turmas.service';
+import ReuniaoForm from '../components/ReuniaoForm';
 import toast from 'react-hot-toast';
 
 export default function Reunioes() {
@@ -9,9 +10,10 @@ export default function Reunioes() {
   const [turmas, setTurmas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ title: '', scheduled_at: '', description: '', class_id: '' });
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ title: '', scheduled_at: '', description: '', class_id: '' });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
 
   const carregarDados = async () => {
     try {
@@ -30,40 +32,27 @@ export default function Reunioes() {
     carregarDados();
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
-    if (!form.title) {
-      toast.error('O título é obrigatório.');
+    if (!editForm.title) {
+      toast.error('O titulo e obrigatorio.');
       return;
     }
-    
+
     setLoading(true);
     try {
-      const payload = { ...form };
-      if (!payload.scheduled_at) {
-        payload.scheduled_at = null;
-      }
-      
-      if (payload.class_id) {
-        payload.class_id = Number(payload.class_id);
-      } else {
-        payload.class_id = null;
-      }
-      
-      if (editId) {
-        await reunioesService.atualizar(editId, payload);
-        toast.success('Reunião atualizada com sucesso!');
-        setIsModalOpen(false);
-      } else {
-        await reunioesService.criar(payload);
-        toast.success('Reunião agendada com sucesso!');
-      }
+      const payload = { ...editForm };
+      if (!payload.scheduled_at) payload.scheduled_at = null;
+      payload.class_id = payload.class_id ? Number(payload.class_id) : null;
 
-      setForm({ title: '', scheduled_at: '', description: '', class_id: '' });
+      await reunioesService.atualizar(editId, payload);
+      toast.success('Reuniao atualizada com sucesso!');
+      setIsEditModalOpen(false);
       setEditId(null);
+      setEditForm({ title: '', scheduled_at: '', description: '', class_id: '' });
       carregarDados();
     } catch (error) {
-      toast.error(editId ? 'Erro ao atualizar reunião.' : 'Erro ao agendar reunião.');
+      toast.error('Erro ao atualizar reuniao.');
     } finally {
       setLoading(false);
     }
@@ -72,43 +61,47 @@ export default function Reunioes() {
   const handleEdit = (item) => {
     setEditId(item.id);
     let formattedDate = '';
-    
+
     if (item.scheduled_at) {
-      // Ajustar para formato aceito pelo input datetime-local: YYYY-MM-DDTHH:mm
       const d = new Date(item.scheduled_at);
       if (!isNaN(d.getTime())) {
         const tzoffset = (new Date()).getTimezoneOffset() * 60000;
         formattedDate = (new Date(d - tzoffset)).toISOString().slice(0, 16);
       }
     }
-    
-    setForm({
+
+    setEditForm({
       title: item.title || '',
       scheduled_at: formattedDate,
       description: item.description || '',
       class_id: item.class_id || ''
     });
-    
-    setIsModalOpen(true);
+
+    setIsEditModalOpen(true);
   };
 
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     try {
       await reunioesService.excluir(deleteTarget);
-      toast.success('Reunião excluída com sucesso!');
+      toast.success('Reuniao excluida com sucesso!');
       carregarDados();
     } catch (error) {
-      toast.error('Erro ao excluir reunião.');
+      toast.error('Erro ao excluir reuniao.');
     } finally {
       setDeleteTarget(null);
     }
   };
 
   const cancelEdit = () => {
-    setForm({ title: '', scheduled_at: '', description: '', class_id: '' });
+    setEditForm({ title: '', scheduled_at: '', description: '', class_id: '' });
     setEditId(null);
-    setIsModalOpen(false);
+    setIsEditModalOpen(false);
+  };
+
+  const handleCreateSuccess = () => {
+    setCreateModalOpen(false);
+    carregarDados();
   };
 
   const formatarDataHora = (dataString) => {
@@ -129,71 +122,26 @@ export default function Reunioes() {
 
   return (
     <div className="page">
-      <PageHeader title="Reuniões" description="Agendamento e gestão de reuniões." />
-
-      <Card title="Agendar Nova Reunião">
-        <form onSubmit={(e) => {
-          setEditId(null); // Ensure it's create mode
-          handleSubmit(e);
-        }}>
-          <div className="form-grid">
-            <FormInput
-              label="Título"
-              id="new-title"
-              required
-              placeholder="Ex: Reunião de Pais"
-              value={!editId ? form.title : ''}
-              onChange={(e) => !editId && setForm({ ...form, title: e.target.value })}
-            />
-            
-            <SelectField 
-              label="Turma Alvo" 
-              id="new-class_id" 
-              value={!editId ? form.class_id : ''} 
-              onChange={e => !editId && setForm({ ...form, class_id: e.target.value })}
-              options={turmas.map(t => ({ value: t.id, label: t.name }))}
-            />
-
-            <FormInput
-              label="Data e Hora"
-              id="new-scheduled_at"
-              type="datetime-local"
-              value={!editId ? form.scheduled_at : ''}
-              onChange={(e) => !editId && setForm({ ...form, scheduled_at: e.target.value })}
-            />
-            <div className="form-group">
-              <label htmlFor="new-description">Descrição</label>
-              <textarea
-                id="new-description"
-                placeholder="Pauta ou detalhes da reunião"
-                value={!editId ? form.description : ''}
-                onChange={(e) => !editId && setForm({ ...form, description: e.target.value })}
-                rows={3}
-              />
-            </div>
-          </div>
-          <div style={{ marginTop: '1rem' }}>
-            <button type="submit" className="btn-primary" disabled={loading || editId}>
-              {loading && !editId ? 'Agendando...' : 'Agendar Reunião'}
-            </button>
-          </div>
-        </form>
-      </Card>
+      <PageHeader title="Reunioes" description="Agendamento e gestao de reunioes.">
+        <button type="button" className="btn-primary" onClick={() => setCreateModalOpen(true)}>
+          + Adicionar Reuniao
+        </button>
+      </PageHeader>
 
       <Card title="Agendamentos">
         <DataTable
-          columns={['Título', 'Turma(s)', 'Data e Hora', 'Descrição', 'Ações']}
+          columns={['Titulo', 'Turma(s)', 'Data e Hora', 'Descricao', 'Acoes']}
           data={reunioes}
-          emptyMessage="Nenhuma reunião agendada."
+          emptyMessage="Nenhuma reuniao agendada."
           renderRow={(item) => (
             <tr key={item.id}>
               <td>{item.title}</td>
               <td>
-                <span style={{ 
-                  backgroundColor: item.class_id ? '#3b82f6' : '#4b5563', 
-                  color: '#fff', 
-                  padding: '0.2rem 0.5rem', 
-                  borderRadius: '12px', 
+                <span style={{
+                  backgroundColor: item.class_id ? '#3b82f6' : '#4b5563',
+                  color: '#fff',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '12px',
                   fontSize: '0.75rem',
                   whiteSpace: 'nowrap'
                 }}>
@@ -204,16 +152,16 @@ export default function Reunioes() {
               <td>{item.description || '-'}</td>
               <td>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button 
-                    className="btn-primary" 
-                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} 
+                  <button
+                    className="btn-primary"
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
                     onClick={() => handleEdit(item)}
                   >
                     Editar
                   </button>
-                  <button 
-                    className="btn-danger" 
-                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} 
+                  <button
+                    className="btn-danger"
+                    style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
                     onClick={() => setDeleteTarget(item.id)}
                   >
                     Excluir
@@ -225,26 +173,30 @@ export default function Reunioes() {
         />
       </Card>
 
-      {isModalOpen && (
+      <FormModal open={createModalOpen} title="Agendar Nova Reuniao" onClose={() => setCreateModalOpen(false)}>
+        <ReuniaoForm turmas={turmas} onSuccess={handleCreateSuccess} />
+      </FormModal>
+
+      {isEditModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>Editar Reunião</h3>
-            <form onSubmit={handleSubmit}>
+            <h3>Editar Reuniao</h3>
+            <form onSubmit={handleEditSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <FormInput
-                  label="Título"
+                  label="Titulo"
                   id="edit-title"
                   required
-                  placeholder="Ex: Reunião de Pais"
-                  value={form.title}
-                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="Ex: Reuniao de Pais"
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
                 />
-                
-                <SelectField 
-                  label="Turma Alvo" 
-                  id="edit-class_id" 
-                  value={form.class_id} 
-                  onChange={e => setForm({ ...form, class_id: e.target.value })}
+
+                <SelectField
+                  label="Turma Alvo"
+                  id="edit-class_id"
+                  value={editForm.class_id}
+                  onChange={e => setEditForm({ ...editForm, class_id: e.target.value })}
                   options={turmas.map(t => ({ value: t.id, label: t.name }))}
                 />
 
@@ -252,16 +204,16 @@ export default function Reunioes() {
                   label="Data e Hora"
                   id="edit-scheduled_at"
                   type="datetime-local"
-                  value={form.scheduled_at}
-                  onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
+                  value={editForm.scheduled_at}
+                  onChange={(e) => setEditForm({ ...editForm, scheduled_at: e.target.value })}
                 />
                 <div className="form-group">
-                  <label htmlFor="edit-description">Descrição</label>
+                  <label htmlFor="edit-description">Descricao</label>
                   <textarea
                     id="edit-description"
-                    placeholder="Pauta ou detalhes da reunião"
-                    value={form.description}
-                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    placeholder="Pauta ou detalhes da reuniao"
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                     rows={3}
                   />
                 </div>
@@ -271,7 +223,7 @@ export default function Reunioes() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Salvando...' : 'Atualizar Reunião'}
+                  {loading ? 'Salvando...' : 'Atualizar Reuniao'}
                 </button>
               </div>
             </form>
@@ -281,8 +233,8 @@ export default function Reunioes() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Excluir reunião"
-        message="Tem certeza que deseja excluir esta reunião?"
+        title="Excluir reuniao"
+        message="Tem certeza que deseja excluir esta reuniao?"
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}
