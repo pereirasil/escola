@@ -134,11 +134,11 @@ export default function Presenca() {
       <Card title="Filtros da Chamada">
         <div className="form-grid">
           <SelectField 
-            label="Turma" 
+            label="Sala" 
             id="turma_id" 
             value={form.turma_id} 
             onChange={handleChangeForm}
-            options={turmas.map(t => ({ value: t.id, label: t.name }))}
+            options={turmas.map(t => ({ value: t.id, label: t.room || t.name }))}
           />
           <SelectField 
             label="Matéria" 

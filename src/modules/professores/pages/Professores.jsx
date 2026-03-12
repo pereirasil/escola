@@ -143,7 +143,7 @@ export default function Professores() {
         {loadingData ? <Spinner /> : (
           <>
             <DataTable
-              columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Matérias', 'Turmas', 'Ações']}
+              columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Matérias', 'Série', 'Sala', 'Ações']}
               data={professores.filter(p => {
                 const matchNome = p.name.toLowerCase().includes(filtroNome.toLowerCase());
                 if (!matchNome) return false;
@@ -155,8 +155,10 @@ export default function Professores() {
                 const teacherSchedules = schedules.filter(s => s.teacher_id === p.id);
                 const classIds = [...new Set(teacherSchedules.map(s => s.class_id))];
                 const subjectIds = [...new Set(teacherSchedules.map(s => s.subject_id))];
-                const nomesTurmas = classIds.map(cid => turmas.find(t => t.id === cid)?.name).filter(Boolean);
+                const turmasVinculadas = classIds.map(cid => turmas.find(t => t.id === cid)).filter(Boolean);
                 const nomesMaterias = subjectIds.map(sid => materias.find(m => m.id === sid)?.name).filter(Boolean);
+                const series = [...new Set(turmasVinculadas.map(t => t.grade).filter(Boolean))];
+                const salas = [...new Set(turmasVinculadas.map(t => t.room).filter(Boolean))];
                 return (
                 <tr key={p.id}>
                   <td>{p.name}</td>
@@ -164,7 +166,8 @@ export default function Professores() {
                   <td>{p.phone}</td>
                   <td>{p.email}</td>
                   <td>{nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
-                  <td>{nomesTurmas.length > 0 ? nomesTurmas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
+                  <td>{series.length > 0 ? series.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
+                  <td>{salas.length > 0 ? salas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => setViewProfile(p)}>Ver Perfil</button>
