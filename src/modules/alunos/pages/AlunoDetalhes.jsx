@@ -122,8 +122,8 @@ export default function AlunoDetalhes() {
 
         <Card title="Histórico de Presença">
           <DataTable
-            columns={['Data', 'Aula', 'Matéria', 'Status']}
-            data={historico.slice(0, 15)} // Mostra as últimas 15 pra não ficar gigante
+            columns={['Data', 'Aula', 'Matéria', 'Status', 'Observação']}
+            data={historico}
             emptyMessage="Nenhuma chamada."
             renderRow={(h) => (
               <tr key={h.id}>
@@ -131,6 +131,7 @@ export default function AlunoDetalhes() {
                 <td>{h.lesson}</td>
                 <td>{getMateriaNome(h.subject_id)}</td>
                 <td>{mapStatus(h.status)}</td>
+                <td style={{ color: '#888' }}>{h.observation || '-'}</td>
               </tr>
             )}
           />

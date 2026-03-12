@@ -78,7 +78,6 @@ export class AttendanceService {
     const qbList = this.repo.createQueryBuilder('p')
       .where('p.student_id = :alunoId', { alunoId })
       .orderBy('p.date', 'DESC')
-      .take(50)
     if (schoolId) qbList.andWhere('p.school_id = :schoolId', { schoolId })
 
     const presencas = await qbList.getMany()

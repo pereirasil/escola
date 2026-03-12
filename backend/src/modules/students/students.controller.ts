@@ -8,6 +8,9 @@ import { NotificationsService } from '../notifications/notifications.service'
 import { GradesService } from '../grades/grades.service'
 import { AttendanceService } from '../attendance/attendance.service'
 import { SubjectsService } from '../subjects/subjects.service'
+import { SchedulesService } from '../schedules/schedules.service'
+import { ClassesService } from '../classes/classes.service'
+import { TeachersService } from '../teachers/teachers.service'
 import { TeacherScopeService } from '../../common/services/teacher-scope.service'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
@@ -24,6 +27,9 @@ export class StudentsController {
     private gradesService: GradesService,
     private attendanceService: AttendanceService,
     private subjectsService: SubjectsService,
+    private schedulesService: SchedulesService,
+    private classesService: ClassesService,
+    private teachersService: TeachersService,
     private teacherScope: TeacherScopeService,
   ) {}
 
@@ -108,6 +114,45 @@ export class StudentsController {
     return this.service.updatePassword(req.user.id, dto.currentPassword, dto.newPassword)
   }
 
+  @Get('me/schedules')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  async getMySchedules(@Req() req: { user: { id: number; school_id?: number } }) {
+    const student = await this.service.findOne(req.user.id)
+    if (!student?.class_id) return []
+
+    const turma = await this.classesService.findOne(student.class_id)
+
+    const [allSchedules, materias] = await Promise.all([
+      this.schedulesService.findAll(student.class_id, req.user.school_id),
+      this.subjectsService.findAll(req.user.school_id),
+    ])
+
+    const schedules = turma?.room
+      ? allSchedules.filter((s) => s.room === turma.room)
+      : allSchedules
+
+    const materiasMap = new Map(materias.map((m) => [m.id, m.name]))
+
+    const teacherIds = [...new Set(schedules.map((s) => s.teacher_id).filter(Boolean))]
+    const teachers = await Promise.all(
+      teacherIds.map((tid) => this.teachersService.findOne(tid).catch(() => null)),
+    )
+    const teachersMap = new Map(
+      teachers.filter(Boolean).map((t) => [t!.id, t!.name]),
+    )
+
+    return schedules.map((s) => ({
+      id: s.id,
+      day_of_week: s.day_of_week,
+      start_time: s.start_time,
+      end_time: s.end_time,
+      room: s.room,
+      materia: materiasMap.get(s.subject_id) || '-',
+      professor: teachersMap.get(s.teacher_id) || '-',
+    }))
+  }
+
   @Get('me/historico')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('student')
@@ -115,22 +160,44 @@ export class StudentsController {
     const alunoId = req.user.id
     const schoolId = req.user.school_id
 
-    const [notas, historicoPresenca, materias] = await Promise.all([
+    const [notas, historicoPresenca, materias, schedules] = await Promise.all([
       this.gradesService.findByAluno(alunoId, schoolId),
       this.attendanceService.getHistoricoAluno(alunoId, schoolId),
       this.subjectsService.findAll(schoolId),
+      this.schedulesService.findAll(undefined, schoolId),
     ])
 
     const materiasMap = new Map(materias.map((m) => [m.id, m.name]))
 
-    const presencasPorMateria = new Map<number, { presencas: number; faltas: number }>()
+    const scheduleMap = new Map<string, { start_time: string; end_time: string }>()
+    for (const s of schedules) {
+      scheduleMap.set(`${s.class_id}-${s.subject_id}-${s.day_of_week}`, { start_time: s.start_time, end_time: s.end_time })
+    }
+
+    const getDayOfWeek = (dateStr: string): string => {
+      const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
+      const d = new Date(dateStr + 'T12:00:00')
+      return days[d.getDay()]
+    }
+
+    const presencasPorMateria = new Map<number, { presencas: number; faltas: number; registros: { date: string; lesson: string; status: string; observation?: string; start_time?: string; end_time?: string }[] }>()
     for (const p of historicoPresenca.presencas) {
-      const entry = presencasPorMateria.get(p.subject_id) || { presencas: 0, faltas: 0 }
+      const entry = presencasPorMateria.get(p.subject_id) || { presencas: 0, faltas: 0, registros: [] }
       if (p.status === 'F') {
         entry.faltas++
       } else {
         entry.presencas++
       }
+      const dayOfWeek = getDayOfWeek(p.date)
+      const schedule = scheduleMap.get(`${p.class_id}-${p.subject_id}-${dayOfWeek}`)
+      entry.registros.push({
+        date: p.date,
+        lesson: p.lesson,
+        status: p.status,
+        observation: p.observation,
+        start_time: schedule?.start_time,
+        end_time: schedule?.end_time,
+      })
       presencasPorMateria.set(p.subject_id, entry)
     }
 
@@ -152,6 +219,7 @@ export class StudentsController {
       notas: (notasPorMateria.get(materiaId) || []).sort((a, b) => a.bimestre.localeCompare(b.bimestre)),
       presencas: presencasPorMateria.get(materiaId)?.presencas || 0,
       faltas: presencasPorMateria.get(materiaId)?.faltas || 0,
+      registros: (presencasPorMateria.get(materiaId)?.registros || []).sort((a, b) => b.date.localeCompare(a.date)),
     }))
 
     historico.sort((a, b) => a.materia.localeCompare(b.materia))

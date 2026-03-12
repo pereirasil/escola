@@ -8,6 +8,9 @@ import { GradesModule } from '../grades/grades.module'
 import { AttendanceModule } from '../attendance/attendance.module'
 import { SubjectsModule } from '../subjects/subjects.module'
 import { TeacherScopeModule } from '../../common/services/teacher-scope.module'
+import { SchedulesModule } from '../schedules/schedules.module'
+import { ClassesModule } from '../classes/classes.module'
+import { TeachersModule } from '../teachers/teachers.module'
 
 @Module({
   imports: [
@@ -17,6 +20,9 @@ import { TeacherScopeModule } from '../../common/services/teacher-scope.module'
     forwardRef(() => AttendanceModule),
     SubjectsModule,
     TeacherScopeModule,
+    SchedulesModule,
+    forwardRef(() => ClassesModule),
+    TeachersModule,
   ],
   controllers: [StudentsController],
   providers: [StudentsService],

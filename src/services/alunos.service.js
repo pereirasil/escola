@@ -18,6 +18,7 @@ export const alunosService = {
   contarNotificacoesNaoLidas: () => api.get('/students/me/notifications/count').then((r) => r.data),
   marcarNotificacoesComoLidas: () => api.patch('/students/me/notifications/read').then((r) => r.data),
   meuHistorico: () => api.get('/students/me/historico').then((r) => r.data),
+  meusHorarios: () => api.get('/students/me/schedules').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>
     api.patch('/students/me/password', { currentPassword, newPassword }).then((r) => r.data),
   uploadMinhaFoto: (file) => {
