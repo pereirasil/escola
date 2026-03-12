@@ -355,6 +355,58 @@
   }
 }
 
+/* Scroll reveal animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal.reveal-scale {
+  transform: scale(0.92) translateY(20px);
+}
+
+.reveal.reveal-scale.revealed {
+  transform: scale(1) translateY(0);
+}
+
+.reveal.reveal-left {
+  transform: translateX(-40px);
+}
+
+.reveal.reveal-left.revealed {
+  transform: translateX(0);
+}
+
+.reveal.reveal-right {
+  transform: translateX(40px);
+}
+
+.reveal.reveal-right.revealed {
+  transform: translateX(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
+.reveal-delay-6 { transition-delay: 0.6s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 @media (prefers-color-scheme: light) {
   .landing-feature-card {
     background: #fff;
@@ -367,6 +419,27 @@
 
   .landing-feature-card p {
     color: #555;
+  }
+
+  .landing-section-alt .landing-feature-card {
+    background: #1e1e2e;
+    border-color: #2a2a3a;
+  }
+
+  .landing-section-alt .landing-feature-card h3 {
+    color: #fff;
+  }
+
+  .landing-section-alt .landing-feature-card p {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .landing-section-alt .landing-section h2 {
+    color: #fff;
+  }
+
+  .landing-section-alt .landing-section > p {
+    color: rgba(255, 255, 255, 0.65);
   }
 
   .landing-section h2 {
@@ -415,5 +488,31 @@
 
   .landing-stat-label {
     color: #666;
+  }
+
+  .landing-hero h1 {
+    color: #fff;
+  }
+
+  .landing-hero p {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .landing-cta h2 {
+    color: #fff;
+  }
+
+  .landing-cta p {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .landing-btn-secondary {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .landing-btn-secondary:hover {
+    color: #fff;
+    border-color: #fff;
   }
 }

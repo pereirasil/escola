@@ -2,11 +2,14 @@ import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import PublicNav from '../components/PublicNav'
 import PublicFooter from '../components/PublicFooter'
+import useScrollReveal from '../../../hooks/useScrollReveal'
 import '../public.css'
 
 export default function SistemaEscolar() {
+  const revealRef = useScrollReveal()
+
   return (
-    <>
+    <div ref={revealRef}>
       <Helmet>
         <title>Sistema Escolar Online - Software de Gestao para Escolas | Gestao Escolar</title>
         <meta name="description" content="Conheca o sistema escolar online mais completo do mercado. Software de gestao para escolas com controle de alunos, professores, notas, presenca e financeiro. Automatize a administracao da sua escola." />
@@ -20,8 +23,8 @@ export default function SistemaEscolar() {
 
       <section className="landing-hero" style={{ minHeight: '50vh' }}>
         <div className="landing-hero-inner">
-          <h1>Sistema Escolar Online</h1>
-          <p>
+          <h1 className="reveal">Sistema Escolar Online</h1>
+          <p className="reveal reveal-delay-1">
             Um software completo de gestao escolar pensado para facilitar
             o dia a dia de diretores, coordenadores, professores e alunos.
             Tudo na nuvem, acessivel de qualquer lugar.
@@ -30,14 +33,14 @@ export default function SistemaEscolar() {
       </section>
 
       <section className="landing-section">
-        <h2>O que e o Sistema de Gestao Escolar?</h2>
-        <p>
+        <h2 className="reveal">O que e o Sistema de Gestao Escolar?</h2>
+        <p className="reveal reveal-delay-1">
           Uma plataforma digital que centraliza todas as operacoes
           administrativas e pedagogicas da sua instituicao de ensino.
         </p>
 
         <div className="landing-features-grid">
-          <article className="landing-feature-card">
+          <article className="landing-feature-card reveal reveal-scale reveal-delay-1">
             <h3>Administracao Simplificada</h3>
             <p>
               Nosso sistema de controle escolar elimina planilhas e papeis.
@@ -46,7 +49,7 @@ export default function SistemaEscolar() {
               processos automatizados de gestao escolar.
             </p>
           </article>
-          <article className="landing-feature-card">
+          <article className="landing-feature-card reveal reveal-scale reveal-delay-2">
             <h3>Acesso Multiusuario</h3>
             <p>
               Cada usuario tem seu perfil com permissoes adequadas.
@@ -55,7 +58,7 @@ export default function SistemaEscolar() {
               Tudo com seguranca e privacidade.
             </p>
           </article>
-          <article className="landing-feature-card">
+          <article className="landing-feature-card reveal reveal-scale reveal-delay-3">
             <h3>100% Online</h3>
             <p>
               Nao precisa instalar nada. Acesse o software para escola
@@ -64,7 +67,7 @@ export default function SistemaEscolar() {
               e disponibilidade 24 horas.
             </p>
           </article>
-          <article className="landing-feature-card">
+          <article className="landing-feature-card reveal reveal-scale reveal-delay-4">
             <h3>Relatorios Inteligentes</h3>
             <p>
               Dashboards com graficos e indicadores que ajudam na tomada
@@ -73,7 +76,7 @@ export default function SistemaEscolar() {
               automaticamente pelo sistema escolar.
             </p>
           </article>
-          <article className="landing-feature-card">
+          <article className="landing-feature-card reveal reveal-scale reveal-delay-5">
             <h3>Comunicacao Integrada</h3>
             <p>
               Mantenha toda a comunidade escolar conectada. Notificacoes
@@ -82,7 +85,7 @@ export default function SistemaEscolar() {
               sistema de gestao escolar.
             </p>
           </article>
-          <article className="landing-feature-card">
+          <article className="landing-feature-card reveal reveal-scale reveal-delay-6">
             <h3>Seguranca dos Dados</h3>
             <p>
               Seus dados sao protegidos com autenticacao segura e
@@ -95,12 +98,12 @@ export default function SistemaEscolar() {
       </section>
 
       <section className="landing-cta">
-        <h2>Experimente o sistema escolar gratuitamente</h2>
-        <p>
+        <h2 className="reveal">Experimente o sistema escolar gratuitamente</h2>
+        <p className="reveal reveal-delay-1">
           Cadastre sua escola e comece a usar agora. Sem compromisso,
           sem necessidade de cartao de credito.
         </p>
-        <div className="landing-hero-actions">
+        <div className="landing-hero-actions reveal reveal-delay-2">
           <Link to="/cadastro" className="landing-btn landing-btn-primary">
             Cadastrar Minha Escola
           </Link>
@@ -111,6 +114,6 @@ export default function SistemaEscolar() {
       </section>
 
       <PublicFooter />
-    </>
+    </div>
   )
 }
