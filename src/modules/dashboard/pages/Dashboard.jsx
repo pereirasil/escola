@@ -157,7 +157,7 @@ export default function Dashboard() {
 
         <Card title="Relação de Alunos Recentes">
           <DataTable
-            columns={['Aluno', 'Turma Vinculada']}
+            columns={['Aluno', 'Série', 'Sala']}
             data={alunos.slice(0, 5)}
             emptyMessage="Nenhum aluno cadastrado."
             renderRow={(a) => {
@@ -165,7 +165,8 @@ export default function Dashboard() {
               return (
                 <tr key={a.id}>
                   <td><strong>{a.name}</strong></td>
-                  <td>{t ? t.name : <span style={{color: '#888'}}>Sem turma</span>}</td>
+                  <td>{t ? t.grade : <span style={{color: '#888'}}>-</span>}</td>
+                  <td>{t ? t.room : <span style={{color: '#888'}}>-</span>}</td>
                 </tr>
               );
             }}
