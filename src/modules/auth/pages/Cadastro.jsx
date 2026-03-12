@@ -37,10 +37,10 @@ export default function Cadastro() {
 
   const helmetBlock = (
     <Helmet>
-      <title>Cadastrar Escola - Sistema de Gestao Escolar Gratuito</title>
-      <meta name="description" content="Cadastre sua escola gratuitamente no sistema de gestao escolar. Software completo para controle de alunos, professores, notas e financeiro." />
-      <meta property="og:title" content="Cadastrar Escola - Sistema de Gestao Escolar Gratuito" />
-      <meta property="og:description" content="Cadastre sua escola gratuitamente no sistema de gestao escolar. Software completo para controle de alunos, professores, notas e financeiro." />
+      <title>Cadastrar Escola - Sistema de Gestão Escolar Gratuito</title>
+      <meta name="description" content="Cadastre sua escola gratuitamente no sistema de gestão escolar. Software completo para controle de alunos, professores, notas e financeiro." />
+      <meta property="og:title" content="Cadastrar Escola - Sistema de Gestão Escolar Gratuito" />
+      <meta property="og:description" content="Cadastre sua escola gratuitamente no sistema de gestão escolar. Software completo para controle de alunos, professores, notas e financeiro." />
       <meta property="og:url" content="https://gestaoescolar.com.br/cadastro" />
       <link rel="canonical" href="https://gestaoescolar.com.br/cadastro" />
     </Helmet>
@@ -51,10 +51,10 @@ export default function Cadastro() {
       <>{helmetBlock}
       <div className="auth-page">
         <div className="auth-card">
-          <h1>Gestao Escolar</h1>
+          <h1>Gestão Escolar</h1>
           <h2>Cadastro enviado</h2>
           <p className="auth-message">
-            Sua escola foi cadastrada. Voce so tera acesso apos o administrador geral aprovar seu cadastro. Aguarde e tente entrar mais tarde.
+            Sua escola foi cadastrada. Você só terá acesso após o administrador geral aprovar seu cadastro. Aguarde e tente entrar mais tarde.
           </p>
           <p className="auth-footer">
             <Link to="/login">Voltar para o login</Link>
@@ -69,7 +69,7 @@ export default function Cadastro() {
     <>{helmetBlock}
     <div className="auth-page">
       <div className="auth-card">
-        <h1>Gestao Escolar</h1>
+        <h1>Gestão Escolar</h1>
         <h2>Cadastre sua escola</h2>
         <form onSubmit={handleSubmit} className="auth-form">
           <label>
@@ -85,7 +85,7 @@ export default function Cadastro() {
             />
           </label>
           <label>
-            Nome do responsavel
+            Nome do responsável
             <input
               type="text"
               name="responsible_name"
@@ -131,7 +131,7 @@ export default function Cadastro() {
             />
           </label>
           <label>
-            Senha (minimo 6 caracteres)
+            Senha (mínimo 6 caracteres)
             <input
               type="password"
               name="password"
@@ -147,7 +147,7 @@ export default function Cadastro() {
           </button>
         </form>
         <p className="auth-footer">
-          Ja tem conta? <Link to="/login">Entrar</Link>
+          Já tem conta? <Link to="/login">Entrar</Link>
         </p>
       </div>
     </div>

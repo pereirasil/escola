@@ -8,7 +8,7 @@ import { materiasService } from '../../../services/materias.service';
 import { maskCpf, maskPhone, maskCep, fetchAddressByCep } from '../../../utils/masks';
 import toast from 'react-hot-toast';
 
-const DIAS_SEMANA = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta', 'Sabado'];
+const DIAS_SEMANA = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
 export default function ProfessorEditar() {
   const { id } = useParams();
@@ -100,7 +100,7 @@ export default function ProfessorEditar() {
 
   const handleAddSchedule = async () => {
     if (!newSchedule.class_id || !newSchedule.subject_id || !newSchedule.day_of_week || !newSchedule.start_time || !newSchedule.end_time) {
-      toast.error('Preencha turma, materia, dia, inicio e fim.');
+      toast.error('Preencha turma, matéria, dia, início e fim.');
       return;
     }
     setAddingSchedule(true);
@@ -114,11 +114,11 @@ export default function ProfessorEditar() {
         end_time: newSchedule.end_time,
         room: newSchedule.room || undefined,
       });
-      toast.success('Horario adicionado!');
+      toast.success('Horário adicionado!');
       setNewSchedule({ class_id: '', subject_id: '', day_of_week: '', start_time: '', end_time: '', room: '' });
       await loadData();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Erro ao adicionar horario.');
+      toast.error(error.response?.data?.message || 'Erro ao adicionar horário.');
     } finally {
       setAddingSchedule(false);
     }
@@ -128,10 +128,10 @@ export default function ProfessorEditar() {
     if (!removeTarget) return;
     try {
       await horariosService.excluir(removeTarget);
-      toast.success('Horario removido!');
+      toast.success('Horário removido!');
       await loadData();
     } catch (error) {
-      toast.error('Erro ao remover horario.');
+      toast.error('Erro ao remover horário.');
     } finally {
       setRemoveTarget(null);
     }
@@ -156,7 +156,7 @@ export default function ProfessorEditar() {
 
   const handleSaveSchedule = async () => {
     if (!editingData.class_id || !editingData.subject_id || !editingData.day_of_week || !editingData.start_time || !editingData.end_time) {
-      toast.error('Preencha turma, materia, dia, inicio e fim.');
+      toast.error('Preencha turma, matéria, dia, início e fim.');
       return;
     }
     setSavingSchedule(true);
@@ -170,12 +170,12 @@ export default function ProfessorEditar() {
         end_time: editingData.end_time,
         room: editingData.room || undefined,
       });
-      toast.success('Horario atualizado!');
+      toast.success('Horário atualizado!');
       setEditingId(null);
       setEditingData({});
       await loadData();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Erro ao atualizar horario.');
+      toast.error(error.response?.data?.message || 'Erro ao atualizar horário.');
     } finally {
       setSavingSchedule(false);
     }
@@ -202,10 +202,10 @@ export default function ProfessorEditar() {
             <FormInput label="E-mail" id="email" type="email" placeholder="Ex: maria@escola.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             <FormInput label="CEP" id="cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
             <FormInput label="Estado" id="state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
-            <FormInput label="Cidade" id="city" placeholder="Ex: Sao Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+            <FormInput label="Cidade" id="city" placeholder="Ex: São Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
             <FormInput label="Bairro" id="neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
             <FormInput label="Rua" id="street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
-            <FormInput label="Numero" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
+            <FormInput label="Número" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
             <FormInput label="Complemento" id="complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
           </div>
           <button type="submit" className="btn-primary" disabled={saving}>
@@ -214,19 +214,19 @@ export default function ProfessorEditar() {
         </form>
       </Card>
 
-      <Card title="Turmas e Horarios">
+      <Card title="Turmas e Horários">
         {teacherSchedules.length > 0 ? (
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table">
               <thead>
                 <tr>
                   <th>Turma</th>
-                  <th>Materia</th>
+                  <th>Matéria</th>
                   <th>Dia</th>
-                  <th>Inicio</th>
+                  <th>Início</th>
                   <th>Fim</th>
                   <th>Sala</th>
-                  <th>Acoes</th>
+                  <th>Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -313,12 +313,12 @@ export default function ProfessorEditar() {
           </div>
         ) : (
           <p style={{ color: '#888', fontStyle: 'italic', fontSize: '0.875rem' }}>
-            Nenhum horario vinculado a este professor.
+            Nenhum horário vinculado a este professor.
           </p>
         )}
 
         <div style={{ marginTop: '1.5rem', borderTop: '1px solid #333', paddingTop: '1rem' }}>
-          <h4 style={{ marginBottom: '0.75rem', fontSize: '0.95rem' }}>Adicionar horario</h4>
+          <h4 style={{ marginBottom: '0.75rem', fontSize: '0.95rem' }}>Adicionar horário</h4>
           <div className="form-grid">
             <SelectField
               label="Turma"
@@ -328,7 +328,7 @@ export default function ProfessorEditar() {
               options={turmas.map(t => ({ value: t.id, label: t.name }))}
             />
             <SelectField
-              label="Materia"
+              label="Matéria"
               id="new-subject"
               value={newSchedule.subject_id}
               onChange={e => setNewSchedule({ ...newSchedule, subject_id: e.target.value })}
@@ -342,7 +342,7 @@ export default function ProfessorEditar() {
               options={DIAS_SEMANA.map(d => ({ value: d, label: d }))}
             />
             <FormInput
-              label="Inicio"
+              label="Início"
               id="new-start"
               type="time"
               value={newSchedule.start_time}
@@ -370,15 +370,15 @@ export default function ProfessorEditar() {
             disabled={addingSchedule}
             style={{ marginTop: '0.5rem' }}
           >
-            {addingSchedule ? 'Adicionando...' : 'Adicionar horario'}
+            {addingSchedule ? 'Adicionando...' : 'Adicionar horário'}
           </button>
         </div>
       </Card>
 
       <ConfirmModal
         open={!!removeTarget}
-        title="Remover horario"
-        message="Tem certeza que deseja remover este horario do professor?"
+        title="Remover horário"
+        message="Tem certeza que deseja remover este horário do professor?"
         confirmLabel="Remover"
         danger
         onConfirm={handleRemoveSchedule}

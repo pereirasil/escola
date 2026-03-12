@@ -57,7 +57,7 @@ export default function Alunos() {
     e.preventDefault();
     try {
       if (form.password !== form.confirmPassword) {
-        toast.error('Senha e confirmacao nao conferem.');
+        toast.error('Senha e confirmação não conferem.');
         return;
       }
       const { confirmPassword, ...payload } = form;
@@ -80,7 +80,7 @@ export default function Alunos() {
     if (!deleteTarget) return;
     try {
       await alunosService.excluir(deleteTarget);
-      toast.success('Aluno excluido com sucesso!');
+      toast.success('Aluno excluído com sucesso!');
       load();
     } catch (error) {
       toast.error('Erro ao excluir aluno.');
@@ -97,26 +97,26 @@ export default function Alunos() {
 
   return (
     <div className="page">
-      <PageHeader title="Alunos" description="Gerenciamento de alunos e matriculas" />
+      <PageHeader title="Alunos" description="Gerenciamento de alunos e matrículas" />
       
       <Card title="Cadastrar Novo Aluno">
         <form onSubmit={handleSubmit}>
           <PhotoUpload onFileSelect={setPhotoFile} label="Foto do aluno" />
           <div className="form-grid">
-            <FormInput label="Nome do aluno" id="name" placeholder="Ex: Joao da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <FormInput label="Nome do aluno" id="name" placeholder="Ex: João da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <FormInput label="Data de nascimento" id="birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />
-            <FormInput label="CPF (usuario de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
-            <FormInput label="Senha" id="password" type="password" placeholder="Minimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+            <FormInput label="CPF (usuário de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
+            <FormInput label="Senha" id="password" type="password" placeholder="Mínimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
             <FormInput label="Confirmar senha" id="confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
-            <FormInput label="Nome do Responsavel" id="guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
-            <FormInput label="CPF do Responsavel" id="guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
-            <FormInput label="Telefone do Responsavel" id="guardian_phone" placeholder="(00) 00000-0000" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })} maxLength={15} />
+            <FormInput label="Nome do Responsável" id="guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
+            <FormInput label="CPF do Responsável" id="guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
+            <FormInput label="Telefone do Responsável" id="guardian_phone" placeholder="(00) 00000-0000" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })} maxLength={15} />
             <FormInput label="CEP" id="cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
             <FormInput label="Estado" id="state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
-            <FormInput label="Cidade" id="city" placeholder="Ex: Sao Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+            <FormInput label="Cidade" id="city" placeholder="Ex: São Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
             <FormInput label="Bairro" id="neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
             <FormInput label="Rua" id="street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
-            <FormInput label="Numero" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
+            <FormInput label="Número" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
             <FormInput label="Complemento" id="complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
             <SelectField
               label="Turma"
@@ -151,7 +151,7 @@ export default function Alunos() {
         {loadingData ? <Spinner /> : (
           <>
             <DataTable
-              columns={['Nome', 'CPF/Matricula', 'Turma', 'Faltas', 'Acoes']}
+              columns={['Nome', 'CPF/Matrícula', 'Turma', 'Faltas', 'Ações']}
               data={alunosFiltrados}
               renderRow={(a) => {
                 const t = turmas.find(t => t.id === a.class_id);
@@ -181,7 +181,7 @@ export default function Alunos() {
                         <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Editar</button>
                       </Link>
                       <Link to={`/alunos/${a.id}`}>
-                        <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Historico</button>
+                        <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Histórico</button>
                       </Link>
                       <button type="button" className="btn-danger" onClick={() => setDeleteTarget(a.id)}>Excluir</button>
                     </td>
@@ -192,8 +192,8 @@ export default function Alunos() {
             {totalPages > 1 && (
               <div className="pagination">
                 <button disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span className="pagination-info">Pagina {page} de {totalPages}</span>
-                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Proxima</button>
+                <span className="pagination-info">Página {page} de {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Próxima</button>
               </div>
             )}
           </>
@@ -203,7 +203,7 @@ export default function Alunos() {
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir aluno"
-        message="Tem certeza que deseja excluir este aluno? Esta acao nao pode ser desfeita."
+        message="Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

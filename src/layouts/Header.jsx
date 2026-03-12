@@ -16,10 +16,10 @@ export default function Header({ onToggleSidebar }) {
         <button type="button" className="sidebar-toggle" onClick={onToggleSidebar} aria-label="Menu">
           &#9776;
         </button>
-        <h1 className="header-title">Gestao Escolar</h1>
+        <h1 className="header-title">Gestão Escolar</h1>
       </div>
       <div className="header-actions">
-        <span className="header-user">{user?.name || user?.email || 'Usuario'}</span>
+        <span className="header-user">{user?.name || user?.email || 'Usuário'}</span>
         <button type="button" className="header-logout" onClick={handleLogout}>
           Sair
         </button>

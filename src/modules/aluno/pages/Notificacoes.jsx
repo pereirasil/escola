@@ -8,17 +8,17 @@ export default function Notificacoes() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    alunosService.minhasNotificacoes().then(setLista).catch(() => toast.error('Erro ao carregar notificacoes.')).finally(() => setLoading(false))
+    alunosService.minhasNotificacoes().then(setLista).catch(() => toast.error('Erro ao carregar notificações.')).finally(() => setLoading(false))
     alunosService.marcarNotificacoesComoLidas().catch(() => {})
   }, [])
 
   return (
     <div className="page">
-      <Card title="Notificacoes">
+      <Card title="Notificações">
         {loading ? (
           <Spinner />
         ) : lista.length === 0 ? (
-          <div className="empty-state">Nenhuma notificacao.</div>
+          <div className="empty-state">Nenhuma notificação.</div>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {lista.map((n) => (

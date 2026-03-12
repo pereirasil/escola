@@ -58,7 +58,7 @@ export default function MeusDados() {
             <FormInput label="Cidade" id="city" value={dados.city ?? ''} onChange={(e) => setDados({ ...dados, city: e.target.value })} />
             <FormInput label="Bairro" id="neighborhood" value={dados.neighborhood ?? ''} onChange={(e) => setDados({ ...dados, neighborhood: e.target.value })} />
             <FormInput label="Rua" id="street" value={dados.street ?? ''} onChange={(e) => setDados({ ...dados, street: e.target.value })} />
-            <FormInput label="Numero" id="number" value={dados.number ?? ''} onChange={(e) => setDados({ ...dados, number: e.target.value })} />
+            <FormInput label="Número" id="number" value={dados.number ?? ''} onChange={(e) => setDados({ ...dados, number: e.target.value })} />
             <FormInput label="Complemento" id="complement" value={dados.complement ?? ''} onChange={(e) => setDados({ ...dados, complement: e.target.value })} />
           </div>
           <button type="submit" className="btn-primary" disabled={saving}>

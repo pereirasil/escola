@@ -62,7 +62,7 @@ export default function Professores() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password !== form.confirmPassword) {
-      toast.error('Senha e confirmacao nao conferem.');
+      toast.error('Senha e confirmação não conferem.');
       return;
     }
     try {
@@ -85,7 +85,7 @@ export default function Professores() {
     if (!deleteTarget) return;
     try {
       await professoresService.excluir(deleteTarget);
-      toast.success('Professor excluido com sucesso!');
+      toast.success('Professor excluído com sucesso!');
       load();
     } catch (error) {
       toast.error('Erro ao excluir professor.');
@@ -96,28 +96,28 @@ export default function Professores() {
 
   return (
     <div className="page">
-      <PageHeader title="Professores" description="Gestao do corpo docente" />
+      <PageHeader title="Professores" description="Gestão do corpo docente" />
       
       <Card title="Cadastrar Novo Professor">
         <form onSubmit={handleSubmit}>
           <PhotoUpload onFileSelect={setPhotoFile} label="Foto do professor" />
           <div className="form-grid">
             <FormInput label="Nome do Professor" id="name" placeholder="Ex: Maria Souza" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-            <FormInput label="CPF (usuario de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
-            <FormInput label="Senha" id="password" type="password" placeholder="Minimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
+            <FormInput label="CPF (usuário de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
+            <FormInput label="Senha" id="password" type="password" placeholder="Mínimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
             <FormInput label="Confirmar senha" id="confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
             <FormInput label="Telefone" id="phone" placeholder="(00) 00000-0000" value={form.phone} onChange={e => setForm({ ...form, phone: maskPhone(e.target.value) })} maxLength={15} />
             <FormInput label="E-mail" id="email" type="email" placeholder="Ex: maria@escola.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             <FormInput label="CEP" id="cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
             <FormInput label="Estado" id="state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
-            <FormInput label="Cidade" id="city" placeholder="Ex: Sao Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+            <FormInput label="Cidade" id="city" placeholder="Ex: São Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
             <FormInput label="Bairro" id="neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
             <FormInput label="Rua" id="street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
-            <FormInput label="Numero" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
+            <FormInput label="Número" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
             <FormInput label="Complemento" id="complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
           </div>
           <p style={{ fontSize: '0.875rem', color: '#888', margin: '1rem 0' }}>
-            Para vincular turmas e materias ao professor, utilize a <Link to="/horarios" style={{ color: '#646cff' }}>Grade Horaria</Link> apos o cadastro.
+            Para vincular turmas e matérias ao professor, utilize a <Link to="/horarios" style={{ color: '#646cff' }}>Grade Horária</Link> após o cadastro.
           </p>
           <button type="submit" className="btn-primary">Salvar Professor</button>
         </form>
@@ -143,7 +143,7 @@ export default function Professores() {
         {loadingData ? <Spinner /> : (
           <>
             <DataTable
-              columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Materias', 'Turmas', 'Acoes']}
+              columns={['Nome', 'CPF', 'Telefone', 'E-mail', 'Matérias', 'Turmas', 'Ações']}
               data={professores.filter(p => {
                 const matchNome = p.name.toLowerCase().includes(filtroNome.toLowerCase());
                 if (!matchNome) return false;
@@ -163,8 +163,8 @@ export default function Professores() {
                   <td>{p.document}</td>
                   <td>{p.phone}</td>
                   <td>{p.email}</td>
-                  <td>{nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}</td>
-                  <td>{nomesTurmas.length > 0 ? nomesTurmas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}</td>
+                  <td>{nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
+                  <td>{nomesTurmas.length > 0 ? nomesTurmas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button className="btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => setViewProfile(p)}>Ver Perfil</button>
@@ -179,8 +179,8 @@ export default function Professores() {
             {totalPages > 1 && (
               <div className="pagination">
                 <button disabled={page === 1} onClick={() => setPage(page - 1)}>Anterior</button>
-                <span className="pagination-info">Pagina {page} de {totalPages}</span>
-                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Proxima</button>
+                <span className="pagination-info">Página {page} de {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>Próxima</button>
               </div>
             )}
           </>
@@ -217,16 +217,16 @@ export default function Professores() {
                   <div><strong>Cidade:</strong> {p.city || '-'}</div>
                   <div><strong>Bairro:</strong> {p.neighborhood || '-'}</div>
                   <div><strong>Rua:</strong> {p.street || '-'}</div>
-                  <div><strong>Numero:</strong> {p.number || '-'}</div>
+                  <div><strong>Número:</strong> {p.number || '-'}</div>
                   <div style={{ gridColumn: '1 / -1' }}><strong>Complemento:</strong> {p.complement || '-'}</div>
                 </div>
                 <div>
-                  <strong>Materias:</strong>{' '}
-                  {nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}
+                  <strong>Matérias:</strong>{' '}
+                  {nomesMaterias.length > 0 ? nomesMaterias.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}
                 </div>
                 <div>
                   <strong>Turmas:</strong>{' '}
-                  {nomesTurmas.length > 0 ? nomesTurmas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vinculo</span>}
+                  {nomesTurmas.length > 0 ? nomesTurmas.join(', ') : <span style={{ color: '#888', fontStyle: 'italic' }}>Sem vínculo</span>}
                 </div>
               </div>
               <div className="modal-actions">
@@ -240,7 +240,7 @@ export default function Professores() {
       <ConfirmModal
         open={!!deleteTarget}
         title="Excluir professor"
-        message="Tem certeza que deseja excluir este professor? Esta acao nao pode ser desfeita."
+        message="Tem certeza que deseja excluir este professor? Esta ação não pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

@@ -53,18 +53,18 @@ export default function EscolasAprovadas() {
           <div style={{ padding: '0.5rem 0' }}>
             <strong style={{ color: '#f59e0b' }}>Registros sem escola vinculada</strong>
             <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: '#888' }}>
-              Existem {orphans.total} registros criados antes do sistema multi-tenant que nao estao vinculados a nenhuma escola.
+              Existem {orphans.total} registros criados antes do sistema multi-tenant que não estão vinculados a nenhuma escola.
               Selecione uma escola para vincular todos esses registros.
             </p>
             <div style={{ fontSize: '0.85rem', marginBottom: '0.75rem', color: '#aaa' }}>
               {orphans.students > 0 && <span>Alunos: {orphans.students} | </span>}
               {orphans.teachers > 0 && <span>Professores: {orphans.teachers} | </span>}
               {orphans.classes > 0 && <span>Turmas: {orphans.classes} | </span>}
-              {orphans.subjects > 0 && <span>Materias: {orphans.subjects} | </span>}
-              {orphans.attendance > 0 && <span>Presencas: {orphans.attendance} | </span>}
-              {orphans.meetings > 0 && <span>Reunioes: {orphans.meetings} | </span>}
-              {orphans.schedules > 0 && <span>Horarios: {orphans.schedules} | </span>}
-              {orphans.notifications > 0 && <span>Notificacoes: {orphans.notifications}</span>}
+              {orphans.subjects > 0 && <span>Matérias: {orphans.subjects} | </span>}
+              {orphans.attendance > 0 && <span>Presenças: {orphans.attendance} | </span>}
+              {orphans.meetings > 0 && <span>Reuniões: {orphans.meetings} | </span>}
+              {orphans.schedules > 0 && <span>Horários: {orphans.schedules} | </span>}
+              {orphans.notifications > 0 && <span>Notificações: {orphans.notifications}</span>}
             </div>
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
               <select
@@ -95,7 +95,7 @@ export default function EscolasAprovadas() {
           <Spinner />
         ) : (
           <DataTable
-            columns={['Escola', 'Responsavel', 'Celular', 'CNPJ', 'E-mail', 'Alunos', 'Professores', 'Data cadastro']}
+            columns={['Escola', 'Responsável', 'Celular', 'CNPJ', 'E-mail', 'Alunos', 'Professores', 'Data cadastro']}
             data={list}
             emptyMessage="Nenhuma escola aprovada no momento."
             renderRow={(u) => (

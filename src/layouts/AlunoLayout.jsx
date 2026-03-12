@@ -45,8 +45,8 @@ export default function AlunoLayout() {
       <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
         <nav className="sidebar-nav">
           <NavLink to="/aluno/dados" className={linkClass} onClick={handleLinkClick}>Meus dados</NavLink>
-          <NavLink to="/aluno/historico" className={linkClass} onClick={handleLinkClick}>Historico</NavLink>
-          <NavLink to="/aluno/notificacoes" className={linkClass} onClick={handleLinkClick}>Notificacoes</NavLink>
+          <NavLink to="/aluno/historico" className={linkClass} onClick={handleLinkClick}>Histórico</NavLink>
+          <NavLink to="/aluno/notificacoes" className={linkClass} onClick={handleLinkClick}>Notificações</NavLink>
           <NavLink to="/aluno/datas" className={linkClass} onClick={handleLinkClick}>Datas Importantes</NavLink>
           <NavLink to="/aluno/alterar-senha" className={linkClass} onClick={handleLinkClick}>Alterar senha</NavLink>
         </nav>
@@ -57,7 +57,7 @@ export default function AlunoLayout() {
             <button type="button" className="sidebar-toggle" onClick={() => setSidebarOpen(prev => !prev)} aria-label="Menu">
               &#9776;
             </button>
-            <h1 className="header-title">Area do Aluno</h1>
+            <h1 className="header-title">Área do Aluno</h1>
           </div>
           <div className="header-actions">
             <NotificationBell />

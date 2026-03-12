@@ -39,7 +39,7 @@ export default function AprovarEscolas() {
           <Spinner />
         ) : (
           <DataTable
-            columns={['Escola', 'Responsavel', 'Celular', 'CNPJ', 'E-mail', 'Data cadastro', 'Acoes']}
+            columns={['Escola', 'Responsável', 'Celular', 'CNPJ', 'E-mail', 'Data cadastro', 'Ações']}
             data={list}
             emptyMessage="Nenhuma escola pendente no momento."
             renderRow={(u) => (

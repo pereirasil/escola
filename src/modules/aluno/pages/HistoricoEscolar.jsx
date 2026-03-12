@@ -10,18 +10,18 @@ export default function HistoricoEscolar() {
   useEffect(() => {
     alunosService.meuHistorico()
       .then(setDados)
-      .catch(() => toast.error('Erro ao carregar historico.'))
+      .catch(() => toast.error('Erro ao carregar histórico.'))
       .finally(() => setLoading(false))
   }, [])
 
   if (loading) return <div className="page"><Spinner /></div>
-  if (!dados) return <div className="page"><div className="empty-state">Nao foi possivel carregar o historico.</div></div>
+  if (!dados) return <div className="page"><div className="empty-state">Não foi possível carregar o histórico.</div></div>
 
   const { historico, resumo } = dados
 
   return (
     <div className="page">
-      <Card title="Historico Escolar">
+      <Card title="Histórico Escolar">
         <div className="historico-resumo">
           <div className="historico-resumo-item">
             <span className="historico-resumo-valor">{resumo.total}</span>
@@ -29,7 +29,7 @@ export default function HistoricoEscolar() {
           </div>
           <div className="historico-resumo-item">
             <span className="historico-resumo-valor" style={{ color: '#4ade80' }}>{resumo.presentes}</span>
-            <span className="historico-resumo-label">Presencas</span>
+            <span className="historico-resumo-label">Presenças</span>
           </div>
           <div className="historico-resumo-item">
             <span className="historico-resumo-valor" style={{ color: '#f87171' }}>{resumo.faltas}</span>
@@ -37,7 +37,7 @@ export default function HistoricoEscolar() {
           </div>
           <div className="historico-resumo-item">
             <span className="historico-resumo-valor" style={{ color: '#646cff' }}>{resumo.frequencia}%</span>
-            <span className="historico-resumo-label">Frequencia</span>
+            <span className="historico-resumo-label">Frequência</span>
           </div>
         </div>
 
@@ -48,12 +48,12 @@ export default function HistoricoEscolar() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Materia</th>
+                  <th>Matéria</th>
                   <th>1 Bim</th>
                   <th>2 Bim</th>
                   <th>3 Bim</th>
                   <th>4 Bim</th>
-                  <th>Presencas</th>
+                  <th>Presenças</th>
                   <th>Faltas</th>
                 </tr>
               </thead>

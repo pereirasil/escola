@@ -45,17 +45,17 @@ const icons = {
 const STEP_ITEMS = [
   { id: 1, title: 'Dados da Turma', description: 'Preencha os dados principais' },
   { id: 2, title: 'Alunos', description: 'Monte a lista da turma' },
-  { id: 3, title: 'Horarios', description: 'Defina a grade da turma' },
+  { id: 3, title: 'Horários', description: 'Defina a grade da turma' },
   { id: 4, title: 'Resumo', description: 'Revise e conclua tudo' },
 ];
 
 const ALUNO_MODAL_STEPS = [
   { id: 1, title: 'Dados', icon: icons.alunos },
-  { id: 2, title: 'Responsavel', icon: icons.userPlus },
-  { id: 3, title: 'Endereco', icon: icons.turma },
+  { id: 2, title: 'Responsável', icon: icons.userPlus },
+  { id: 3, title: 'Endereço', icon: icons.turma },
 ];
 
-const diasDaSemana = ['Segunda', 'Terca', 'Quarta', 'Quinta', 'Sexta'];
+const diasDaSemana = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta'];
 
 const initialTurmaForm = {
   name: '',
@@ -229,7 +229,7 @@ export default function TurmaSteps() {
   const handleCriarAluno = async (event) => {
     event.preventDefault();
     if (alunoForm.password !== alunoForm.confirmPassword) {
-      toast.error('Senha e confirmacao do aluno nao conferem.');
+      toast.error('Senha e confirmação do aluno não conferem.');
       return;
     }
 
@@ -246,7 +246,7 @@ export default function TurmaSteps() {
       ]);
       closeAlunoModal();
       setCompleted(false);
-      toast.success('Aluno preparado para criacao no passo final.');
+      toast.success('Aluno preparado para criação no passo final.');
     } finally {
       setSavingAluno(false);
     }
@@ -285,7 +285,7 @@ export default function TurmaSteps() {
   const handleSalvarHorario = (event) => {
     event.preventDefault();
     if (!horarioForm.teacher_id || !horarioForm.subject_id || !horarioForm.start_time || !horarioForm.end_time) {
-      toast.error('Preencha professor, materia, horario inicial e final.');
+      toast.error('Preencha professor, matéria, horário inicial e final.');
       return;
     }
 
@@ -303,7 +303,7 @@ export default function TurmaSteps() {
         end_time: horarioForm.end_time,
         room: horarioForm.room || '',
         teacher_name: professor?.name || selectedTeacherLabel || 'Professor',
-        subject_name: materia?.name || 'Materia',
+        subject_name: materia?.name || 'Matéria',
       };
 
       setHorariosDraft((current) => {
@@ -315,7 +315,7 @@ export default function TurmaSteps() {
 
       resetHorarioForm();
       setCompleted(false);
-      toast.success(editingHorarioId ? 'Horario atualizado no rascunho.' : 'Horario adicionado ao rascunho.');
+      toast.success(editingHorarioId ? 'Horário atualizado no rascunho.' : 'Horário adicionado ao rascunho.');
     } finally {
       setSavingHorario(false);
     }
@@ -338,7 +338,7 @@ export default function TurmaSteps() {
     setHorariosDraft((current) => current.filter((horario) => horario.draftId !== horarioId));
     if (editingHorarioId === horarioId) resetHorarioForm();
     setCompleted(false);
-    toast.success('Horario removido do rascunho.');
+    toast.success('Horário removido do rascunho.');
   };
 
   const validateBeforeSummary = () => {
@@ -352,7 +352,7 @@ export default function TurmaSteps() {
       return false;
     }
     if (horariosDraft.length === 0) {
-      toast.error('Adicione pelo menos um horario antes de seguir.');
+      toast.error('Adicione pelo menos um horário antes de seguir.');
       setStep(3);
       return false;
     }
@@ -411,9 +411,9 @@ export default function TurmaSteps() {
       }
 
       setCompleted(true);
-      toast.success('Turma criada com alunos e horarios.');
+      toast.success('Turma criada com alunos e horários.');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Erro ao concluir a criacao da turma.');
+      toast.error(error.response?.data?.message || 'Erro ao concluir a criação da turma.');
     } finally {
       setFinalizing(false);
     }
@@ -500,7 +500,7 @@ export default function TurmaSteps() {
                     onChange={(event) => setTurmaForm({ ...turmaForm, name: event.target.value })}
                   />
                   <SelectField
-                    label="Serie / Ano"
+                    label="Série / Ano"
                     id="step-class-grade"
                     value={turmaForm.grade}
                     onChange={(event) => setTurmaForm({ ...turmaForm, grade: event.target.value })}
@@ -508,7 +508,7 @@ export default function TurmaSteps() {
                       { value: 'Maternal', label: 'Maternal' },
                       { value: 'Jardim I', label: 'Jardim I' },
                       { value: 'Jardim II', label: 'Jardim II' },
-                      { value: 'Pre-escola', label: 'Pre-escola' },
+                      { value: 'Pré-escola', label: 'Pré-escola' },
                       { value: '1o Ano (Ensino Fundamental)', label: '1o Ano (Ensino Fundamental)' },
                       { value: '2o Ano (Ensino Fundamental)', label: '2o Ano (Ensino Fundamental)' },
                       { value: '3o Ano (Ensino Fundamental)', label: '3o Ano (Ensino Fundamental)' },
@@ -518,9 +518,9 @@ export default function TurmaSteps() {
                       { value: '7o Ano (Ensino Fundamental)', label: '7o Ano (Ensino Fundamental)' },
                       { value: '8o Ano (Ensino Fundamental)', label: '8o Ano (Ensino Fundamental)' },
                       { value: '9o Ano (Ensino Fundamental)', label: '9o Ano (Ensino Fundamental)' },
-                      { value: '1o Ano (Ensino Medio)', label: '1o Ano (Ensino Medio)' },
-                      { value: '2o Ano (Ensino Medio)', label: '2o Ano (Ensino Medio)' },
-                      { value: '3o Ano (Ensino Medio)', label: '3o Ano (Ensino Medio)' },
+                      { value: '1o Ano (Ensino Médio)', label: '1o Ano (Ensino Médio)' },
+                      { value: '2o Ano (Ensino Médio)', label: '2o Ano (Ensino Médio)' },
+                      { value: '3o Ano (Ensino Médio)', label: '3o Ano (Ensino Médio)' },
                     ]}
                   />
                   <SelectField
@@ -529,7 +529,7 @@ export default function TurmaSteps() {
                     value={turmaForm.shift}
                     onChange={(event) => setTurmaForm({ ...turmaForm, shift: event.target.value })}
                     options={[
-                      { value: 'Manha', label: 'Manha' },
+                      { value: 'Manhã', label: 'Manhã' },
                       { value: 'Tarde', label: 'Tarde' },
                       { value: 'Noite', label: 'Noite' },
                     ]}
@@ -552,7 +552,7 @@ export default function TurmaSteps() {
                 <div className="steps-actions steps-actions-end">
                   <button type="submit" className="btn-primary">
                     <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
-                    Proximo passo
+                    Próximo passo
                   </button>
                 </div>
               </form>
@@ -604,7 +604,7 @@ export default function TurmaSteps() {
                 <div className="steps-actions steps-actions-end">
                   <button type="button" className="btn-primary" onClick={() => setStep(3)}>
                     <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
-                    Proximo passo
+                    Próximo passo
                   </button>
                 </div>
               </Card>
@@ -641,7 +641,7 @@ export default function TurmaSteps() {
             <>
               <Card>
                 <StepCardHeader
-                  title="3. Montar grade horaria da turma"
+                  title="3. Montar grade horária da turma"
                   action={(
                     <button type="button" className="btn-secondary" onClick={() => setStep(2)}>
                       <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
@@ -651,12 +651,12 @@ export default function TurmaSteps() {
                 />
                 {materias.length === 0 ? (
                   <div className="empty-state">
-                    Cadastre ao menos uma materia em <Link to="/materias">Materias</Link> para criar horarios.
+                    Cadastre ao menos uma matéria em <Link to="/materias">Matérias</Link> para criar horários.
                   </div>
                 ) : (
                   <form onSubmit={handleSalvarHorario}>
                     <p className="page-description" style={{ marginTop: 0 }}>
-                      Monte a grade no rascunho. Nada sera salvo no banco antes da confirmacao final.
+                      Monte a grade no rascunho. Nada será salvo no banco antes da confirmação final.
                     </p>
                     <div className="steps-inline-form steps-inline-form-top">
                       <div className="steps-inline-form-grow">
@@ -677,14 +677,14 @@ export default function TurmaSteps() {
                         {savingHorario ? 'Salvando...' : editingHorarioId ? 'Salvar' : 'Adicionar'}
                       </button>
                       {editingHorarioId && (
-                        <button type="button" className="btn-secondary btn-icon" onClick={resetHorarioForm} title="Cancelar edicao" aria-label="Cancelar edicao">
+                        <button type="button" className="btn-secondary btn-icon" onClick={resetHorarioForm} title="Cancelar edição" aria-label="Cancelar edição">
                           <span className="inline-icon"><Icon path={icons.close} size={18} /></span>
                         </button>
                       )}
                     </div>
                     <div className="form-grid">
                       <SelectField
-                        label="Materia"
+                        label="Matéria"
                         id="step-schedule-subject"
                         value={horarioForm.subject_id}
                         onChange={(event) => setHorarioForm({ ...horarioForm, subject_id: event.target.value })}
@@ -698,7 +698,7 @@ export default function TurmaSteps() {
                         options={diasDaSemana.map((dia) => ({ value: dia, label: dia }))}
                       />
                       <FormInput
-                        label="Inicio"
+                        label="Início"
                         id="step-schedule-start"
                         type="time"
                         value={horarioForm.start_time}
@@ -722,16 +722,16 @@ export default function TurmaSteps() {
                     <div className="steps-actions steps-actions-end">
                       <button type="button" className="btn-primary" onClick={handleGoToSummary}>
                         <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
-                        Proximo passo
+                        Próximo passo
                       </button>
                     </div>
                   </form>
                 )}
               </Card>
 
-              <Card title="Horarios no rascunho">
+              <Card title="Horários no rascunho">
                 {horariosDaTurma.length === 0 ? (
-                  <div className="empty-state">Nenhum horario definido ainda.</div>
+                  <div className="empty-state">Nenhum horário definido ainda.</div>
                 ) : (
                   <div className="steps-list">
                     {horariosDaTurma.map((horario) => (
@@ -767,7 +767,7 @@ export default function TurmaSteps() {
             <>
               <Card>
                 <StepCardHeader
-                  title="4. Resumo da criacao"
+                  title="4. Resumo da criação"
                   action={(
                     <button type="button" className="btn-secondary" onClick={() => setStep(3)} disabled={finalizing}>
                       <span className="inline-icon"><Icon path={icons.arrowLeft} size={16} /></span>
@@ -780,7 +780,7 @@ export default function TurmaSteps() {
                     <div>
                       <strong>{turmaForm.name || 'Turma sem nome'}</strong>
                       <small>
-                        {turmaForm.grade || 'Serie nao informada'} • {turmaForm.shift || 'Turno nao informado'}
+                        {turmaForm.grade || 'Série não informada'} • {turmaForm.shift || 'Turno não informado'}
                         {turmaForm.room ? ` • Sala ${turmaForm.room}` : ''}
                         {turmaForm.school_year ? ` • Ano letivo ${turmaForm.school_year}` : ''}
                       </small>
@@ -806,9 +806,9 @@ export default function TurmaSteps() {
                 )}
               </Card>
 
-              <Card title={`Horarios escolhidos (${horariosDaTurma.length})`}>
+              <Card title={`Horários escolhidos (${horariosDaTurma.length})`}>
                 {horariosDaTurma.length === 0 ? (
-                  <div className="empty-state">Nenhum horario selecionado.</div>
+                  <div className="empty-state">Nenhum horário selecionado.</div>
                 ) : (
                   <div className="steps-list">
                     {horariosDaTurma.map((horario) => (
@@ -828,22 +828,22 @@ export default function TurmaSteps() {
                 )}
               </Card>
 
-              <Card title="Confirmacao final">
+              <Card title="Confirmação final">
                 <p className="page-description">
-                  Revise os dados acima. A turma, as matriculas e os horarios serao criados somente ao clicar em concluir.
+                  Revise os dados acima. A turma, as matrículas e os horários serão criados somente ao clicar em concluir.
                 </p>
                 <div className="steps-actions steps-actions-end">
                   <button type="button" className="btn-primary" onClick={handleConcluir} disabled={finalizing}>
                     <span className="inline-icon"><Icon path={icons.check} size={16} /></span>
-                    {finalizing ? 'Concluindo...' : 'Concluir criacao da turma'}
+                    {finalizing ? 'Concluindo...' : 'Concluir criação da turma'}
                   </button>
                 </div>
               </Card>
 
               {completed && (
-                <Card title="Turma concluida">
+                <Card title="Turma concluída">
                   <p className="page-description">
-                    Tudo foi salvo no banco com sucesso. Agora voce pode usar as telas atuais para editar, incluir e excluir normalmente.
+                    Tudo foi salvo no banco com sucesso. Agora você pode usar as telas atuais para editar, incluir e excluir normalmente.
                   </p>
                   <div className="steps-actions">
                     <button type="button" className="btn-secondary" onClick={handleNovaTurma}>
@@ -900,9 +900,9 @@ export default function TurmaSteps() {
 
               {alunoModalStep === 2 && (
                 <div className="form-grid">
-                  <FormInput label="Nome do responsavel" id="modal-student-guardian-name" value={alunoForm.guardian_name} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_name: event.target.value })} />
-                  <FormInput label="Telefone do responsavel" id="modal-student-guardian-phone" maxLength={15} value={alunoForm.guardian_phone} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_phone: maskPhone(event.target.value) })} />
-                  <FormInput label="CPF do responsavel" id="modal-student-guardian-document" maxLength={14} value={alunoForm.guardian_document} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_document: maskCpf(event.target.value) })} />
+                  <FormInput label="Nome do responsável" id="modal-student-guardian-name" value={alunoForm.guardian_name} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_name: event.target.value })} />
+                  <FormInput label="Telefone do responsável" id="modal-student-guardian-phone" maxLength={15} value={alunoForm.guardian_phone} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_phone: maskPhone(event.target.value) })} />
+                  <FormInput label="CPF do responsável" id="modal-student-guardian-document" maxLength={14} value={alunoForm.guardian_document} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_document: maskCpf(event.target.value) })} />
                 </div>
               )}
 
@@ -913,7 +913,7 @@ export default function TurmaSteps() {
                   <FormInput label="Cidade" id="modal-student-city" value={alunoForm.city} onChange={(event) => setAlunoForm({ ...alunoForm, city: event.target.value })} />
                   <FormInput label="Bairro" id="modal-student-neighborhood" value={alunoForm.neighborhood} onChange={(event) => setAlunoForm({ ...alunoForm, neighborhood: event.target.value })} />
                   <FormInput label="Rua" id="modal-student-street" value={alunoForm.street} onChange={(event) => setAlunoForm({ ...alunoForm, street: event.target.value })} />
-                  <FormInput label="Numero" id="modal-student-number" value={alunoForm.number} onChange={(event) => setAlunoForm({ ...alunoForm, number: event.target.value })} />
+                  <FormInput label="Número" id="modal-student-number" value={alunoForm.number} onChange={(event) => setAlunoForm({ ...alunoForm, number: event.target.value })} />
                   <FormInput label="Complemento" id="modal-student-complement" value={alunoForm.complement} onChange={(event) => setAlunoForm({ ...alunoForm, complement: event.target.value })} />
                 </div>
               )}
@@ -932,7 +932,7 @@ export default function TurmaSteps() {
                 {alunoModalStep < ALUNO_MODAL_STEPS.length ? (
                   <button type="button" className="btn-primary" onClick={() => setAlunoModalStep(alunoModalStep + 1)} disabled={savingAluno}>
                     <span className="inline-icon"><Icon path={icons.arrowRight} size={16} /></span>
-                    Proximo
+                    Próximo
                   </button>
                 ) : (
                   <button type="submit" className="btn-primary" disabled={savingAluno}>

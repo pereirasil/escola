@@ -74,54 +74,54 @@ export default function Login() {
   return (
     <>
     <Helmet>
-      <title>Entrar - Sistema de Gestao Escolar | Login</title>
-      <meta name="description" content="Acesse o sistema de gestao escolar. Faca login como gestor, professor ou aluno e gerencie sua escola online." />
-      <meta property="og:title" content="Entrar - Sistema de Gestao Escolar" />
-      <meta property="og:description" content="Acesse o sistema de gestao escolar. Faca login como gestor, professor ou aluno." />
+      <title>Entrar - Sistema de Gestão Escolar | Login</title>
+      <meta name="description" content="Acesse o sistema de gestão escolar. Faça login como gestor, professor ou aluno e gerencie sua escola online." />
+      <meta property="og:title" content="Entrar - Sistema de Gestão Escolar" />
+      <meta property="og:description" content="Acesse o sistema de gestão escolar. Faça login como gestor, professor ou aluno." />
       <meta property="og:url" content="https://gestaoescolar.com.br/login" />
       <link rel="canonical" href="https://gestaoescolar.com.br/login" />
     </Helmet>
     <div className="auth-page">
       <div className="auth-hero">
         <div className="auth-hero-content">
-          <h1 className="auth-hero-title">Gestao Escolar</h1>
+          <h1 className="auth-hero-title">Gestão Escolar</h1>
           <p className="auth-hero-subtitle">
-            A plataforma completa para transformar a administracao da sua escola.
+            A plataforma completa para transformar a administração da sua escola.
           </p>
 
           <div className="auth-hero-features">
             <div className="auth-hero-feature">
               <span className="auth-hero-feature-icon">&#9670;</span>
               <div>
-                <strong>Gestao Integrada</strong>
-                <p>Controle de turmas, materias, horarios e financeiro em um so lugar.</p>
+                <strong>Gestão Integrada</strong>
+                <p>Controle de turmas, matérias, horários e financeiro em um só lugar.</p>
               </div>
             </div>
             <div className="auth-hero-feature">
               <span className="auth-hero-feature-icon">&#9670;</span>
               <div>
                 <strong>Acompanhamento em Tempo Real</strong>
-                <p>Notas, presenca e desempenho dos alunos atualizados instantaneamente.</p>
+                <p>Notas, presença e desempenho dos alunos atualizados instantaneamente.</p>
               </div>
             </div>
             <div className="auth-hero-feature">
               <span className="auth-hero-feature-icon">&#9670;</span>
               <div>
-                <strong>Comunicacao Eficiente</strong>
-                <p>Professores, alunos e gestores conectados em uma unica plataforma.</p>
+                <strong>Comunicação Eficiente</strong>
+                <p>Professores, alunos e gestores conectados em uma única plataforma.</p>
               </div>
             </div>
             <div className="auth-hero-feature">
               <span className="auth-hero-feature-icon">&#9670;</span>
               <div>
-                <strong>Relatorios Inteligentes</strong>
-                <p>Dashboards e graficos que facilitam a tomada de decisao.</p>
+                <strong>Relatórios Inteligentes</strong>
+                <p>Dashboards e gráficos que facilitam a tomada de decisão.</p>
               </div>
             </div>
           </div>
 
           <p className="auth-hero-footer-text">
-            Usado por escolas que buscam eficiencia, organizacao e resultados.
+            Usado por escolas que buscam eficiência, organização e resultados.
           </p>
         </div>
       </div>
@@ -167,7 +167,7 @@ export default function Login() {
               E-mail ou CPF
               <input
                 type="text"
-                placeholder="E-mail (gestao) ou CPF (aluno)"
+                placeholder="E-mail (gestão) ou CPF (aluno)"
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
                 required

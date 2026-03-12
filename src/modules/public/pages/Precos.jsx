@@ -11,10 +11,10 @@ export default function Precos() {
   return (
     <div ref={revealRef}>
       <Helmet>
-        <title>Precos e Planos - Sistema de Gestao Escolar | Comece Gratuitamente</title>
-        <meta name="description" content="Conheca os planos e precos do sistema de gestao escolar. Comece gratuitamente e escolha o plano ideal para sua escola. Software para escola com funcionalidades completas." />
-        <meta property="og:title" content="Precos e Planos - Sistema de Gestao Escolar | Comece Gratuitamente" />
-        <meta property="og:description" content="Conheca os planos e precos do sistema de gestao escolar. Comece gratuitamente e escolha o plano ideal para sua escola." />
+        <title>Preços e Planos - Sistema de Gestão Escolar | Comece Gratuitamente</title>
+        <meta name="description" content="Conheça os planos e preços do sistema de gestão escolar. Comece gratuitamente e escolha o plano ideal para sua escola. Software para escola com funcionalidades completas." />
+        <meta property="og:title" content="Preços e Planos - Sistema de Gestão Escolar | Comece Gratuitamente" />
+        <meta property="og:description" content="Conheça os planos e preços do sistema de gestão escolar. Comece gratuitamente e escolha o plano ideal para sua escola." />
         <meta property="og:url" content="https://gestaoescolar.com.br/precos" />
         <link rel="canonical" href="https://gestaoescolar.com.br/precos" />
       </Helmet>
@@ -23,10 +23,10 @@ export default function Precos() {
 
       <section className="landing-hero" style={{ minHeight: '40vh' }}>
         <div className="landing-hero-inner">
-          <h1 className="reveal">Planos e Precos</h1>
+          <h1 className="reveal">Planos e Preços</h1>
           <p className="reveal reveal-delay-1">
             Escolha o plano ideal para sua escola. Comece gratuitamente
-            e escale conforme a necessidade da sua instituicao.
+            e escale conforme a necessidade da sua instituição.
           </p>
         </div>
       </section>
@@ -34,8 +34,8 @@ export default function Precos() {
       <section className="landing-section">
         <h2 className="reveal">Planos para todos os tamanhos de escola</h2>
         <p className="reveal reveal-delay-1">
-          Do ensino infantil ao medio, temos o plano certo para a
-          sua instituicao de ensino.
+          Do ensino infantil ao médio, temos o plano certo para a
+          sua instituição de ensino.
         </p>
 
         <div className="landing-pricing-grid">
@@ -43,40 +43,40 @@ export default function Precos() {
             <span className="landing-pricing-badge">Mais Popular</span>
             <h3>Profissional</h3>
             <div className="landing-pricing-price">
-              R$ 159,99 <small>/mes</small>
+              R$ 159,99 <small>/mês</small>
             </div>
             <ul className="landing-pricing-features">
-              <li>Ate 500 alunos</li>
+              <li>Até 500 alunos</li>
               <li>Cadastro de professores</li>
-              <li>Controle de turmas e materias</li>
-              <li>Lancamento de notas</li>
-              <li>Controle de presenca</li>
-              <li>Gestao financeira completa</li>
-              <li>Grade horaria automatizada</li>
-              <li>Relatorios avancados</li>
-              <li>Reunioes e calendario escolar</li>
+              <li>Controle de turmas e matérias</li>
+              <li>Lançamento de notas</li>
+              <li>Controle de presença</li>
+              <li>Gestão financeira completa</li>
+              <li>Grade horária automatizada</li>
+              <li>Relatórios avançados</li>
+              <li>Reuniões e calendário escolar</li>
               <li>Suporte por e-mail</li>
             </ul>
             <Link to="/cadastro" className="landing-btn landing-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-              Comecar Agora
+              Começar Agora
             </Link>
           </div>
 
           <div className="landing-pricing-card reveal reveal-scale reveal-delay-2">
             <h3>Institucional</h3>
             <div className="landing-pricing-price">
-              R$ 249,99 <small>/mes</small>
+              R$ 249,99 <small>/mês</small>
             </div>
             <ul className="landing-pricing-features">
               <li>Alunos ilimitados</li>
               <li>Cadastro de professores</li>
-              <li>Controle de turmas e materias</li>
-              <li>Lancamento de notas</li>
-              <li>Controle de presenca</li>
-              <li>Gestao financeira completa</li>
-              <li>Grade horaria automatizada</li>
-              <li>Relatorios avancados</li>
-              <li>Reunioes e calendario escolar</li>
+              <li>Controle de turmas e matérias</li>
+              <li>Lançamento de notas</li>
+              <li>Controle de presença</li>
+              <li>Gestão financeira completa</li>
+              <li>Grade horária automatizada</li>
+              <li>Relatórios avançados</li>
+              <li>Reuniões e calendário escolar</li>
               <li>Suporte por e-mail</li>
             </ul>
             <Link to="/cadastro" className="landing-btn landing-btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
@@ -92,50 +92,50 @@ export default function Precos() {
           <article className="landing-feature-card reveal reveal-left reveal-delay-1">
             <h3>Preciso instalar algum software?</h3>
             <p>
-              Nao. O sistema de gestao escolar e 100% online. Basta
+              Não. O sistema de gestão escolar é 100% online. Basta
               acessar pelo navegador de qualquer computador, tablet
-              ou celular. Nenhuma instalacao necessaria.
+              ou celular. Nenhuma instalação necessária.
             </p>
           </article>
           <article className="landing-feature-card reveal reveal-right reveal-delay-2">
             <h3>Posso migrar de plano depois?</h3>
             <p>
-              Sim. Voce pode comecar com o plano gratuito e fazer
+              Sim. Você pode começar com o plano gratuito e fazer
               upgrade a qualquer momento conforme sua escola crescer.
-              A migracao e simples e sem perda de dados.
+              A migração é simples e sem perda de dados.
             </p>
           </article>
           <article className="landing-feature-card reveal reveal-left reveal-delay-3">
-            <h3>Meus dados estao seguros?</h3>
+            <h3>Meus dados estão seguros?</h3>
             <p>
-              Sim. Utilizamos criptografia, backups automaticos e
-              controle de acesso por permissao. Cada escola tem um
+              Sim. Utilizamos criptografia, backups automáticos e
+              controle de acesso por permissão. Cada escola tem um
               ambiente isolado com total privacidade.
             </p>
           </article>
           <article className="landing-feature-card reveal reveal-right reveal-delay-4">
-            <h3>Quanto tempo leva para comecar?</h3>
+            <h3>Quanto tempo leva para começar?</h3>
             <p>
               Poucos minutos. Cadastre sua escola, adicione professores
-              e alunos, e o sistema ja esta pronto para uso. Oferecemos
-              um processo de configuracao guiado.
+              e alunos, e o sistema já está pronto para uso. Oferecemos
+              um processo de configuração guiado.
             </p>
           </article>
         </div>
       </section>
 
       <section className="landing-cta">
-        <h2 className="reveal">Pronto para comecar?</h2>
+        <h2 className="reveal">Pronto para começar?</h2>
         <p className="reveal reveal-delay-1">
-          Cadastre-se gratuitamente e descubra como o sistema de gestao
-          escolar pode transformar a administracao da sua escola.
+          Cadastre-se gratuitamente e descubra como o sistema de gestão
+          escolar pode transformar a administração da sua escola.
         </p>
         <div className="landing-hero-actions reveal reveal-delay-2">
           <Link to="/cadastro" className="landing-btn landing-btn-primary">
             Cadastre-se
           </Link>
           <Link to="/login" className="landing-btn landing-btn-secondary">
-            Ja Tenho Conta
+            Já Tenho Conta
           </Link>
         </div>
       </section>

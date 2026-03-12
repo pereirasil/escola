@@ -106,10 +106,10 @@ export default function Horarios() {
     if (!deleteTarget) return;
     try {
       await horariosService.excluir(deleteTarget);
-      toast.success('Horario removido com sucesso!');
+      toast.success('Horário removido com sucesso!');
       loadHorarios();
     } catch (error) {
-      toast.error('Erro ao remover horario.');
+      toast.error('Erro ao remover horário.');
     } finally {
       setDeleteTarget(null);
     }
@@ -291,7 +291,7 @@ export default function Horarios() {
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content modal-content-wide">
-            <h3>Editar Horario</h3>
+            <h3>Editar Horário</h3>
             <form onSubmit={handleSubmit}>
               <div className="form-grid">
                 <SelectField 
@@ -313,7 +313,7 @@ export default function Horarios() {
                 />
 
                 <SelectField 
-                  label="Materia" 
+                  label="Matéria" 
                   id="edit-subject_id" 
                   required 
                   value={form.subject_id} 
@@ -330,7 +330,7 @@ export default function Horarios() {
                   options={diasDaSemana.map(d => ({ value: d, label: d }))}
                 />
 
-                <FormInput label="Inicio" id="edit-start_time" type="time" required value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
+                <FormInput label="Início" id="edit-start_time" type="time" required value={form.start_time} onChange={e => setForm({ ...form, start_time: e.target.value })} />
                 <FormInput label="Fim" id="edit-end_time" type="time" required value={form.end_time} onChange={e => setForm({ ...form, end_time: e.target.value })} />
                 <FormInput label="Sala" id="edit-room" placeholder="Ex: Lab 1" value={form.room} onChange={e => setForm({ ...form, room: e.target.value })} />
               </div>
@@ -339,7 +339,7 @@ export default function Horarios() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Salvando...' : 'Atualizar Horario'}
+                  {loading ? 'Salvando...' : 'Atualizar Horário'}
                 </button>
               </div>
             </form>
@@ -349,8 +349,8 @@ export default function Horarios() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Remover horario"
-        message="Tem certeza que deseja remover este horario?"
+        title="Remover horário"
+        message="Tem certeza que deseja remover este horário?"
         confirmLabel="Remover"
         danger
         onConfirm={confirmDelete}

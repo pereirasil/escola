@@ -75,11 +75,11 @@ export class TeacherScopeService {
     if (user.role !== 'teacher') return
     const student = await this.studentsService.findOne(studentId)
     if (!student) {
-      throw new ForbiddenException('Aluno nao encontrado')
+      throw new ForbiddenException('Aluno não encontrado')
     }
     const classIds = await this.classesService.getClassIdsByStudent(studentId, user.school_id)
     if (classIds.length === 0) {
-      throw new ForbiddenException('Aluno nao encontrado ou sem turma')
+      throw new ForbiddenException('Aluno não encontrado ou sem turma')
     }
     const teacherClassIds = await this.getTeacherClassIds(user)
     if (!classIds.some((classId) => teacherClassIds.includes(classId))) {

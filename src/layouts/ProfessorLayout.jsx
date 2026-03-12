@@ -44,9 +44,9 @@ export default function ProfessorLayout() {
       <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
         <nav className="sidebar-nav">
           <NavLink to="/professor/turmas" className={linkClass} onClick={handleLinkClick}>Minhas Turmas</NavLink>
-          <NavLink to="/professor/faltas" className={linkClass} onClick={handleLinkClick}>Lancamento de Faltas</NavLink>
-          <NavLink to="/professor/notas" className={linkClass} onClick={handleLinkClick}>Lancamento de Notas</NavLink>
-          <NavLink to="/professor/historico" className={linkClass} onClick={handleLinkClick}>Historico e Graficos</NavLink>
+          <NavLink to="/professor/faltas" className={linkClass} onClick={handleLinkClick}>Lançamento de Faltas</NavLink>
+          <NavLink to="/professor/notas" className={linkClass} onClick={handleLinkClick}>Lançamento de Notas</NavLink>
+          <NavLink to="/professor/historico" className={linkClass} onClick={handleLinkClick}>Histórico e Gráficos</NavLink>
           <NavLink to="/professor/alterar-senha" className={linkClass} onClick={handleLinkClick}>Alterar Senha</NavLink>
         </nav>
       </aside>
@@ -56,7 +56,7 @@ export default function ProfessorLayout() {
             <button type="button" className="sidebar-toggle" onClick={() => setSidebarOpen(prev => !prev)} aria-label="Menu">
               &#9776;
             </button>
-            <h1 className="header-title">Area do Professor</h1>
+            <h1 className="header-title">Área do Professor</h1>
           </div>
           <div className="header-actions">
             <input

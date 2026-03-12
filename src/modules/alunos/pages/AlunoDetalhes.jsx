@@ -80,7 +80,7 @@ export default function AlunoDetalhes() {
             {aluno.name?.charAt(0)?.toUpperCase()}
           </div>
         )}
-        <PageHeader title={aluno.name} description={`Matricula/CPF: ${aluno.document || 'Nao informado'}`} />
+        <PageHeader title={aluno.name} description={`Matrícula/CPF: ${aluno.document || 'Não informado'}`} />
       </div>
 
       <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>

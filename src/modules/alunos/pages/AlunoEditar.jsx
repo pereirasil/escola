@@ -111,18 +111,18 @@ export default function AlunoEditar() {
         <form onSubmit={handleSubmit}>
           <PhotoUpload currentPhoto={currentPhoto} onFileSelect={setPhotoFile} label="Foto do aluno" />
           <div className="form-grid">
-            <FormInput label="Nome do aluno" id="name" placeholder="Ex: Joao da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <FormInput label="Nome do aluno" id="name" placeholder="Ex: João da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <FormInput label="Data de nascimento" id="birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />
-            <FormInput label="CPF (usuario de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
-            <FormInput label="Nome do Responsavel" id="guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
-            <FormInput label="CPF do Responsavel" id="guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
-            <FormInput label="Telefone do Responsavel" id="guardian_phone" placeholder="(00) 00000-0000" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })} maxLength={15} />
+            <FormInput label="CPF (usuário de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
+            <FormInput label="Nome do Responsável" id="guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
+            <FormInput label="CPF do Responsável" id="guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
+            <FormInput label="Telefone do Responsável" id="guardian_phone" placeholder="(00) 00000-0000" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })} maxLength={15} />
             <FormInput label="CEP" id="cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
             <FormInput label="Estado" id="state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
-            <FormInput label="Cidade" id="city" placeholder="Ex: Sao Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
+            <FormInput label="Cidade" id="city" placeholder="Ex: São Paulo" value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
             <FormInput label="Bairro" id="neighborhood" placeholder="Ex: Centro" value={form.neighborhood} onChange={e => setForm({ ...form, neighborhood: e.target.value })} />
             <FormInput label="Rua" id="street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
-            <FormInput label="Numero" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
+            <FormInput label="Número" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
             <FormInput label="Complemento" id="complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
             <div className="form-group">
               <label htmlFor="class_id">Turma</label>
@@ -139,7 +139,7 @@ export default function AlunoEditar() {
             </div>
           </div>
           <button type="submit" className="btn-primary" disabled={saving}>
-            {saving ? 'Salvando...' : 'Salvar alteracoes'}
+            {saving ? 'Salvando...' : 'Salvar alterações'}
           </button>
         </form>
       </Card>

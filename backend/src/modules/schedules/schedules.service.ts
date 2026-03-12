@@ -31,7 +31,7 @@ export class SchedulesService {
 
     const conflict = await query.getOne();
     if (conflict) {
-      throw new ConflictException('Ja existe uma aula nesta sala, no mesmo dia e horario.');
+      throw new ConflictException('Já existe uma aula nesta sala, no mesmo dia e horário.');
     }
   }
 
@@ -54,7 +54,7 @@ export class SchedulesService {
 
     const conflict = await query.getOne();
     if (conflict) {
-      throw new ConflictException('Este professor ja possui uma aula no mesmo dia e horario.');
+      throw new ConflictException('Este professor já possui uma aula no mesmo dia e horário.');
     }
   }
 

@@ -41,7 +41,7 @@ export class CalendarEventsService {
 
   async update(id: number, dto: UpdateCalendarEventDto) {
     const existing = await this.repo.findOne({ where: { id } })
-    if (!existing) throw new NotFoundException('Evento nao encontrado')
+    if (!existing) throw new NotFoundException('Evento não encontrado')
 
     const data: Partial<CalendarEvent> = { ...dto } as any
     if (dto.series) {
@@ -58,7 +58,7 @@ export class CalendarEventsService {
 
   async findForStudent(studentId: number) {
     const student = await this.studentRepo.findOne({ where: { id: studentId } })
-    if (!student) throw new NotFoundException('Aluno nao encontrado')
+    if (!student) throw new NotFoundException('Aluno não encontrado')
 
     const enrollmentWhere: any = { student_id: studentId }
     if (student.school_id) enrollmentWhere.school_id = student.school_id

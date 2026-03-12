@@ -96,10 +96,10 @@ export default function Reunioes() {
     if (!deleteTarget) return;
     try {
       await reunioesService.excluir(deleteTarget);
-      toast.success('Reuniao excluida com sucesso!');
+      toast.success('Reunião excluída com sucesso!');
       carregarDados();
     } catch (error) {
-      toast.error('Erro ao excluir reuniao.');
+      toast.error('Erro ao excluir reunião.');
     } finally {
       setDeleteTarget(null);
     }
@@ -162,10 +162,10 @@ export default function Reunioes() {
               onChange={(e) => !editId && setForm({ ...form, scheduled_at: e.target.value })}
             />
             <div className="form-group">
-              <label htmlFor="new-description">Descricao</label>
+              <label htmlFor="new-description">Descrição</label>
               <textarea
                 id="new-description"
-                placeholder="Pauta ou detalhes da reuniao"
+                placeholder="Pauta ou detalhes da reunião"
                 value={!editId ? form.description : ''}
                 onChange={(e) => !editId && setForm({ ...form, description: e.target.value })}
                 rows={3}
@@ -174,7 +174,7 @@ export default function Reunioes() {
           </div>
           <div style={{ marginTop: '1rem' }}>
             <button type="submit" className="btn-primary" disabled={loading || editId}>
-              {loading && !editId ? 'Agendando...' : 'Agendar Reuniao'}
+              {loading && !editId ? 'Agendando...' : 'Agendar Reunião'}
             </button>
           </div>
         </form>
@@ -228,14 +228,14 @@ export default function Reunioes() {
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
-            <h3>Editar Reuniao</h3>
+            <h3>Editar Reunião</h3>
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <FormInput
-                  label="Titulo"
+                  label="Título"
                   id="edit-title"
                   required
-                  placeholder="Ex: Reuniao de Pais"
+                  placeholder="Ex: Reunião de Pais"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
@@ -256,10 +256,10 @@ export default function Reunioes() {
                   onChange={(e) => setForm({ ...form, scheduled_at: e.target.value })}
                 />
                 <div className="form-group">
-                  <label htmlFor="edit-description">Descricao</label>
+                  <label htmlFor="edit-description">Descrição</label>
                   <textarea
                     id="edit-description"
-                    placeholder="Pauta ou detalhes da reuniao"
+                    placeholder="Pauta ou detalhes da reunião"
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                     rows={3}
@@ -271,7 +271,7 @@ export default function Reunioes() {
                   Cancelar
                 </button>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? 'Salvando...' : 'Atualizar Reuniao'}
+                  {loading ? 'Salvando...' : 'Atualizar Reunião'}
                 </button>
               </div>
             </form>
@@ -281,8 +281,8 @@ export default function Reunioes() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Excluir reuniao"
-        message="Tem certeza que deseja excluir esta reuniao?"
+        title="Excluir reunião"
+        message="Tem certeza que deseja excluir esta reunião?"
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

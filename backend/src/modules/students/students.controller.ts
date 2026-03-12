@@ -148,7 +148,7 @@ export class StudentsController {
 
     const historico = Array.from(materiaIds).map((materiaId) => ({
       materia_id: materiaId,
-      materia: materiasMap.get(materiaId) || `Materia ${materiaId}`,
+      materia: materiasMap.get(materiaId) || `Matéria ${materiaId}`,
       notas: (notasPorMateria.get(materiaId) || []).sort((a, b) => a.bimestre.localeCompare(b.bimestre)),
       presencas: presencasPorMateria.get(materiaId)?.presencas || 0,
       faltas: presencasPorMateria.get(materiaId)?.faltas || 0,

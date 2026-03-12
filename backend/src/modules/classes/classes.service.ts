@@ -72,18 +72,18 @@ export class ClassesService {
 
   async enrollStudent(classId: number, studentId: number, schoolId?: number) {
     const classEntity = await this.findOne(classId)
-    if (!classEntity) throw new NotFoundException('Turma nao encontrada')
+    if (!classEntity) throw new NotFoundException('Turma não encontrada')
 
     const studentWhere: any = { id: studentId }
     if (schoolId) studentWhere.school_id = schoolId
     const student = await this.studentRepo.findOne({ where: studentWhere })
-    if (!student) throw new NotFoundException('Aluno nao encontrado')
+    if (!student) throw new NotFoundException('Aluno não encontrado')
 
     const enrollmentWhere: any = { class_id: classId, student_id: studentId }
     if (schoolId) enrollmentWhere.school_id = schoolId
     const existing = await this.enrollmentRepo.findOne({ where: enrollmentWhere })
     if (existing) {
-      throw new ConflictException('Aluno ja matriculado nesta turma')
+      throw new ConflictException('Aluno já matriculado nesta turma')
     }
 
     return this.enrollmentRepo.save(

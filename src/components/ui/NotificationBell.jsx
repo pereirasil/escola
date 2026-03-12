@@ -66,7 +66,7 @@ export function NotificationBell() {
         type="button"
         className="notification-bell"
         onClick={handleBellClick}
-        aria-label={`Notificacoes${count > 0 ? `, ${count} nao lidas` : ''}`}
+        aria-label={`Notificações${count > 0 ? `, ${count} não lidas` : ''}`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -91,12 +91,12 @@ export function NotificationBell() {
 
       {open && (
         <div className="notification-dropdown">
-          <div className="notification-dropdown-header">Notificacoes</div>
+          <div className="notification-dropdown-header">Notificações</div>
           <div className="notification-dropdown-body">
             {loading ? (
               <div className="notification-dropdown-empty">Carregando...</div>
             ) : lista.length === 0 ? (
-              <div className="notification-dropdown-empty">Nenhuma notificacao.</div>
+              <div className="notification-dropdown-empty">Nenhuma notificação.</div>
             ) : (
               lista.slice(0, 5).map((n) => (
                 <div

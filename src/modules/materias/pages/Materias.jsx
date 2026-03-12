@@ -13,7 +13,7 @@ export default function Materias() {
       const res = await materiasService.listar();
       setMaterias(res.data || []);
     } catch (error) {
-      toast.error('Erro ao carregar materias.');
+      toast.error('Erro ao carregar matérias.');
     }
   };
 
@@ -23,11 +23,11 @@ export default function Materias() {
     e.preventDefault();
     try {
       await materiasService.criar({ ...form, duration_minutes: form.duration_minutes ? Number(form.duration_minutes) : null });
-      toast.success('Materia cadastrada com sucesso!');
+      toast.success('Matéria cadastrada com sucesso!');
       setForm({ name: '', duration_minutes: '' });
       load();
     } catch (error) {
-      toast.error('Erro ao salvar materia.');
+      toast.error('Erro ao salvar matéria.');
     }
   };
 
@@ -35,10 +35,10 @@ export default function Materias() {
     if (!deleteTarget) return;
     try {
       await materiasService.excluir(deleteTarget);
-      toast.success('Materia excluida com sucesso!');
+      toast.success('Matéria excluída com sucesso!');
       load();
     } catch (error) {
-      toast.error('Erro ao excluir materia.');
+      toast.error('Erro ao excluir matéria.');
     } finally {
       setDeleteTarget(null);
     }
@@ -46,21 +46,21 @@ export default function Materias() {
 
   return (
     <div className="page">
-      <PageHeader title="Materias" description="Cadastro das disciplinas escolares" />
+      <PageHeader title="Matérias" description="Cadastro das disciplinas escolares" />
       
-      <Card title="Cadastrar Nova Materia">
+      <Card title="Cadastrar Nova Matéria">
         <form onSubmit={handleSubmit}>
           <div className="form-grid">
-            <FormInput label="Nome da materia" id="name" placeholder="Ex: Matematica" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+            <FormInput label="Nome da matéria" id="name" placeholder="Ex: Matemática" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <FormInput label="Tempo de aula (min)" id="duration_minutes" placeholder="Ex: 50" type="number" value={form.duration_minutes} onChange={e => setForm({ ...form, duration_minutes: e.target.value })} />
           </div>
-          <button type="submit" className="btn-primary">Salvar Materia</button>
+          <button type="submit" className="btn-primary">Salvar Matéria</button>
         </form>
       </Card>
 
-      <Card title="Lista de Materias">
+      <Card title="Lista de Matérias">
         <DataTable
-          columns={['Nome', 'Duracao (minutos)', 'Acoes']}
+          columns={['Nome', 'Duração (minutos)', 'Ações']}
           data={materias}
           renderRow={(m) => (
             <tr key={m.id}>
@@ -76,8 +76,8 @@ export default function Materias() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Excluir materia"
-        message="Tem certeza que deseja excluir esta materia? Esta acao nao pode ser desfeita."
+        title="Excluir matéria"
+        message="Tem certeza que deseja excluir esta matéria? Esta ação não pode ser desfeita."
         confirmLabel="Excluir"
         danger
         onConfirm={confirmDelete}

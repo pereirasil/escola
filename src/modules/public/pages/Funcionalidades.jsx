@@ -11,10 +11,10 @@ export default function Funcionalidades() {
   return (
     <div ref={revealRef}>
       <Helmet>
-        <title>Funcionalidades do Sistema de Gestao Escolar | Controle Completo da Escola</title>
-        <meta name="description" content="Todas as funcionalidades do sistema de gestao escolar: controle de alunos, gestao de professores, lancamento de notas, controle de presenca, gestao financeira, grade horaria e relatorios." />
-        <meta property="og:title" content="Funcionalidades do Sistema de Gestao Escolar | Controle Completo da Escola" />
-        <meta property="og:description" content="Todas as funcionalidades do sistema de gestao escolar: controle de alunos, gestao de professores, lancamento de notas, controle de presenca e gestao financeira." />
+        <title>Funcionalidades do Sistema de Gestão Escolar | Controle Completo da Escola</title>
+        <meta name="description" content="Todas as funcionalidades do sistema de gestão escolar: controle de alunos, gestão de professores, lançamento de notas, controle de presença, gestão financeira, grade horária e relatórios." />
+        <meta property="og:title" content="Funcionalidades do Sistema de Gestão Escolar | Controle Completo da Escola" />
+        <meta property="og:description" content="Todas as funcionalidades do sistema de gestão escolar: controle de alunos, gestão de professores, lançamento de notas, controle de presença e gestão financeira." />
         <meta property="og:url" content="https://gestaoescolar.com.br/funcionalidades" />
         <link rel="canonical" href="https://gestaoescolar.com.br/funcionalidades" />
       </Helmet>
@@ -23,10 +23,10 @@ export default function Funcionalidades() {
 
       <section className="landing-hero" style={{ minHeight: '40vh' }}>
         <div className="landing-hero-inner">
-          <h1 className="reveal">Funcionalidades do Sistema de Gestao Escolar</h1>
+          <h1 className="reveal">Funcionalidades do Sistema de Gestão Escolar</h1>
           <p className="reveal reveal-delay-1">
             Todas as ferramentas que sua escola precisa para funcionar
-            com eficiencia, organizacao e controle total.
+            com eficiência, organização e controle total.
           </p>
         </div>
       </section>
@@ -34,33 +34,33 @@ export default function Funcionalidades() {
       <section className="landing-section">
         <h2 className="reveal">Controle de Alunos</h2>
         <p className="reveal reveal-delay-1">
-          Sistema para controle de alunos com todas as informacoes
+          Sistema para controle de alunos com todas as informações
           que sua escola precisa.
         </p>
         <div className="landing-features-grid">
           <article className="landing-feature-card reveal reveal-left reveal-delay-1">
             <h3>Cadastro Completo</h3>
             <p>
-              Registre todos os dados dos alunos: informacoes pessoais,
-              contatos de responsaveis, documentos, endereco e foto.
-              Mantenha o cadastro sempre atualizado e acessivel.
+              Registre todos os dados dos alunos: informações pessoais,
+              contatos de responsáveis, documentos, endereço e foto.
+              Mantenha o cadastro sempre atualizado e acessível.
             </p>
           </article>
           <article className="landing-feature-card reveal reveal-scale reveal-delay-2">
-            <h3>Historico Escolar</h3>
+            <h3>Histórico Escolar</h3>
             <p>
-              Acompanhe o historico completo de cada aluno: notas por
-              disciplina, frequencia, ocorrencias e evolucao academica
-              ao longo dos anos. Informacoes centralizadas para consulta
-              rapida.
+              Acompanhe o histórico completo de cada aluno: notas por
+              disciplina, frequência, ocorrências e evolução acadêmica
+              ao longo dos anos. Informações centralizadas para consulta
+              rápida.
             </p>
           </article>
           <article className="landing-feature-card reveal reveal-right reveal-delay-3">
-            <h3>Matricula e Turmas</h3>
+            <h3>Matrícula e Turmas</h3>
             <p>
-              Gerencie matriculas, enturmacao e transferencias de forma
-              simples. Vincule alunos a turmas, defina periodos letivos
-              e acompanhe a situacao de cada matricula.
+              Gerencie matrículas, enturmação e transferências de forma
+              simples. Vincule alunos a turmas, defina períodos letivos
+              e acompanhe a situação de cada matrícula.
             </p>
           </article>
         </div>
@@ -68,7 +68,7 @@ export default function Funcionalidades() {
 
       <div className="landing-section-alt">
         <section className="landing-section">
-          <h2 className="reveal">Gestao de Professores</h2>
+          <h2 className="reveal">Gestão de Professores</h2>
           <p className="reveal reveal-delay-1">
             Ferramentas completas para gerenciar o corpo docente da sua escola.
           </p>
@@ -77,24 +77,24 @@ export default function Funcionalidades() {
               <h3>Cadastro de Professores</h3>
               <p>
                 Registre dados profissionais e pessoais de cada professor.
-                Atribua disciplinas, defina carga horaria e acompanhe a
-                atuacao de cada docente na instituicao.
+                Atribua disciplinas, defina carga horária e acompanhe a
+                atuação de cada docente na instituição.
               </p>
             </article>
             <article className="landing-feature-card reveal reveal-scale reveal-delay-2">
-              <h3>Lancamento de Notas</h3>
+              <h3>Lançamento de Notas</h3>
               <p>
-                Professores lancam notas diretamente no sistema, por turma
-                e disciplina. O processo e simples, rapido e elimina
+                Professores lançam notas diretamente no sistema, por turma
+                e disciplina. O processo é simples, rápido e elimina
                 a necessidade de cadernetas e planilhas.
               </p>
             </article>
             <article className="landing-feature-card reveal reveal-right reveal-delay-3">
-              <h3>Controle de Presenca</h3>
+              <h3>Controle de Presença</h3>
               <p>
-                Registro de frequencia diario por turma. Professores fazem
-                a chamada online e o sistema gera relatorios automaticos
-                de presenca e ausencia dos alunos.
+                Registro de frequência diária por turma. Professores fazem
+                a chamada online e o sistema gera relatórios automáticos
+                de presença e ausência dos alunos.
               </p>
             </article>
           </div>
@@ -102,7 +102,7 @@ export default function Funcionalidades() {
       </div>
 
       <section className="landing-section">
-        <h2 className="reveal">Gestao Financeira</h2>
+        <h2 className="reveal">Gestão Financeira</h2>
         <p className="reveal reveal-delay-1">
           Controle financeiro completo para manter as contas da escola
           em dia.
@@ -112,17 +112,17 @@ export default function Funcionalidades() {
             <h3>Mensalidades e Pagamentos</h3>
             <p>
               Gerencie mensalidades dos alunos, registre pagamentos,
-              acompanhe inadimplencia e gere relatorios financeiros
-              detalhados. Controle total sobre a saude financeira
+              acompanhe inadimplência e gere relatórios financeiros
+              detalhados. Controle total sobre a saúde financeira
               da escola.
             </p>
           </article>
           <article className="landing-feature-card reveal reveal-right reveal-delay-2">
-            <h3>Relatorios Financeiros</h3>
+            <h3>Relatórios Financeiros</h3>
             <p>
-              Visualize a situacao financeira da escola com graficos
+              Visualize a situação financeira da escola com gráficos
               e indicadores. Acompanhe receitas, valores em aberto
-              e historico de pagamentos por aluno ou por periodo.
+              e histórico de pagamentos por aluno ou por período.
             </p>
           </article>
         </div>
@@ -136,35 +136,35 @@ export default function Funcionalidades() {
           </p>
           <div className="landing-features-grid">
             <article className="landing-feature-card reveal reveal-scale reveal-delay-1">
-              <h3>Grade Horaria</h3>
+              <h3>Grade Horária</h3>
               <p>
-                Monte a grade horaria de cada turma com facilidade.
-                Atribua professores e materias por horario e dia da
+                Monte a grade horária de cada turma com facilidade.
+                Atribua professores e matérias por horário e dia da
                 semana. Visualize conflitos automaticamente.
               </p>
             </article>
             <article className="landing-feature-card reveal reveal-scale reveal-delay-2">
-              <h3>Turmas e Materias</h3>
+              <h3>Turmas e Matérias</h3>
               <p>
-                Crie turmas, cadastre materias e vincule tudo de forma
-                integrada. Defina periodos letivos e acompanhe a
-                organizacao pedagogica da escola.
+                Crie turmas, cadastre matérias e vincule tudo de forma
+                integrada. Defina períodos letivos e acompanhe a
+                organização pedagógica da escola.
               </p>
             </article>
             <article className="landing-feature-card reveal reveal-scale reveal-delay-3">
-              <h3>Reunioes e Eventos</h3>
+              <h3>Reuniões e Eventos</h3>
               <p>
-                Agende reunioes com responsaveis, registre pautas e
-                gerencie o calendario escolar com datas comemorativas
-                e eventos importantes da instituicao.
+                Agende reuniões com responsáveis, registre pautas e
+                gerencie o calendário escolar com datas comemorativas
+                e eventos importantes da instituição.
               </p>
             </article>
             <article className="landing-feature-card reveal reveal-scale reveal-delay-4">
               <h3>Dashboard Completo</h3>
               <p>
-                Painel administrativo com visao geral da escola: total
+                Painel administrativo com visão geral da escola: total
                 de alunos, professores, turmas, indicadores financeiros
-                e graficos de desempenho. Tudo em uma unica tela.
+                e gráficos de desempenho. Tudo em uma única tela.
               </p>
             </article>
           </div>
@@ -175,14 +175,14 @@ export default function Funcionalidades() {
         <h2 className="reveal">Comece a usar todas essas funcionalidades agora</h2>
         <p className="reveal reveal-delay-1">
           Cadastre sua escola gratuitamente e tenha acesso ao sistema
-          de gestao escolar mais completo.
+          de gestão escolar mais completo.
         </p>
         <div className="landing-hero-actions reveal reveal-delay-2">
           <Link to="/cadastro" className="landing-btn landing-btn-primary">
             Cadastre-se
           </Link>
           <Link to="/precos" className="landing-btn landing-btn-secondary">
-            Ver Planos e Precos
+            Ver Planos e Preços
           </Link>
         </div>
       </section>
