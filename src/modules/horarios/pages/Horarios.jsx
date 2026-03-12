@@ -24,7 +24,7 @@ export default function Horarios() {
   const [loading, setLoading] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
-  const [filtroTurma, setFiltroTurma] = useState('');
+  const [filtroSerie, setFiltroSerie] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const loadAll = async () => {
@@ -44,7 +44,7 @@ export default function Horarios() {
 
   const loadHorarios = async () => {
     try {
-      const res = await horariosService.listar(filtroTurma);
+      const res = await horariosService.listar();
       setHorarios(res.data || []);
     } catch (error) {
       toast.error('Erro ao carregar horarios.');
@@ -52,7 +52,7 @@ export default function Horarios() {
   };
 
   useEffect(() => { loadAll(); }, []);
-  useEffect(() => { loadHorarios(); }, [filtroTurma]);
+  useEffect(() => { loadHorarios(); }, []);
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
@@ -115,7 +115,14 @@ export default function Horarios() {
     loadHorarios();
   };
 
-  const temposUnicos = Array.from(new Set(horarios.map(h => h.start_time))).sort();
+  const seriesUnicas = [...new Set(turmas.map(t => t.grade).filter(Boolean))].sort();
+  const classIdsDaSerie = filtroSerie
+    ? turmas.filter(t => t.grade === filtroSerie).map(t => t.id)
+    : [];
+  const horariosFiltrados = filtroSerie
+    ? horarios.filter(h => classIdsDaSerie.includes(h.class_id))
+    : horarios;
+  const temposUnicos = Array.from(new Set(horariosFiltrados.map(h => h.start_time))).sort();
 
   return (
     <div className="page">
@@ -128,16 +135,16 @@ export default function Horarios() {
       <Card title="Grade Semanal">
         <div style={{ marginBottom: '1.5rem', maxWidth: '300px' }}>
           <SelectField
-            label="Visualizar Grade da Turma:"
-            id="filtroTurma"
-            value={filtroTurma}
-            onChange={e => setFiltroTurma(e.target.value)}
-            options={[{ value: '', label: 'Todas as turmas' }, ...turmas.map(t => ({ value: t.id, label: t.name }))]}
+            label="Visualizar Grade por Serie:"
+            id="filtroSerie"
+            value={filtroSerie}
+            onChange={e => setFiltroSerie(e.target.value)}
+            options={[{ value: '', label: 'Todas as series' }, ...seriesUnicas.map(s => ({ value: s, label: s }))]}
           />
         </div>
 
-        {horarios.length === 0 ? (
-          <div className="empty-state">Nenhum horario encontrado para a turma selecionada.</div>
+        {horariosFiltrados.length === 0 ? (
+          <div className="empty-state">Nenhum horario encontrado para a serie selecionada.</div>
         ) : (
           <div style={{ overflowX: 'auto', borderRadius: '8px', border: '1px solid #333' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
@@ -157,7 +164,7 @@ export default function Horarios() {
                         {tempo}
                       </td>
                       {diasDaSemana.map(dia => {
-                        const aulasNoHorarioEDia = horarios.filter(h => h.start_time === tempo && h.day_of_week === dia);
+                        const aulasNoHorarioEDia = horariosFiltrados.filter(h => h.start_time === tempo && h.day_of_week === dia);
 
                         return (
                           <td key={dia} style={{ padding: '0.5rem', verticalAlign: 'top', borderRight: '1px solid #2a2a2a' }}>
