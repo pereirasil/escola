@@ -12,7 +12,7 @@ export default function Alunos() {
   const [turmas, setTurmas] = useState([]);
   const [ranking, setRanking] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [form, setForm] = useState({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
+  const [form, setForm] = useState({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '', _serie: '' });
   const [photoFile, setPhotoFile] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
@@ -60,7 +60,7 @@ export default function Alunos() {
         toast.error('Senha e confirmação não conferem.');
         return;
       }
-      const { confirmPassword, ...payload } = form;
+      const { confirmPassword, _serie, ...payload } = form;
       const classId = form.class_id ? Number(form.class_id) : null;
       const res = await alunosService.criar({ ...payload, class_id: classId });
       const alunoId = res.data?.id;
@@ -68,7 +68,7 @@ export default function Alunos() {
         await alunosService.uploadFoto(alunoId, photoFile);
       }
       toast.success('Aluno cadastrado com sucesso!');
-      setForm({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
+      setForm({ name: '', birth_date: '', document: '', password: '', confirmPassword: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '', _serie: '' });
       setPhotoFile(null);
       load();
     } catch (error) {
@@ -119,11 +119,18 @@ export default function Alunos() {
             <FormInput label="Número" id="number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
             <FormInput label="Complemento" id="complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
             <SelectField
-              label="Turma"
+              label="Série"
+              id="serie_filter"
+              value={form._serie || ''}
+              onChange={e => setForm({ ...form, _serie: e.target.value, class_id: '' })}
+              options={[...new Set(turmas.map(t => t.grade).filter(Boolean))].map(g => ({ value: g, label: g }))}
+            />
+            <SelectField
+              label="Sala"
               id="class_id"
               value={form.class_id}
               onChange={e => setForm({ ...form, class_id: e.target.value })}
-              options={turmas.map(t => ({ value: t.id, label: t.name }))}
+              options={turmas.filter(t => !form._serie || t.grade === form._serie).map(t => ({ value: t.id, label: t.room || t.name }))}
             />
           </div>
           <button type="submit" className="btn-primary">Salvar Aluno</button>
@@ -151,7 +158,7 @@ export default function Alunos() {
         {loadingData ? <Spinner /> : (
           <>
             <DataTable
-              columns={['Nome', 'CPF/Matrícula', 'Turma', 'Faltas', 'Ações']}
+              columns={['Nome', 'CPF/Matrícula', 'Série', 'Sala', 'Faltas', 'Ações']}
               data={alunosFiltrados}
               renderRow={(a) => {
                 const t = turmas.find(t => t.id === a.class_id);
@@ -167,7 +174,8 @@ export default function Alunos() {
                       </Link>
                     </td>
                     <td>{a.document}</td>
-                    <td>{t ? t.name : '-'}</td>
+                    <td>{t?.grade || '-'}</td>
+                    <td>{t?.room || '-'}</td>
                     <td>
                       <span style={{ 
                         color: alerta ? '#f87171' : (totalFaltas > 0 ? '#fbbf24' : '#4ade80'),
