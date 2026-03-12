@@ -37,10 +37,10 @@ export default function Cadastro() {
 
   const helmetBlock = (
     <Helmet>
-      <title>Cadastrar Escola - Sistema de Gestão Escolar Gratuito</title>
-      <meta name="description" content="Cadastre sua escola gratuitamente no sistema de gestão escolar. Software completo para controle de alunos, professores, notas e financeiro." />
-      <meta property="og:title" content="Cadastrar Escola - Sistema de Gestão Escolar Gratuito" />
-      <meta property="og:description" content="Cadastre sua escola gratuitamente no sistema de gestão escolar. Software completo para controle de alunos, professores, notas e financeiro." />
+      <title>Cadastrar Escola - Sistema de Gestão Escolar</title>
+      <meta name="description" content="Cadastre sua escola no sistema de gestão escolar. Software completo para controle de alunos, professores, notas e financeiro." />
+      <meta property="og:title" content="Cadastrar Escola - Sistema de Gestão Escolar" />
+      <meta property="og:description" content="Cadastre sua escola no sistema de gestão escolar. Software completo para controle de alunos, professores, notas e financeiro." />
       <meta property="og:url" content="https://gestaoescolar.com.br/cadastro" />
       <link rel="canonical" href="https://gestaoescolar.com.br/cadastro" />
     </Helmet>

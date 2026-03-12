@@ -122,8 +122,8 @@ export default function LandingPage() {
       <section className="landing-cta">
         <h2 className="reveal">Pronto para transformar a gestão da sua escola?</h2>
         <p className="reveal reveal-delay-1">
-          Cadastre-se gratuitamente e comece a usar o sistema de gestão escolar
-          mais completo do mercado. Sem necessidade de instalação.
+          Cadastre sua escola e comece a usar uma plataforma completa para gestão escolar.
+          Tudo online e sem necessidade de instalação.
         </p>
         <div className="landing-hero-actions reveal reveal-delay-2">
           <Link to="/cadastro" className="landing-btn landing-btn-primary">

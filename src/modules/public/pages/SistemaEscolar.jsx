@@ -98,10 +98,10 @@ export default function SistemaEscolar() {
       </section>
 
       <section className="landing-cta">
-        <h2 className="reveal">Experimente o sistema escolar gratuitamente</h2>
+        <h2 className="reveal">Experimente o sistema escolar agora</h2>
         <p className="reveal reveal-delay-1">
-          Cadastre sua escola e comece a usar agora. Sem compromisso,
-          sem necessidade de cartão de crédito.
+          Cadastre sua escola e comece a usar agora. Tudo online
+          e sem necessidade de instalação.
         </p>
         <div className="landing-hero-actions reveal reveal-delay-2">
           <Link to="/cadastro" className="landing-btn landing-btn-primary">

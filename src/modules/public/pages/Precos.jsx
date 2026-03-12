@@ -11,10 +11,10 @@ export default function Precos() {
   return (
     <div ref={revealRef}>
       <Helmet>
-        <title>Preços e Planos - Sistema de Gestão Escolar | Comece Gratuitamente</title>
-        <meta name="description" content="Conheça os planos e preços do sistema de gestão escolar. Comece gratuitamente e escolha o plano ideal para sua escola. Software para escola com funcionalidades completas." />
-        <meta property="og:title" content="Preços e Planos - Sistema de Gestão Escolar | Comece Gratuitamente" />
-        <meta property="og:description" content="Conheça os planos e preços do sistema de gestão escolar. Comece gratuitamente e escolha o plano ideal para sua escola." />
+        <title>Preços e Planos - Sistema de Gestão Escolar</title>
+        <meta name="description" content="Conheça os planos e preços do sistema de gestão escolar. Escolha o plano ideal para sua escola. Software para escola com funcionalidades completas." />
+        <meta property="og:title" content="Preços e Planos - Sistema de Gestão Escolar" />
+        <meta property="og:description" content="Conheça os planos e preços do sistema de gestão escolar. Escolha o plano ideal para sua escola." />
         <meta property="og:url" content="https://gestaoescolar.com.br/precos" />
         <link rel="canonical" href="https://gestaoescolar.com.br/precos" />
       </Helmet>
@@ -25,8 +25,8 @@ export default function Precos() {
         <div className="landing-hero-inner">
           <h1 className="reveal">Planos e Preços</h1>
           <p className="reveal reveal-delay-1">
-            Escolha o plano ideal para sua escola. Comece gratuitamente
-            e escale conforme a necessidade da sua instituição.
+            Escolha o plano ideal para sua escola e escale
+            conforme a necessidade da sua instituição.
           </p>
         </div>
       </section>
@@ -100,9 +100,9 @@ export default function Precos() {
           <article className="landing-feature-card reveal reveal-right reveal-delay-2">
             <h3>Posso migrar de plano depois?</h3>
             <p>
-              Sim. Você pode começar com o plano gratuito e fazer
-              upgrade a qualquer momento conforme sua escola crescer.
-              A migração é simples e sem perda de dados.
+              Sim. Você pode migrar de plano a qualquer momento
+              conforme sua escola crescer. A migração é simples
+              e sem perda de dados.
             </p>
           </article>
           <article className="landing-feature-card reveal reveal-left reveal-delay-3">
@@ -127,7 +127,7 @@ export default function Precos() {
       <section className="landing-cta">
         <h2 className="reveal">Pronto para começar?</h2>
         <p className="reveal reveal-delay-1">
-          Cadastre-se gratuitamente e descubra como o sistema de gestão
+          Cadastre-se e descubra como o sistema de gestão
           escolar pode transformar a administração da sua escola.
         </p>
         <div className="landing-hero-actions reveal reveal-delay-2">

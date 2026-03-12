@@ -174,7 +174,7 @@ export default function Funcionalidades() {
       <section className="landing-cta">
         <h2 className="reveal">Comece a usar todas essas funcionalidades agora</h2>
         <p className="reveal reveal-delay-1">
-          Cadastre sua escola gratuitamente e tenha acesso ao sistema
+          Cadastre sua escola e tenha acesso ao sistema
           de gestão escolar mais completo.
         </p>
         <div className="landing-hero-actions reveal reveal-delay-2">
