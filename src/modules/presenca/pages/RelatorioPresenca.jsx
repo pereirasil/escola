@@ -60,7 +60,7 @@ export default function RelatorioPresenca() {
             id="turma" 
             value={turmaId} 
             onChange={e => setTurmaId(e.target.value)}
-            options={turmas.map(t => ({ value: t.id, label: t.name }))}
+            options={turmas.map(t => ({ value: t.id, label: t.room || t.name }))}
           />
         </div>
       </Card>
