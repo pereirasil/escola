@@ -13,14 +13,20 @@ export default function Precos() {
       <Helmet>
         <title>Preços e Planos - Sistema de Gestão Escolar</title>
         <meta name="description" content="Conheça os planos e preços do sistema de gestão escolar. Escolha o plano ideal para sua escola. Software para escola com funcionalidades completas." />
+        <meta name="robots" content="index,follow" />
         <meta property="og:title" content="Preços e Planos - Sistema de Gestão Escolar" />
         <meta property="og:description" content="Conheça os planos e preços do sistema de gestão escolar. Escolha o plano ideal para sua escola." />
         <meta property="og:url" content="https://gestaoescolar.com.br/precos" />
+        <meta property="og:image" content="https://gestaoescolar.com.br/og-image.png" />
+        <meta name="twitter:image" content="https://gestaoescolar.com.br/og-image.png" />
         <link rel="canonical" href="https://gestaoescolar.com.br/precos" />
       </Helmet>
 
-      <PublicNav />
+      <header>
+        <PublicNav />
+      </header>
 
+      <main>
       <section className="landing-hero" style={{ minHeight: '40vh' }}>
         <div className="landing-hero-inner">
           <h1 className="reveal">Planos e Preços</h1>
@@ -139,6 +145,8 @@ export default function Precos() {
           </Link>
         </div>
       </section>
+
+      </main>
 
       <PublicFooter />
     </div>

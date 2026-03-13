@@ -13,14 +13,20 @@ export default function LandingPage() {
       <Helmet>
         <title>Sistema de Gestão Escolar Online | Controle de Alunos, Notas e Professores</title>
         <meta name="description" content="Sistema completo de gestão escolar online. Controle de alunos, professores, notas, presença, turmas e financeiro. Software para escola com painel administrativo e relatórios inteligentes." />
+        <meta name="robots" content="index,follow" />
         <meta property="og:title" content="Sistema de Gestão Escolar Online | Controle de Alunos, Notas e Professores" />
         <meta property="og:description" content="Sistema completo de gestão escolar online. Controle de alunos, professores, notas, presença, turmas e financeiro." />
         <meta property="og:url" content="https://gestaoescolar.com.br/" />
+        <meta property="og:image" content="https://gestaoescolar.com.br/og-image.png" />
+        <meta name="twitter:image" content="https://gestaoescolar.com.br/og-image.png" />
         <link rel="canonical" href="https://gestaoescolar.com.br/" />
       </Helmet>
 
-      <PublicNav />
+      <header>
+        <PublicNav />
+      </header>
 
+      <main>
       <section className="landing-hero">
         <div className="landing-hero-inner">
           <h1 className="reveal">Sistema de Gestão Escolar</h1>
@@ -134,6 +140,8 @@ export default function LandingPage() {
           </Link>
         </div>
       </section>
+
+      </main>
 
       <PublicFooter />
     </div>

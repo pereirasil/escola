@@ -5,8 +5,13 @@ Allow: /cadastro
 Allow: /sistema-escolar
 Allow: /funcionalidades
 Allow: /precos
+Allow: /controle-de-alunos
+Allow: /gestao-de-notas
 
 Disallow: /dashboard
+Disallow: /admin
+Disallow: /professor
+Disallow: /aluno
 Disallow: /alunos
 Disallow: /professores
 Disallow: /materias
@@ -21,9 +26,6 @@ Disallow: /reunioes
 Disallow: /datas-comemorativas
 Disallow: /aprovar-escolas
 Disallow: /escolas-aprovadas
-Disallow: /aluno
-Disallow: /professor
-Disallow: /admin
 Disallow: /painel
 
 Sitemap: https://gestaoescolar.com.br/sitemap.xml

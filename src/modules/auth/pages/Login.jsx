@@ -76,11 +76,15 @@ export default function Login() {
     <Helmet>
       <title>Entrar - Sistema de Gestão Escolar | Login</title>
       <meta name="description" content="Acesse o sistema de gestão escolar. Faça login como gestor, professor ou aluno e gerencie sua escola online." />
+      <meta name="robots" content="index,follow" />
       <meta property="og:title" content="Entrar - Sistema de Gestão Escolar" />
       <meta property="og:description" content="Acesse o sistema de gestão escolar. Faça login como gestor, professor ou aluno." />
       <meta property="og:url" content="https://gestaoescolar.com.br/login" />
+      <meta property="og:image" content="https://gestaoescolar.com.br/og-image.png" />
+      <meta name="twitter:image" content="https://gestaoescolar.com.br/og-image.png" />
       <link rel="canonical" href="https://gestaoescolar.com.br/login" />
     </Helmet>
+    <main>
     <div className="auth-page">
       <div className="auth-hero">
         <div className="auth-hero-content">
@@ -136,6 +140,7 @@ export default function Login() {
                 <img
                   src={avatar.photo.startsWith('http') ? avatar.photo : `${API_URL}/uploads/${avatar.photo}`}
                   alt={avatar.name || ''}
+                  loading="lazy"
                   style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover', border: '3px solid #646cff' }}
                 />
               ) : (
@@ -233,6 +238,7 @@ export default function Login() {
         </div>
       </div>
     </div>
+    </main>
     </>
   )
 }

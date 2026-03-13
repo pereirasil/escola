@@ -39,9 +39,12 @@ export default function Cadastro() {
     <Helmet>
       <title>Cadastrar Escola - Sistema de Gestão Escolar</title>
       <meta name="description" content="Cadastre sua escola no sistema de gestão escolar. Software completo para controle de alunos, professores, notas e financeiro." />
+      <meta name="robots" content="index,follow" />
       <meta property="og:title" content="Cadastrar Escola - Sistema de Gestão Escolar" />
       <meta property="og:description" content="Cadastre sua escola no sistema de gestão escolar. Software completo para controle de alunos, professores, notas e financeiro." />
       <meta property="og:url" content="https://gestaoescolar.com.br/cadastro" />
+      <meta property="og:image" content="https://gestaoescolar.com.br/og-image.png" />
+      <meta name="twitter:image" content="https://gestaoescolar.com.br/og-image.png" />
       <link rel="canonical" href="https://gestaoescolar.com.br/cadastro" />
     </Helmet>
   )
@@ -49,6 +52,7 @@ export default function Cadastro() {
   if (success) {
     return (
       <>{helmetBlock}
+      <main>
       <div className="auth-page">
         <div className="auth-card">
           <h1>Gestão Escolar</h1>
@@ -61,12 +65,14 @@ export default function Cadastro() {
           </p>
         </div>
       </div>
+      </main>
       </>
     )
   }
 
   return (
     <>{helmetBlock}
+    <main>
     <div className="auth-page">
       <div className="auth-card">
         <h1>Gestão Escolar</h1>
@@ -151,6 +157,7 @@ export default function Cadastro() {
         </p>
       </div>
     </div>
+    </main>
     </>
   )
 }

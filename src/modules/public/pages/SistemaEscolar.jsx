@@ -13,14 +13,20 @@ export default function SistemaEscolar() {
       <Helmet>
         <title>Sistema Escolar Online - Software de Gestão para Escolas | Gestão Escolar</title>
         <meta name="description" content="Conheça o sistema escolar online mais completo do mercado. Software de gestão para escolas com controle de alunos, professores, notas, presença e financeiro. Automatize a administração da sua escola." />
+        <meta name="robots" content="index,follow" />
         <meta property="og:title" content="Sistema Escolar Online - Software de Gestão para Escolas" />
         <meta property="og:description" content="Conheça o sistema escolar online mais completo do mercado. Software de gestão para escolas com controle de alunos, professores, notas, presença e financeiro." />
         <meta property="og:url" content="https://gestaoescolar.com.br/sistema-escolar" />
+        <meta property="og:image" content="https://gestaoescolar.com.br/og-image.png" />
+        <meta name="twitter:image" content="https://gestaoescolar.com.br/og-image.png" />
         <link rel="canonical" href="https://gestaoescolar.com.br/sistema-escolar" />
       </Helmet>
 
-      <PublicNav />
+      <header>
+        <PublicNav />
+      </header>
 
+      <main>
       <section className="landing-hero" style={{ minHeight: '50vh' }}>
         <div className="landing-hero-inner">
           <h1 className="reveal">Sistema Escolar Online</h1>
@@ -112,6 +118,8 @@ export default function SistemaEscolar() {
           </Link>
         </div>
       </section>
+
+      </main>
 
       <PublicFooter />
     </div>

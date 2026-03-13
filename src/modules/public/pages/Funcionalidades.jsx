@@ -13,14 +13,20 @@ export default function Funcionalidades() {
       <Helmet>
         <title>Funcionalidades do Sistema de Gestão Escolar | Controle Completo da Escola</title>
         <meta name="description" content="Todas as funcionalidades do sistema de gestão escolar: controle de alunos, gestão de professores, lançamento de notas, controle de presença, gestão financeira, grade horária e relatórios." />
+        <meta name="robots" content="index,follow" />
         <meta property="og:title" content="Funcionalidades do Sistema de Gestão Escolar | Controle Completo da Escola" />
         <meta property="og:description" content="Todas as funcionalidades do sistema de gestão escolar: controle de alunos, gestão de professores, lançamento de notas, controle de presença e gestão financeira." />
         <meta property="og:url" content="https://gestaoescolar.com.br/funcionalidades" />
+        <meta property="og:image" content="https://gestaoescolar.com.br/og-image.png" />
+        <meta name="twitter:image" content="https://gestaoescolar.com.br/og-image.png" />
         <link rel="canonical" href="https://gestaoescolar.com.br/funcionalidades" />
       </Helmet>
 
-      <PublicNav />
+      <header>
+        <PublicNav />
+      </header>
 
+      <main>
       <section className="landing-hero" style={{ minHeight: '40vh' }}>
         <div className="landing-hero-inner">
           <h1 className="reveal">Funcionalidades do Sistema de Gestão Escolar</h1>
@@ -186,6 +192,8 @@ export default function Funcionalidades() {
           </Link>
         </div>
       </section>
+
+      </main>
 
       <PublicFooter />
     </div>
