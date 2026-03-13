@@ -6,6 +6,7 @@ import ProfessorLayout from '../layouts/ProfessorLayout';
 import { useAuthStore } from '../store/useAuthStore';
 import { publicRoutes } from './PublicRoutes';
 import { privateRoutes } from './PrivateRoutes';
+import AlunoDashboard from '../modules/aluno/pages/AlunoDashboard';
 import MeusDados from '../modules/aluno/pages/MeusDados';
 import HistoricoEscolar from '../modules/aluno/pages/HistoricoEscolar';
 import Notificacoes from '../modules/aluno/pages/Notificacoes';
@@ -28,7 +29,7 @@ export const router = createBrowserRouter([
       {
         element: <AlunoLayout />,
         children: [
-          { index: true, element: <Navigate to="/aluno/dados" replace /> },
+          { index: true, element: <AlunoDashboard /> },
           { path: 'dados', element: <MeusDados /> },
           { path: 'historico', element: <HistoricoEscolar /> },
           { path: 'horarios', element: <MeusHorarios /> },

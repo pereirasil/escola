@@ -47,7 +47,7 @@ export default function ProfessorLayout() {
   const handleLinkClick = () => setSidebarOpen(false)
 
   return (
-    <div className="layout">
+    <div className="layout layout-professor">
       <NoIndex />
       {sidebarOpen && <div className="sidebar-overlay sidebar-overlay-visible" onClick={() => setSidebarOpen(false)} />}
       <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
@@ -57,6 +57,10 @@ export default function ProfessorLayout() {
           <NavLink to="/professor/notas" className={linkClass} onClick={handleLinkClick}>Lançamento de Notas</NavLink>
           <NavLink to="/professor/historico" className={linkClass} onClick={handleLinkClick}>Histórico e Gráficos</NavLink>
           <NavLink to="/professor/alterar-senha" className={linkClass} onClick={handleLinkClick}>Alterar Senha</NavLink>
+          <div className="sidebar-divider" />
+          <button type="button" className="sidebar-link sidebar-link-logout" onClick={() => { handleLinkClick(); handleLogout(); }}>
+            Sair
+          </button>
         </nav>
       </aside>
       <div className="layout-main">
@@ -77,6 +81,7 @@ export default function ProfessorLayout() {
             />
             {user?.photo ? (
               <img
+                className="header-avatar"
                 src={user.photo.startsWith('http') ? user.photo : `${API_URL}/uploads/${user.photo}`}
                 alt={user.name}
                 title="Clique para trocar a foto"
@@ -91,6 +96,7 @@ export default function ProfessorLayout() {
               />
             ) : (
               <span
+                className="header-avatar"
                 title="Clique para adicionar foto"
                 onClick={() => fileInputRef.current?.click()}
                 style={{

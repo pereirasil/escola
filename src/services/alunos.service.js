@@ -14,6 +14,7 @@ export const alunosService = {
     return api.post(`/students/${id}/photo`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
   },
   me: () => api.get('/students/me').then((r) => r.data),
+  headerInfo: () => api.get('/students/me/header-info').then((r) => r.data),
   minhasNotificacoes: () => api.get('/students/me/notifications').then((r) => r.data),
   contarNotificacoesNaoLidas: () => api.get('/students/me/notifications/count').then((r) => r.data),
   marcarNotificacoesComoLidas: () => api.patch('/students/me/notifications/read').then((r) => r.data),

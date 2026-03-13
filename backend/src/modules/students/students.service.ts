@@ -3,6 +3,7 @@ import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/co
 import { InjectRepository } from '@nestjs/typeorm'
 import { Brackets, Repository } from 'typeorm'
 import { Student } from './entities/student.entity'
+import { User } from '../users/entities/user.entity'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
 
@@ -17,6 +18,8 @@ export class StudentsService {
   constructor(
     @InjectRepository(Student)
     private repo: Repository<Student>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
   ) {}
 
   findAll(schoolId?: number) {
@@ -60,6 +63,23 @@ export class StudentsService {
 
   findOne(id: number) {
     return this.repo.findOne({ where: { id } })
+  }
+
+  async getHeaderInfo(studentId: number): Promise<{ guardian_name: string | null; school_name: string | null }> {
+    const student = await this.findOne(studentId)
+    if (!student) return { guardian_name: null, school_name: null }
+    let school_name: string | null = null
+    if (student.school_id) {
+      const school = await this.userRepo.findOne({
+        where: { id: student.school_id, role: 'school' },
+        select: ['name'],
+      })
+      school_name = school?.name ?? null
+    }
+    return {
+      guardian_name: student.guardian_name ?? null,
+      school_name,
+    }
   }
 
   findByDocument(cpf: string): Promise<Student | null> {
