@@ -98,7 +98,7 @@ export function NotificationBell() {
             ) : lista.length === 0 ? (
               <div className="notification-dropdown-empty">Nenhuma notificação.</div>
             ) : (
-              lista.slice(0, 5).map((n) => (
+              lista.map((n) => (
                 <div
                   key={n.id}
                   className="notification-dropdown-item"
@@ -111,7 +111,7 @@ export function NotificationBell() {
               ))
             )}
           </div>
-          {lista.length > 5 && (
+          {lista.length > 0 && (
             <div className="notification-dropdown-footer">
               <button type="button" onClick={handleNotificacaoClick}>Ver todas</button>
             </div>

@@ -11,6 +11,7 @@ import { TeacherScopeModule } from '../../common/services/teacher-scope.module'
 import { SchedulesModule } from '../schedules/schedules.module'
 import { ClassesModule } from '../classes/classes.module'
 import { TeachersModule } from '../teachers/teachers.module'
+import { CalendarEventsModule } from '../calendar-events/calendar-events.module'
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TeachersModule } from '../teachers/teachers.module'
     SchedulesModule,
     forwardRef(() => ClassesModule),
     TeachersModule,
+    CalendarEventsModule,
   ],
   controllers: [StudentsController],
   providers: [StudentsService],

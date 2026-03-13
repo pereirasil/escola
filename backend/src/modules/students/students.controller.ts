@@ -12,6 +12,7 @@ import { SchedulesService } from '../schedules/schedules.service'
 import { ClassesService } from '../classes/classes.service'
 import { TeachersService } from '../teachers/teachers.service'
 import { TeacherScopeService } from '../../common/services/teacher-scope.service'
+import { CalendarEventsService } from '../calendar-events/calendar-events.service'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
@@ -31,6 +32,7 @@ export class StudentsController {
     private classesService: ClassesService,
     private teachersService: TeachersService,
     private teacherScope: TeacherScopeService,
+    private calendarEventsService: CalendarEventsService,
   ) {}
 
   @Get()
@@ -61,7 +63,9 @@ export class StudentsController {
   @Get('me/notifications')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('student')
-  findMyNotifications(@Req() req: { user: { id: number } }) {
+  async findMyNotifications(@Req() req: { user: { id: number } }) {
+    const events = await this.calendarEventsService.findForStudent(req.user.id)
+    await this.notificationsService.ensureForCalendarEvents(req.user.id, events)
     return this.notificationsService.findByStudentId(req.user.id)
   }
 

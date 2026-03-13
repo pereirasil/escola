@@ -79,6 +79,29 @@ export class NotificationsService {
     }
   }
 
+  async ensureForCalendarEvents(studentId: number, events: { id: number; title: string; description?: string; date?: string }[]) {
+    if (events.length === 0) return
+    const existing = await this.notificationRepo.find({
+      where: { student_id: studentId, type: 'calendar_event', reference_id: In(events.map((e) => e.id)) },
+      select: ['reference_id'],
+    })
+    const existingIds = new Set(existing.map((n) => n.reference_id))
+    const toCreate = events.filter((e) => !existingIds.has(e.id))
+    if (toCreate.length === 0) return
+    const notifications = toCreate.map((event) => {
+      const date = event.date || ''
+      const formattedDate = date.includes('-') ? date.split('-').reverse().join('/') : date
+      return this.notificationRepo.create({
+        student_id: studentId,
+        title: event.title,
+        message: event.description || `Data comemorativa: ${event.title} em ${formattedDate}.`,
+        type: 'calendar_event',
+        reference_id: event.id,
+      })
+    })
+    await this.notificationRepo.save(notifications)
+  }
+
   async createForCalendarEvent(event: CalendarEvent, series: string[], schoolId?: number) {
     const where: any = {}
     if (schoolId) where.school_id = schoolId

@@ -12,5 +12,6 @@ import { NotificationsModule } from '../notifications/notifications.module'
   imports: [TypeOrmModule.forFeature([CalendarEvent, Student, Class, Enrollment]), NotificationsModule],
   controllers: [CalendarEventsController],
   providers: [CalendarEventsService],
+  exports: [CalendarEventsService],
 })
 export class CalendarEventsModule {}
