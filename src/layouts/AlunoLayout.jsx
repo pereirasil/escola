@@ -3,8 +3,17 @@ import { Outlet, useNavigate, NavLink, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
 import { NotificationBell } from '../components/ui'
 import { alunosService } from '../services/alunos.service'
+import BottomNav from '../components/BottomNav'
 import NoIndex from '../components/NoIndex'
 import toast from 'react-hot-toast'
+
+const alunoBottomNavItems = [
+  { key: 'dados', to: '/aluno/dados', label: 'Dados', icon: 'dados', end: false },
+  { key: 'historico', to: '/aluno/historico', label: 'Histórico', icon: 'historico', end: false },
+  { key: 'horarios', to: '/aluno/horarios', label: 'Horários', icon: 'horarios', end: false },
+  { key: 'notificacoes', to: '/aluno/notificacoes', label: 'Avisos', icon: 'notificacoes', end: false },
+  { key: 'menu', type: 'button', label: 'Mais', icon: 'menu' },
+]
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -114,6 +123,7 @@ export default function AlunoLayout() {
           <Outlet />
         </main>
       </div>
+      <BottomNav items={alunoBottomNavItems} onMenuClick={() => setSidebarOpen(true)} />
     </div>
   )
 }

@@ -2,8 +2,17 @@ import { useState, useRef } from 'react'
 import { Outlet, useNavigate, NavLink, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
 import { professoresService } from '../services/professores.service'
+import BottomNav from '../components/BottomNav'
 import NoIndex from '../components/NoIndex'
 import toast from 'react-hot-toast'
+
+const professorBottomNavItems = [
+  { key: 'turmas', to: '/professor/turmas', label: 'Turmas', icon: 'turmas', end: false },
+  { key: 'faltas', to: '/professor/faltas', label: 'Faltas', icon: 'faltas', end: false },
+  { key: 'notas', to: '/professor/notas', label: 'Notas', icon: 'notas', end: false },
+  { key: 'historico', to: '/professor/historico', label: 'Histórico', icon: 'historico', end: false },
+  { key: 'menu', type: 'button', label: 'Mais', icon: 'menu' },
+]
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -111,6 +120,7 @@ export default function ProfessorLayout() {
           <Outlet />
         </main>
       </div>
+      <BottomNav items={professorBottomNavItems} onMenuClick={() => setSidebarOpen(true)} />
     </div>
   )
 }

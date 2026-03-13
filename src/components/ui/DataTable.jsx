@@ -13,7 +13,7 @@ export function DataTable({ columns, data, emptyMessage = "Nenhum registro encon
 
   return (
     <>
-      <div style={{ overflowX: 'auto' }}>
+      <div className="table-scroll">
         <table className="data-table">
           <thead>
             <tr>
