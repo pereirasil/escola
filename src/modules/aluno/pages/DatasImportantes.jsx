@@ -37,7 +37,7 @@ export default function DatasImportantes() {
                 style={{
                   padding: '1rem',
                   marginBottom: '0.5rem',
-                  background: '#1a1a1a',
+                  background: '#f5f5f5',
                   borderRadius: '8px',
                   borderLeft: '4px solid #646cff',
                 }}
@@ -47,7 +47,7 @@ export default function DatasImportantes() {
                   <span style={{ color: '#646cff', fontWeight: 500 }}>{formatarData(ev.date)}</span>
                 </div>
                 {ev.description && (
-                  <p style={{ margin: '0.5rem 0 0', color: '#aaa' }}>{ev.description}</p>
+                  <p style={{ margin: '0.5rem 0 0', color: '#666' }}>{ev.description}</p>
                 )}
               </li>
             ))}
