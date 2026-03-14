@@ -171,95 +171,96 @@ export class StudentsController {
     const alunoId = req.user.id
     const schoolId = req.user.school_id
 
-    const [notas, historicoPresenca, materias, schedules] = await Promise.all([
+    const [notas, historicoPresenca, materias] = await Promise.all([
       this.gradesService.findByAluno(alunoId, schoolId),
       this.attendanceService.getHistoricoAluno(alunoId, schoolId),
       this.subjectsService.findAll(schoolId),
-      this.schedulesService.findAll(undefined, schoolId),
     ])
 
     const materiasMap = new Map(materias.map((m) => [m.id, m.name]))
 
-    const scheduleMap = new Map<string, { start_time: string; end_time: string }>()
-    for (const s of schedules) {
-      scheduleMap.set(`${s.class_id}-${s.subject_id}-${s.day_of_week}`, { start_time: s.start_time, end_time: s.end_time })
-    }
-
-    const getDayOfWeek = (dateStr: string): string => {
-      const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
-      const d = new Date(dateStr + 'T12:00:00')
-      return days[d.getDay()]
-    }
-
-    const presencasPorMateria = new Map<number, { presencas: number; faltas: number; registros: { date: string; lesson: string; status: string; observation?: string; start_time?: string; end_time?: string }[] }>()
+    const presencasPorMateria = new Map<number, { data: string; aula: string; status: string; observacao: string | null }[]>()
     for (const p of historicoPresenca.presencas) {
-      const entry = presencasPorMateria.get(p.subject_id) || { presencas: 0, faltas: 0, registros: [] }
-      if (p.status === 'F') {
-        entry.faltas++
-      } else {
-        entry.presencas++
-      }
-      const dayOfWeek = getDayOfWeek(p.date)
-      const schedule = scheduleMap.get(`${p.class_id}-${p.subject_id}-${dayOfWeek}`)
-      entry.registros.push({
-        date: p.date,
-        lesson: p.lesson,
+      const entry = presencasPorMateria.get(p.subject_id) || []
+      entry.push({
+        data: p.date,
+        aula: p.lesson ?? '',
         status: p.status,
-        observation: p.observation,
-        start_time: schedule?.start_time,
-        end_time: schedule?.end_time,
+        observacao: p.observation ?? null,
       })
       presencasPorMateria.set(p.subject_id, entry)
     }
 
-    const notasPorMateria = new Map<number, { bimestre: string; nota: number }[]>()
-    for (const n of notas) {
-      const arr = notasPorMateria.get(n.materia_id) || []
-      arr.push({ bimestre: n.bimestre, nota: n.nota })
-      notasPorMateria.set(n.materia_id, arr)
+    for (const [, registros] of presencasPorMateria) {
+      registros.sort((a, b) => b.data.localeCompare(a.data))
     }
 
-    const materiaIds = new Set([
-      ...notasPorMateria.keys(),
-      ...presencasPorMateria.keys(),
-    ])
+    const historico: Array<{
+      materia: string
+      bimestre: number
+      nota: number
+      presencas: Array<{ data: string; aula: string; status: string; observacao: string | null }>
+    }> = []
 
-    const historico = Array.from(materiaIds).map((materiaId) => ({
-      materia_id: materiaId,
-      materia: materiasMap.get(materiaId) || `Matéria ${materiaId}`,
-      notas: (notasPorMateria.get(materiaId) || []).sort((a, b) => a.bimestre.localeCompare(b.bimestre)),
-      presencas: presencasPorMateria.get(materiaId)?.presencas || 0,
-      faltas: presencasPorMateria.get(materiaId)?.faltas || 0,
-      registros: (presencasPorMateria.get(materiaId)?.registros || []).sort((a, b) => b.date.localeCompare(a.date)),
-    }))
+    for (const n of notas) {
+      const materia = materiasMap.get(n.materia_id) || `Matéria ${n.materia_id}`
+      const bimestreNum = parseInt(n.bimestre, 10) || 1
+      const presencas = (presencasPorMateria.get(n.materia_id) || []).map((r) => ({ ...r }))
 
-    historico.sort((a, b) => a.materia.localeCompare(b.materia))
+      historico.push({
+        materia,
+        bimestre: bimestreNum,
+        nota: Number(n.nota),
+        presencas,
+      })
+    }
 
-    const TIPOS_PADRAO = ['Trabalho', 'Teste', 'Prova']
-    const avaliacoesPorDisciplina: Array<{ materia_id: number; materia: string; bimestre: string; avaliacoes: Array<{ tipo: string; valor: number; nota: number | null }> }> = []
-
-    for (const item of historico) {
-      for (const { bimestre, nota } of item.notas) {
-        const avaliacoes = TIPOS_PADRAO.map((tipo, idx) => ({
-          tipo,
-          valor: 10,
-          nota: idx === 2 ? nota : null,
-        }))
-        avaliacoesPorDisciplina.push({
-          materia_id: item.materia_id,
-          materia: item.materia,
-          bimestre,
-          avaliacoes,
+    const materiaIdsComPresenca = new Set(presencasPorMateria.keys())
+    for (const materiaId of materiaIdsComPresenca) {
+      if (!notas.some((n) => n.materia_id === materiaId)) {
+        const materia = materiasMap.get(materiaId) || `Matéria ${materiaId}`
+        const presencas = (presencasPorMateria.get(materiaId) || []).map((r) => ({ ...r }))
+        historico.push({
+          materia,
+          bimestre: 1,
+          nota: 0,
+          presencas,
         })
       }
     }
 
+    historico.sort((a, b) => a.materia.localeCompare(b.materia) || a.bimestre - b.bimestre)
+
+    const TIPOS_PADRAO = ['Trabalho', 'Teste', 'Prova']
+    const avaliacoesPorDisciplina: Array<{
+      materia: string
+      bimestre: number
+      avaliacoes: Array<{ tipo: string; nota: number | null }>
+    }> = []
+
+    for (const n of notas) {
+      const materia = materiasMap.get(n.materia_id) || `Matéria ${n.materia_id}`
+      const bimestreNum = parseInt(n.bimestre, 10) || 1
+      const avaliacoes = TIPOS_PADRAO.map((tipo, idx) => ({
+        tipo,
+        nota: idx === 2 ? Number(n.nota) : null,
+      }))
+
+      avaliacoesPorDisciplina.push({
+        materia,
+        bimestre: bimestreNum,
+        avaliacoes,
+      })
+    }
+
+    avaliacoesPorDisciplina.sort(
+      (a, b) => a.materia.localeCompare(b.materia) || a.bimestre - b.bimestre,
+    )
+
     return {
-      historico,
       resumo: historicoPresenca.resumo,
-      avaliacoesPorDisciplina: avaliacoesPorDisciplina.sort((a, b) =>
-        a.materia.localeCompare(b.materia) || a.bimestre.localeCompare(b.bimestre),
-      ),
+      historico,
+      avaliacoesPorDisciplina,
     }
   }
 

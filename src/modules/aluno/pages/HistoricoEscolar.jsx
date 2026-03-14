@@ -6,7 +6,11 @@ import toast from 'react-hot-toast'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
+const ANOS = [2026, 2025, 2024]
+const BIMESTRES = [1, 2, 3, 4]
+
 const mapStatus = (status) => {
+  if (!status) return '-'
   switch (status) {
     case 'P': return <span style={{ color: '#4ade80', fontWeight: 'bold' }}>Presente</span>
     case 'F': return <span style={{ color: '#f87171', fontWeight: 'bold' }}>Falta</span>
@@ -18,13 +22,16 @@ const mapStatus = (status) => {
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
-  const parts = dateStr.split('-')
+  const parts = String(dateStr).split('-')
   if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`
   return dateStr
 }
 
-const ANOS = [2026, 2025, 2024]
-const BIMESTRES = ['1', '2', '3', '4']
+function toBimestreValue(val) {
+  if (val === null || val === undefined) return 1
+  const n = Number(val)
+  return isNaN(n) ? 1 : n
+}
 
 export default function HistoricoEscolar() {
   const { user } = useAuthStore()
@@ -32,40 +39,77 @@ export default function HistoricoEscolar() {
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState('boletim')
   const [ano, setAno] = useState(new Date().getFullYear().toString())
-  const [bimestre, setBimestre] = useState('1')
+  const [bimestre, setBimestre] = useState(1)
 
   useEffect(() => {
     alunosService.meuHistorico()
-      .then(setDados)
-      .catch(() => toast.error('Erro ao carregar histórico.'))
+      .then((res) => setDados(res ?? null))
+      .catch(() => {
+        toast.error('Erro ao carregar histórico.')
+        setDados(null)
+      })
       .finally(() => setLoading(false))
   }, [])
 
   if (loading) return <div className="page"><Spinner /></div>
   if (!dados) return <div className="page"><div className="empty-state">Não foi possível carregar o histórico.</div></div>
 
-  const { historico, resumo, avaliacoesPorDisciplina = [] } = dados
+  const resumo = dados?.resumo ?? { total: 0, faltas: 0, presentes: 0, frequencia: 100 }
+  const historico = dados?.historico ?? []
+  const avaliacoesPorDisciplina = dados?.avaliacoesPorDisciplina ?? []
 
-  const todasNotas = []
+  const bimestreNum = toBimestreValue(bimestre)
+
+  const notasFiltradas = historico
+    .filter((item) => toBimestreValue(item?.bimestre) === bimestreNum)
+    .map((item) => ({
+      materia: item?.materia ?? '-',
+      bimestre: toBimestreValue(item?.bimestre),
+      nota: Number(item?.nota) ?? 0,
+    }))
+    .sort((a, b) => a.materia.localeCompare(b.materia))
+
+  const seenPresencas = new Set()
   const todosRegistros = []
-
   for (const item of historico) {
-    for (const n of item.notas) {
-      todasNotas.push({ ...n, materia: item.materia })
-    }
-    if (item.registros) {
-      for (const r of item.registros) {
-        todosRegistros.push({ ...r, materia: item.materia })
+    const materia = item?.materia ?? '-'
+    const presencas = item?.presencas ?? []
+    for (const r of presencas) {
+      const key = `${r?.data ?? ''}-${r?.aula ?? ''}-${materia}`
+      if (key && !seenPresencas.has(key)) {
+        seenPresencas.add(key)
+        const dateStr = r?.data ?? ''
+        const anoPresenca = dateStr ? String(dateStr).split('-')[0] : ''
+        if (!ano || anoPresenca === String(ano)) {
+          todosRegistros.push({
+            data: r?.data ?? '',
+            aula: r?.aula ?? '-',
+            materia,
+            status: r?.status ?? '',
+            observacao: r?.observacao ?? null,
+          })
+        }
       }
     }
   }
+  todosRegistros.sort((a, b) => (b?.data ?? '').localeCompare(a?.data ?? ''))
 
-  todasNotas.sort((a, b) => a.materia.localeCompare(b.materia) || a.bimestre.localeCompare(b.bimestre))
-  todosRegistros.sort((a, b) => b.date.localeCompare(a.date))
+  const avaliacoesFiltradas = avaliacoesPorDisciplina
+    .filter((d) => toBimestreValue(d?.bimestre) === bimestreNum)
 
-  const avaliacoesFiltradas = avaliacoesPorDisciplina.filter(
-    (a) => a.bimestre === bimestre
-  )
+  const avaliacoesLinhas = []
+  for (const d of avaliacoesFiltradas) {
+    const materia = d?.materia ?? '-'
+    const bimestreItem = toBimestreValue(d?.bimestre)
+    for (const av of d?.avaliacoes ?? []) {
+      avaliacoesLinhas.push({
+        materia,
+        tipo: av?.tipo ?? '-',
+        nota: av?.nota != null ? Number(av.nota) : null,
+        bimestre: bimestreItem,
+      })
+    }
+  }
 
   return (
     <div className="pedagogico-page">
@@ -74,14 +118,14 @@ export default function HistoricoEscolar() {
           {user?.photo ? (
             <img
               src={user.photo.startsWith('http') ? user.photo : `${API_URL}/uploads/${user.photo}`}
-              alt={user.name}
+              alt={user?.name ?? 'Aluno'}
             />
           ) : (
             <div className="pedagogico-profile-placeholder">SEM FOTO</div>
           )}
         </div>
         <div>
-          <h2 className="pedagogico-profile-name">{user?.name || 'Aluno'}</h2>
+          <h2 className="pedagogico-profile-name">{user?.name ?? 'Aluno'}</h2>
         </div>
       </section>
 
@@ -116,7 +160,7 @@ export default function HistoricoEscolar() {
         <select
           className="pedagogico-select"
           value={bimestre}
-          onChange={(e) => setBimestre(e.target.value)}
+          onChange={(e) => setBimestre(Number(e.target.value))}
           aria-label="Bimestre"
         >
           {BIMESTRES.map((b) => (
@@ -133,24 +177,24 @@ export default function HistoricoEscolar() {
                 <div className="pedagogico-boletim-card-label">Frequência Total</div>
                 <div
                   className="pedagogico-boletim-card-value"
-                  style={{ color: resumo.frequencia < 75 ? '#dc2626' : '#16a34a' }}
+                  style={{ color: (resumo?.frequencia ?? 100) < 75 ? '#dc2626' : '#16a34a' }}
                 >
-                  {resumo.frequencia}%
+                  {resumo?.frequencia ?? 0}%
                 </div>
               </div>
               <div className="pedagogico-boletim-card">
                 <div className="pedagogico-boletim-card-label">Aulas Presentes</div>
                 <div className="pedagogico-boletim-card-value" style={{ color: '#2563eb' }}>
-                  {resumo.presentes}
+                  {resumo?.presentes ?? 0}
                 </div>
               </div>
               <div className="pedagogico-boletim-card">
                 <div className="pedagogico-boletim-card-label">Total de Faltas</div>
                 <div
                   className="pedagogico-boletim-card-value"
-                  style={{ color: resumo.faltas > 0 ? '#dc2626' : '#6b7280' }}
+                  style={{ color: (resumo?.faltas ?? 0) > 0 ? '#dc2626' : '#6b7280' }}
                 >
-                  {resumo.faltas}
+                  {resumo?.faltas ?? 0}
                 </div>
               </div>
             </div>
@@ -158,15 +202,15 @@ export default function HistoricoEscolar() {
             <Card title="Boletim de Notas">
               <DataTable
                 columns={['Matéria', 'Bimestre', 'Nota']}
-                data={todasNotas}
-                emptyMessage="Nenhuma nota lançada."
+                data={notasFiltradas}
+                emptyMessage="Nenhuma nota lançada para o bimestre selecionado."
                 renderRow={(n, idx) => (
                   <tr key={idx}>
                     <td>{n.materia}</td>
                     <td>{n.bimestre} Bimestre</td>
                     <td>
-                      <strong style={{ color: n.nota >= 6 ? '#4ade80' : '#f87171' }}>
-                        {Number(n.nota).toFixed(1)}
+                      <strong style={{ color: (n.nota ?? 0) >= 6 ? '#4ade80' : '#f87171' }}>
+                        {Number(n.nota ?? 0).toFixed(1)}
                       </strong>
                     </td>
                   </tr>
@@ -176,17 +220,16 @@ export default function HistoricoEscolar() {
 
             <Card title="Histórico de Presença">
               <DataTable
-                columns={['Data', 'Horário', 'Aula', 'Matéria', 'Status', 'Observação']}
+                columns={['Data', 'Aula', 'Matéria', 'Status', 'Observação']}
                 data={todosRegistros}
                 emptyMessage="Nenhuma chamada registrada."
                 renderRow={(r, idx) => (
                   <tr key={idx}>
-                    <td>{formatDate(r.date)}</td>
-                    <td>{r.start_time && r.end_time ? `${r.start_time} - ${r.end_time}` : '-'}</td>
-                    <td>{r.lesson || '-'}</td>
-                    <td>{r.materia}</td>
-                    <td>{mapStatus(r.status)}</td>
-                    <td style={{ color: '#888' }}>{r.observation || '-'}</td>
+                    <td>{formatDate(r?.data)}</td>
+                    <td>{r?.aula ?? '-'}</td>
+                    <td>{r?.materia ?? '-'}</td>
+                    <td>{mapStatus(r?.status)}</td>
+                    <td style={{ color: '#888' }}>{r?.observacao ?? '-'}</td>
                   </tr>
                 )}
               />
@@ -196,42 +239,32 @@ export default function HistoricoEscolar() {
 
         {tab === 'avaliacoes' && (
           <>
-            {avaliacoesFiltradas.length === 0 ? (
+            {avaliacoesLinhas.length === 0 ? (
               <div className="empty-state">Nenhuma avaliação para o bimestre selecionado.</div>
             ) : (
-              avaliacoesFiltradas.map((d) => (
-                <div key={`${d.materia_id}-${d.bimestre}`} className="pedagogico-disciplina">
-                  <h3 className="pedagogico-disciplina-nome">{d.materia}</h3>
-                  <div className="pedagogico-avaliacoes-wrap">
-                    <table className="pedagogico-avaliacoes-table">
-                      <thead>
-                        <tr>
-                          <th>Avaliação</th>
-                          <th>Valor</th>
-                          <th>Nota</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {d.avaliacoes.map((av, idx) => (
-                          <tr key={idx}>
-                            <td>{av.tipo}</td>
-                            <td>{Number(av.valor).toFixed(2).replace('.', ',')}</td>
-                            <td>
-                              {av.nota != null ? (
-                                <span className={av.nota >= 6 ? 'nota-aprovado' : 'nota-reprovado'}>
-                                  {Number(av.nota).toFixed(2).replace('.', ',')}
-                                </span>
-                              ) : (
-                                '-'
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ))
+              <Card title="Avaliações por Disciplina">
+                <DataTable
+                  columns={['Matéria', 'Tipo de Avaliação', 'Nota', 'Bimestre']}
+                  data={avaliacoesLinhas}
+                  emptyMessage="Nenhuma avaliação encontrada."
+                  renderRow={(av, idx) => (
+                    <tr key={idx}>
+                      <td>{av.materia}</td>
+                      <td>{av.tipo}</td>
+                      <td>
+                        {av.nota != null ? (
+                          <span className={(av.nota ?? 0) >= 6 ? 'nota-aprovado' : 'nota-reprovado'}>
+                            {Number(av.nota).toFixed(2).replace('.', ',')}
+                          </span>
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                      <td>{av.bimestre} Bimestre</td>
+                    </tr>
+                  )}
+                />
+              </Card>
             )}
           </>
         )}

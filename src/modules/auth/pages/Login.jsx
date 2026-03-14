@@ -65,7 +65,18 @@ export default function Login() {
       const target = role === 'student' ? '/aluno' : role === 'teacher' ? '/professor' : '/dashboard'
       navigate(target, { replace: true })
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Erro ao entrar. Tente novamente.')
+      const msg = err.response?.data?.message
+      if (msg) {
+        toast.error(msg)
+      } else if (err.code === 'ERR_NETWORK' || !err.response) {
+        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+        toast.error(`Não foi possível conectar à API (${baseURL}). Verifique se o backend está rodando.`)
+      } else {
+        toast.error('Erro ao entrar. Tente novamente.')
+      }
+      if (import.meta.env.DEV) {
+        console.error('[Login]', err)
+      }
     } finally {
       setLoading(false)
     }
