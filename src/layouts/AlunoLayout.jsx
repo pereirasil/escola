@@ -51,6 +51,7 @@ export default function AlunoLayout() {
           <NavLink to="/aluno/horarios" className={linkClass} onClick={handleLinkClick}>Horários</NavLink>
           <NavLink to="/aluno/notificacoes" className={linkClass} onClick={handleLinkClick}>Notificações</NavLink>
           <NavLink to="/aluno/datas" className={linkClass} onClick={handleLinkClick}>Datas Importantes</NavLink>
+          <NavLink to="/aluno/reunioes" className={linkClass} onClick={handleLinkClick}>Reuniões</NavLink>
           <NavLink to="/aluno/alterar-senha" className={linkClass} onClick={handleLinkClick}>Alterar senha</NavLink>
           <div className="sidebar-divider" />
           <button type="button" className="sidebar-link sidebar-link-logout" onClick={() => { handleLinkClick(); handleLogout(); }}>

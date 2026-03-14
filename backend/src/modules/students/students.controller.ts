@@ -13,6 +13,7 @@ import { ClassesService } from '../classes/classes.service'
 import { TeachersService } from '../teachers/teachers.service'
 import { TeacherScopeService } from '../../common/services/teacher-scope.service'
 import { CalendarEventsService } from '../calendar-events/calendar-events.service'
+import { MeetingsService } from '../meetings/meetings.service'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
@@ -33,6 +34,7 @@ export class StudentsController {
     private teachersService: TeachersService,
     private teacherScope: TeacherScopeService,
     private calendarEventsService: CalendarEventsService,
+    private meetingsService: MeetingsService,
   ) {}
 
   @Get()
@@ -262,6 +264,44 @@ export class StudentsController {
       historico,
       avaliacoesPorDisciplina,
     }
+  }
+
+  @Get('me/meetings')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  async getMyMeetings(@Req() req: { user: { id: number; school_id?: number } }) {
+    const student = await this.service.findOne(req.user.id)
+    const classIds: number[] = []
+
+    if (student?.class_id) {
+      classIds.push(student.class_id)
+      const studentClass = await this.classesService.findOne(student.class_id)
+      if (studentClass?.grade) {
+        const sameGradeClasses = await this.classesService.findAll(req.user.school_id)
+        for (const c of sameGradeClasses) {
+          if (c.grade === studentClass.grade && c.id !== student.class_id) {
+            classIds.push(c.id)
+          }
+        }
+      }
+    }
+
+    const meetings = await this.meetingsService.findByClassIdsOrGeneral(classIds, req.user.school_id)
+
+    return meetings.map((m) => {
+      const scheduled = m.scheduled_at ? new Date(m.scheduled_at) : null
+      const data = scheduled ? scheduled.toISOString().slice(0, 10) : ''
+      const horario = scheduled ? scheduled.toTimeString().slice(0, 5) : ''
+      return {
+        id: m.id,
+        titulo: m.title,
+        descricao: m.description ?? '',
+        data,
+        horario,
+        local: null,
+        tipo: 'Reuniao',
+      }
+    })
   }
 
   @Get(':id')

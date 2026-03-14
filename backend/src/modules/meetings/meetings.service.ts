@@ -18,6 +18,20 @@ export class MeetingsService {
     return this.repo.find({ where, order: { scheduled_at: 'DESC' } })
   }
 
+  async findByClassIdsOrGeneral(classIds: number[], schoolId?: number): Promise<Meeting[]> {
+    const qb = this.repo
+      .createQueryBuilder('m')
+      .orderBy('m.scheduled_at', 'DESC')
+
+    qb.andWhere('(m.class_id IS NULL OR m.class_id IN (:...classIds))', { classIds: classIds.length ? classIds : [0] })
+
+    if (schoolId !== undefined && schoolId !== null) {
+      qb.andWhere('(m.school_id = :schoolId OR m.school_id IS NULL)', { schoolId })
+    }
+
+    return qb.getMany()
+  }
+
   async create(dto: CreateMeetingDto, schoolId?: number) {
     const meeting = await this.repo.save(this.repo.create({ ...dto, school_id: schoolId }))
     await this.notificationsService.createForMeeting(meeting, schoolId)

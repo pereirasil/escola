@@ -10,5 +10,6 @@ import { NotificationsModule } from '../notifications/notifications.module'
   imports: [TypeOrmModule.forFeature([Meeting, Message]), NotificationsModule],
   controllers: [MeetingsController],
   providers: [MeetingsService],
+  exports: [MeetingsService],
 })
 export class MeetingsModule {}

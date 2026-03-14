@@ -13,6 +13,7 @@ import { SchedulesModule } from '../schedules/schedules.module'
 import { ClassesModule } from '../classes/classes.module'
 import { TeachersModule } from '../teachers/teachers.module'
 import { CalendarEventsModule } from '../calendar-events/calendar-events.module'
+import { MeetingsModule } from '../meetings/meetings.module'
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { CalendarEventsModule } from '../calendar-events/calendar-events.module'
     forwardRef(() => ClassesModule),
     TeachersModule,
     CalendarEventsModule,
+    MeetingsModule,
   ],
   controllers: [StudentsController],
   providers: [StudentsService],
