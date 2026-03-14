@@ -32,6 +32,9 @@ body {
 .layout {
   display: flex;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .layout-main {
@@ -39,11 +42,13 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  width: 100%;
 }
 
 .layout-content {
   flex: 1;
   padding: 1.5rem;
+  min-width: 0;
 }
 
 /* Sidebar */
@@ -1668,6 +1673,21 @@ button:focus-visible {
 
   .layout-main {
     padding-bottom: 0;
+  }
+
+  /* Header fixo no topo para aluno e professor */
+  .layout-aluno .aluno-header-bar,
+  .layout-professor .aluno-header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 850;
+  }
+
+  .layout-aluno .layout-main,
+  .layout-professor .layout-main {
+    padding-top: 52px;
   }
 
   .layout-content {
