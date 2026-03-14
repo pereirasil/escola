@@ -829,6 +829,46 @@ body {
   margin-top: 0.25rem;
 }
 
+.comunicacao-lista-titulo {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.75rem;
+}
+
+.comunicacao-conversa-preview {
+  display: block;
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  line-height: 1.3;
+}
+
+.comunicacao-conversa-item-encerrada {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
+  opacity: 0.9;
+}
+
+.comunicacao-conversa-item-encerrada:hover {
+  background: #e5e7eb;
+}
+
+.comunicacao-conversa-item-encerrada.active {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.comunicacao-status-encerrada {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
 .chat-placeholder {
   display: flex;
   align-items: center;

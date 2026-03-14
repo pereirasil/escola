@@ -10,6 +10,11 @@ function formatarData(data) {
   return new Date(data).toLocaleString('pt-BR')
 }
 
+function truncarTexto(texto, maxLen = 60) {
+  if (!texto) return ''
+  return texto.length > maxLen ? texto.slice(0, maxLen) + '...' : texto
+}
+
 export default function Comunicacao() {
   const [tab, setTab] = useState('aviso')
   const [avisoLista, setAvisoLista] = useState([])
@@ -21,6 +26,9 @@ export default function Comunicacao() {
   const [novaSubject, setNovaSubject] = useState('')
   const [novaMensagem, setNovaMensagem] = useState('')
   const [criando, setCriando] = useState(false)
+
+  const conversasAbertas = conversas.filter((c) => c.status === 'open')
+  const conversasEncerradas = conversas.filter((c) => c.status === 'closed')
 
   const carregarAvisos = () => {
     setAvisoLoading(true)
@@ -46,7 +54,7 @@ export default function Comunicacao() {
   }, [])
 
   useEffect(() => {
-    if (tab === 'conversa') carregarConversas()
+    if (tab === 'conversa' || tab === 'historico') carregarConversas()
   }, [tab])
 
   const handleCriarConversa = async (e) => {
@@ -61,11 +69,16 @@ export default function Comunicacao() {
         subject: novaSubject.trim(),
         initial_message: novaMensagem.trim() || undefined,
       })
-      setConversas((prev) => [nova, ...prev])
+      const novaComPreview = {
+        ...nova,
+        status: 'open',
+        last_message: novaMensagem.trim() || null,
+      }
+      setConversas((prev) => [novaComPreview, ...prev])
       setNovaSubject('')
       setNovaMensagem('')
       setShowNovaConversa(false)
-      setSelectedConversation(nova)
+      setSelectedConversation(novaComPreview)
     } catch {
       toast.error('Erro ao criar conversa.')
     } finally {
@@ -82,7 +95,7 @@ export default function Comunicacao() {
             role="tab"
             aria-selected={tab === 'aviso'}
             className={`comunicacao-tab ${tab === 'aviso' ? 'comunicacao-tab-active' : ''}`}
-            onClick={() => setTab('aviso')}
+            onClick={() => { setTab('aviso'); setSelectedConversation(null) }}
           >
             Avisos
           </button>
@@ -91,9 +104,18 @@ export default function Comunicacao() {
             role="tab"
             aria-selected={tab === 'conversa'}
             className={`comunicacao-tab ${tab === 'conversa' ? 'comunicacao-tab-active' : ''}`}
-            onClick={() => setTab('conversa')}
+            onClick={() => { setTab('conversa'); setSelectedConversation(null) }}
           >
             Conversas
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'historico'}
+            className={`comunicacao-tab ${tab === 'historico' ? 'comunicacao-tab-active' : ''}`}
+            onClick={() => { setTab('historico'); setSelectedConversation(null) }}
+          >
+            Histórico
           </button>
         </nav>
 
@@ -155,21 +177,25 @@ export default function Comunicacao() {
                 </form>
               )}
 
+              <h4 className="comunicacao-lista-titulo">Conversas ativas</h4>
               <div className="comunicacao-conversa-lista">
                 {conversasLoading ? (
                   <Spinner />
-                ) : conversas.length === 0 ? (
-                  <div className="empty-state">Nenhuma conversa.</div>
+                ) : conversasAbertas.length === 0 ? (
+                  <div className="empty-state">Nenhuma conversa ativa.</div>
                 ) : (
-                  conversas.map((c) => (
+                  conversasAbertas.map((c) => (
                     <button
                       key={c.id}
                       type="button"
-                      className={`comunicacao-conversa-item ${selectedConversation?.id === c.id ? 'active' : ''} ${c.status === 'closed' ? 'closed' : ''}`}
+                      className={`comunicacao-conversa-item ${selectedConversation?.id === c.id ? 'active' : ''}`}
                       onClick={() => setSelectedConversation(c)}
                     >
                       <strong>{c.subject}</strong>
-                      <small>{c.status === 'closed' ? 'Encerrada' : formatarData(c.last_message_at)}</small>
+                      {c.last_message && (
+                        <span className="comunicacao-conversa-preview">{truncarTexto(c.last_message)}</span>
+                      )}
+                      <small>{formatarData(c.last_message_at)}</small>
                     </button>
                   ))
                 )}
@@ -182,7 +208,7 @@ export default function Comunicacao() {
                   conversation={selectedConversation}
                   onClose={() => setSelectedConversation(null)}
                   onConversationClosed={() => {
-                    setSelectedConversation((c) => (c ? { ...c, status: 'closed' } : null))
+                    setSelectedConversation((c) => (c ? { ...c, status: 'closed', closed_at: new Date().toISOString() } : null))
                     carregarConversas()
                   }}
                   isStudent
@@ -190,6 +216,49 @@ export default function Comunicacao() {
               ) : (
                 <div className="chat-placeholder">
                   Selecione uma conversa ou inicie uma nova.
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {tab === 'historico' && (
+          <section className="comunicacao-aba comunicacao-chat">
+            <div className="comunicacao-chat-sidebar">
+              <h4 className="comunicacao-lista-titulo">Conversas encerradas</h4>
+              <div className="comunicacao-conversa-lista">
+                {conversasLoading ? (
+                  <Spinner />
+                ) : conversasEncerradas.length === 0 ? (
+                  <div className="empty-state">Nenhuma conversa encerrada.</div>
+                ) : (
+                  conversasEncerradas.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`comunicacao-conversa-item comunicacao-conversa-item-encerrada ${selectedConversation?.id === c.id ? 'active' : ''}`}
+                      onClick={() => setSelectedConversation(c)}
+                    >
+                      <strong>{c.subject}</strong>
+                      <small>{formatarData(c.closed_at)}</small>
+                      <span className="comunicacao-status-encerrada">Encerrada</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+            <div className="comunicacao-chat-main">
+              {selectedConversation ? (
+                <ChatView
+                  conversationId={selectedConversation.id}
+                  conversation={selectedConversation}
+                  onClose={() => setSelectedConversation(null)}
+                  onConversationClosed={() => {}}
+                  isStudent
+                />
+              ) : (
+                <div className="chat-placeholder">
+                  Selecione uma conversa para visualizar o histórico.
                 </div>
               )}
             </div>

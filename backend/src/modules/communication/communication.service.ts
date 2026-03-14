@@ -21,10 +21,26 @@ export class CommunicationService {
   async findConversationsByStudent(studentId: number, schoolId?: number) {
     const where: any = { student_id: studentId }
     if (schoolId != null) where.school_id = schoolId
-    return this.convRepo.find({
+    const convs = await this.convRepo.find({
       where,
       order: { last_message_at: 'DESC', created_at: 'DESC' },
     })
+    if (convs.length === 0) return []
+    const ids = convs.map((c) => c.id)
+    const msgs = await this.msgRepo.find({
+      where: { conversation_id: In(ids) },
+      order: { id: 'DESC' },
+    })
+    const lastMsgByConv = new Map<number, string>()
+    for (const m of msgs) {
+      if (!lastMsgByConv.has(m.conversation_id)) {
+        lastMsgByConv.set(m.conversation_id, m.message)
+      }
+    }
+    return convs.map((c) => ({
+      ...c,
+      last_message: lastMsgByConv.get(c.id) ?? null,
+    }))
   }
 
   async findConversationsBySchool(schoolId?: number) {
