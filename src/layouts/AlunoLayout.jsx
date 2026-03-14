@@ -15,6 +15,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import { alunosService } from '../services/alunos.service'
 import BottomNav from '../components/BottomNav'
 import NoIndex from '../components/NoIndex'
+import { NotificationBell } from '../components/ui'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -51,7 +52,7 @@ const menuSections = [
   {
     title: 'Sistema',
     items: [
-      { to: '/aluno/notificacoes', label: 'Notificações', icon: Bell, end: false },
+      { to: '/aluno/comunicacao', label: 'Comunicação', icon: Bell, end: false },
     ],
   },
 ]
@@ -153,6 +154,7 @@ export default function AlunoLayout() {
           </div>
           {isPedagogico && <h1 className="aluno-header-title">Pedagógico</h1>}
           <div className="aluno-header-right">
+            <NotificationBell />
             <span className="aluno-logo-badge">{headerInfo.school_name || 'Gestão Escolar'}</span>
           </div>
         </header>

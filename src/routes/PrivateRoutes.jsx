@@ -16,6 +16,7 @@ import RelatorioPresenca from '../modules/presenca/pages/RelatorioPresenca';
 import Financeiro from '../modules/financeiro/pages/Financeiro';
 import Reunioes from '../modules/reunioes/pages/Reunioes';
 import CalendarEventsPage from '../modules/calendar-events/pages/CalendarEventsPage';
+import ComunicacaoEscola from '../modules/escola/pages/Comunicacao';
 import AprovarEscolas from '../modules/admin/pages/AprovarEscolas';
 import EscolasAprovadas from '../modules/admin/pages/EscolasAprovadas';
 
@@ -40,6 +41,7 @@ export const privateRoutes = {
     { path: 'financeiro', element: <Financeiro /> },
     { path: 'reunioes', element: <Reunioes /> },
     { path: 'datas-comemorativas', element: <CalendarEventsPage /> },
+    { path: 'comunicacao', element: <ComunicacaoEscola /> },
     { path: 'aprovar-escolas', element: <AprovarEscolas /> },
     { path: 'escolas-aprovadas', element: <EscolasAprovadas /> },
   ],

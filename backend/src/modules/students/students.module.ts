@@ -14,10 +14,12 @@ import { ClassesModule } from '../classes/classes.module'
 import { TeachersModule } from '../teachers/teachers.module'
 import { CalendarEventsModule } from '../calendar-events/calendar-events.module'
 import { MeetingsModule } from '../meetings/meetings.module'
+import { StudentMessagesModule } from '../student-messages/student-messages.module'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Student, User]),
+    StudentMessagesModule,
     NotificationsModule,
     forwardRef(() => GradesModule),
     forwardRef(() => AttendanceModule),

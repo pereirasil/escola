@@ -13,6 +13,9 @@ import { SubjectsModule } from './modules/subjects/subjects.module'
 import { SchedulesModule } from './modules/schedules/schedules.module'
 import { NotificationsModule } from './modules/notifications/notifications.module'
 import { CalendarEventsModule } from './modules/calendar-events/calendar-events.module'
+import { StudentMessagesModule } from './modules/student-messages/student-messages.module'
+import { SchoolModule } from './modules/school/school.module'
+import { CommunicationModule } from './modules/communication/communication.module'
 
 @Module({
   imports: [
@@ -39,6 +42,9 @@ import { CalendarEventsModule } from './modules/calendar-events/calendar-events.
     SchedulesModule,
     NotificationsModule,
     CalendarEventsModule,
+    StudentMessagesModule,
+    SchoolModule,
+    CommunicationModule,
   ],
 })
 export class AppModule {}

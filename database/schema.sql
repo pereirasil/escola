@@ -145,6 +145,52 @@ CREATE TABLE IF NOT EXISTS messages (
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Conversas (chat em tempo real)
+CREATE TABLE IF NOT EXISTS conversations (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  school_id INTEGER,
+  student_id INTEGER NOT NULL,
+  subject TEXT NOT NULL,
+  status TEXT DEFAULT 'open',
+  last_message_at DATETIME,
+  closed_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES students(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_conversations_student_id ON conversations(student_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_school_id ON conversations(school_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_last_message_at ON conversations(last_message_at);
+
+CREATE TABLE IF NOT EXISTS conversation_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  conversation_id INTEGER NOT NULL,
+  sender_type TEXT NOT NULL,
+  sender_id INTEGER NOT NULL,
+  message TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (conversation_id) REFERENCES conversations(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_conversation_messages_conversation_id ON conversation_messages(conversation_id);
+
+-- Mensagens do aluno para a escola (Central de Comunicação - legado)
+CREATE TABLE IF NOT EXISTS student_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  student_id INTEGER NOT NULL,
+  school_id INTEGER,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  response TEXT,
+  status TEXT DEFAULT 'pending',
+  responded_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (student_id) REFERENCES students(id)
+);
+
 -- Índices para consultas frequentes
 CREATE INDEX IF NOT EXISTS idx_enrollments_student ON enrollments(student_id);
 CREATE INDEX IF NOT EXISTS idx_enrollments_class ON enrollments(class_id);

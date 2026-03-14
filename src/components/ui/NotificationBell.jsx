@@ -57,7 +57,7 @@ export function NotificationBell() {
 
   const handleNotificacaoClick = () => {
     setOpen(false)
-    navigate('/aluno/notificacoes')
+    navigate('/aluno/comunicacao')
   }
 
   return (
@@ -66,7 +66,7 @@ export function NotificationBell() {
         type="button"
         className="notification-bell"
         onClick={handleBellClick}
-        aria-label={`Notificações${count > 0 ? `, ${count} não lidas` : ''}`}
+        aria-label={`Comunicação${count > 0 ? `, ${count} não lidas` : ''}`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -91,12 +91,12 @@ export function NotificationBell() {
 
       {open && (
         <div className="notification-dropdown">
-          <div className="notification-dropdown-header">Notificações</div>
+          <div className="notification-dropdown-header">Comunicação</div>
           <div className="notification-dropdown-body">
             {loading ? (
               <div className="notification-dropdown-empty">Carregando...</div>
             ) : lista.length === 0 ? (
-              <div className="notification-dropdown-empty">Nenhuma notificação.</div>
+              <div className="notification-dropdown-empty">Nenhum aviso.</div>
             ) : (
               lista.map((n) => (
                 <div

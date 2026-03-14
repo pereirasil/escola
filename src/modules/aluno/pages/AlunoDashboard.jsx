@@ -10,7 +10,7 @@ const gridItems = [
   { to: '/aluno/dados', label: 'Meus Dados', icon: 'dados' },
   { to: '/aluno/historico', label: 'Histórico', icon: 'historico' },
   { to: '/aluno/horarios', label: 'Horários', icon: 'horarios' },
-  { to: '/aluno/notificacoes', label: 'Avisos', icon: 'aviso', badge: true },
+  { to: '/aluno/comunicacao', label: 'Comunicação', icon: 'aviso', badge: true },
   { to: '/aluno/datas', label: 'Datas Importantes', icon: 'calendario' },
   { to: '/aluno/reunioes', label: 'Reuniões', icon: 'reunioes' },
   { to: '/aluno/alterar-senha', label: 'Alterar Senha', icon: 'senha' },

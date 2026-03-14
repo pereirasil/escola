@@ -9,7 +9,7 @@ import { privateRoutes } from './PrivateRoutes';
 import AlunoDashboard from '../modules/aluno/pages/AlunoDashboard';
 import MeusDados from '../modules/aluno/pages/MeusDados';
 import HistoricoEscolar from '../modules/aluno/pages/HistoricoEscolar';
-import Notificacoes from '../modules/aluno/pages/Notificacoes';
+import Comunicacao from '../modules/aluno/pages/Comunicacao';
 import AlterarSenha from '../modules/aluno/pages/AlterarSenha';
 import DatasImportantes from '../modules/aluno/pages/DatasImportantes';
 import MeusHorarios from '../modules/aluno/pages/MeusHorarios';
@@ -35,7 +35,8 @@ export const router = createBrowserRouter([
           { path: 'dados', element: <MeusDados /> },
           { path: 'historico', element: <HistoricoEscolar /> },
           { path: 'horarios', element: <MeusHorarios /> },
-          { path: 'notificacoes', element: <Notificacoes /> },
+          { path: 'comunicacao', element: <Comunicacao /> },
+          { path: 'notificacoes', element: <Navigate to="/aluno/comunicacao" replace /> },
           { path: 'datas', element: <DatasImportantes /> },
           { path: 'reunioes', element: <MinhasReunioes /> },
           { path: 'alterar-senha', element: <AlterarSenha /> },

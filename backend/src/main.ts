@@ -7,9 +7,14 @@ import { UsersService } from './modules/users/users.service'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { join } from 'path'
 import { existsSync, mkdirSync } from 'fs'
+import { RedisIoAdapter } from './common/redis-io.adapter'
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
+
+  const redisAdapter = new RedisIoAdapter(app)
+  await redisAdapter.connectToRedis()
+  app.useWebSocketAdapter(redisAdapter)
   app.useGlobalPipes(new ValidationPipe({ whitelist: true }))
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)))
   app.enableCors({ origin: true })

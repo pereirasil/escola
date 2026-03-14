@@ -14,9 +14,11 @@ import { TeachersService } from '../teachers/teachers.service'
 import { TeacherScopeService } from '../../common/services/teacher-scope.service'
 import { CalendarEventsService } from '../calendar-events/calendar-events.service'
 import { MeetingsService } from '../meetings/meetings.service'
+import { StudentMessagesService } from '../student-messages/student-messages.service'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
+import { CreateStudentMessageDto } from '../student-messages/dto/create-student-message.dto'
 import { RolesGuard } from '../../common/guards/roles.guard'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
@@ -35,6 +37,7 @@ export class StudentsController {
     private teacherScope: TeacherScopeService,
     private calendarEventsService: CalendarEventsService,
     private meetingsService: MeetingsService,
+    private studentMessagesService: StudentMessagesService,
   ) {}
 
   @Get()
@@ -91,6 +94,28 @@ export class StudentsController {
   @Roles('student')
   markNotificationsAsRead(@Req() req: { user: { id: number } }) {
     return this.notificationsService.markAllAsRead(req.user.id)
+  }
+
+  @Post('me/messages')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  async createMyMessage(
+    @Req() req: { user: { id: number; school_id?: number } },
+    @Body() dto: CreateStudentMessageDto,
+  ) {
+    return this.studentMessagesService.create(
+      req.user.id,
+      dto.subject,
+      dto.message,
+      req.user.school_id,
+    )
+  }
+
+  @Get('me/messages')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  findMyMessages(@Req() req: { user: { id: number } }) {
+    return this.studentMessagesService.findByStudentId(req.user.id)
   }
 
   @Post('me/photo')
