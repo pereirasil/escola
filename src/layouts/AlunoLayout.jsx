@@ -1,15 +1,59 @@
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation, NavLink, Navigate } from 'react-router-dom'
+import {
+  LayoutDashboard,
+  FileText,
+  Calendar,
+  CalendarDays,
+  Users,
+  User,
+  Key,
+  Bell,
+  LogOut,
+} from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { alunosService } from '../services/alunos.service'
 import BottomNav from '../components/BottomNav'
 import NoIndex from '../components/NoIndex'
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const alunoBottomNavItems = [
   { key: 'inicio', to: '/aluno', label: 'Início', icon: 'dashboard', end: true },
   { key: 'horarios', to: '/aluno/horarios', label: 'Calendário', icon: 'horarios', end: false },
   { key: 'historico', to: '/aluno/historico', label: 'Pedagógico', icon: 'historico', end: false },
   { key: 'menu', type: 'button', label: 'Menu', icon: 'menu' },
+]
+
+const menuSections = [
+  {
+    title: 'Painel',
+    items: [
+      { to: '/aluno', label: 'Menu Inicial', icon: LayoutDashboard, end: true },
+    ],
+  },
+  {
+    title: 'Acadêmico',
+    items: [
+      { to: '/aluno/historico', label: 'Histórico', icon: FileText, end: false },
+      { to: '/aluno/horarios', label: 'Horários', icon: Calendar, end: false },
+      { to: '/aluno/datas', label: 'Datas Importantes', icon: CalendarDays, end: false },
+      { to: '/aluno/reunioes', label: 'Reuniões', icon: Users, end: false },
+    ],
+  },
+  {
+    title: 'Conta',
+    items: [
+      { to: '/aluno/dados', label: 'Meus dados', icon: User, end: false },
+      { to: '/aluno/alterar-senha', label: 'Alterar senha', icon: Key, end: false },
+    ],
+  },
+  {
+    title: 'Sistema',
+    items: [
+      { to: '/aluno/notificacoes', label: 'Notificações', icon: Bell, end: false },
+    ],
+  },
 ]
 
 export default function AlunoLayout() {
@@ -36,25 +80,62 @@ export default function AlunoLayout() {
     navigate('/login', { replace: true })
   }
 
-  const linkClass = ({ isActive }) => (isActive ? 'sidebar-link active' : 'sidebar-link')
+  const linkClass = ({ isActive }) => `sidebar-link sidebar-link-aluno ${isActive ? 'active' : ''}`
   const handleLinkClick = () => setSidebarOpen(false)
 
   return (
     <div className="layout layout-aluno">
       <NoIndex />
       {sidebarOpen && <div className="sidebar-overlay sidebar-overlay-visible" onClick={() => setSidebarOpen(false)} />}
-      <aside className={`sidebar${sidebarOpen ? ' sidebar-open' : ''}`}>
+      <aside className={`sidebar sidebar-aluno${sidebarOpen ? ' sidebar-open' : ''}`}>
+        <div className="sidebar-aluno-user">
+          <div className="sidebar-aluno-photo">
+            {user?.photo ? (
+              <img
+                src={user.photo.startsWith('http') ? user.photo : `${API_URL}/uploads/${user.photo}`}
+                alt={user.name}
+              />
+            ) : (
+              <div className="sidebar-aluno-photo-placeholder">
+                <User size={24} strokeWidth={1.5} />
+              </div>
+            )}
+          </div>
+          <div className="sidebar-aluno-info">
+            <span className="sidebar-aluno-name">{user?.name || 'Aluno'}</span>
+            <span className="sidebar-aluno-role">Estudante</span>
+          </div>
+        </div>
+
         <nav className="sidebar-nav">
-          <NavLink to="/aluno" className={linkClass} onClick={handleLinkClick} end>Menu Inicial</NavLink>
-          <NavLink to="/aluno/dados" className={linkClass} onClick={handleLinkClick}>Meus dados</NavLink>
-          <NavLink to="/aluno/historico" className={linkClass} onClick={handleLinkClick}>Histórico</NavLink>
-          <NavLink to="/aluno/horarios" className={linkClass} onClick={handleLinkClick}>Horários</NavLink>
-          <NavLink to="/aluno/notificacoes" className={linkClass} onClick={handleLinkClick}>Notificações</NavLink>
-          <NavLink to="/aluno/datas" className={linkClass} onClick={handleLinkClick}>Datas Importantes</NavLink>
-          <NavLink to="/aluno/reunioes" className={linkClass} onClick={handleLinkClick}>Reuniões</NavLink>
-          <NavLink to="/aluno/alterar-senha" className={linkClass} onClick={handleLinkClick}>Alterar senha</NavLink>
-          <div className="sidebar-divider" />
-          <button type="button" className="sidebar-link sidebar-link-logout" onClick={() => { handleLinkClick(); handleLogout(); }}>
+          {menuSections.map((section) => (
+            <div key={section.title} className="sidebar-aluno-section">
+              <div className="sidebar-section-title">{section.title}</div>
+              {section.items.map((item) => {
+                const Icon = item.icon
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={linkClass}
+                    onClick={handleLinkClick}
+                    end={item.end}
+                  >
+                    <Icon size={18} strokeWidth={2} className="sidebar-link-icon" />
+                    {item.label}
+                  </NavLink>
+                )
+              })}
+            </div>
+          ))}
+
+          <div className="sidebar-divider sidebar-divider-aluno" />
+          <button
+            type="button"
+            className="sidebar-link sidebar-link-aluno sidebar-link-logout"
+            onClick={() => { handleLinkClick(); handleLogout(); }}
+          >
+            <LogOut size={18} strokeWidth={2} className="sidebar-link-icon" />
             Sair
           </button>
         </nav>
