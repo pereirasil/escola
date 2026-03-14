@@ -129,7 +129,6 @@ export default function AlunoDashboard() {
         </button>
         <div className="aluno-profile-info">
           <h2 className="aluno-profile-name">{user?.name || 'Aluno'}</h2>
-          <span className="aluno-profile-role">Estudante</span>
         </div>
       </section>
 

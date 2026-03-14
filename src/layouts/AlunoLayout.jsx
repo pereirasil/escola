@@ -103,7 +103,6 @@ export default function AlunoLayout() {
           </div>
           <div className="sidebar-aluno-info">
             <span className="sidebar-aluno-name">{user?.name || 'Aluno'}</span>
-            <span className="sidebar-aluno-role">Estudante</span>
           </div>
         </div>
 
