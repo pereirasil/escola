@@ -19,6 +19,7 @@ export default function AlunoLayout() {
   const location = useLocation()
   const { user, logout } = useAuthStore()
   const isDashboard = location.pathname === '/aluno'
+  const isPedagogico = location.pathname.startsWith('/aluno/historico')
 
   useEffect(() => {
     alunosService.headerInfo()
@@ -58,7 +59,7 @@ export default function AlunoLayout() {
         </nav>
       </aside>
       <div className="layout-main">
-        <header className={`aluno-header-bar ${isDashboard ? '' : 'aluno-header-bar-sub'}`}>
+        <header className={`aluno-header-bar ${isDashboard ? '' : 'aluno-header-bar-sub'} ${isPedagogico ? 'aluno-header-pedagogico' : ''}`}>
           <div className="aluno-header-left">
             <button type="button" className="aluno-header-menu" onClick={() => setSidebarOpen(prev => !prev)} aria-label="Menu">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -67,8 +68,9 @@ export default function AlunoLayout() {
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
-            <span className="aluno-header-user">{headerInfo.guardian_name || user?.name || 'Aluno'}</span>
+            {!isPedagogico && <span className="aluno-header-user">{headerInfo.guardian_name || user?.name || 'Aluno'}</span>}
           </div>
+          {isPedagogico && <h1 className="aluno-header-title">Pedagógico</h1>}
           <div className="aluno-header-right">
             <span className="aluno-logo-badge">{headerInfo.school_name || 'Gestão Escolar'}</span>
           </div>

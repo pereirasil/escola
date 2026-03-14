@@ -42,6 +42,7 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;
   width: 100%;
 }
 
@@ -170,6 +171,21 @@ body {
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+}
+
+.aluno-header-pedagogico {
+  justify-content: space-between;
+}
+
+.aluno-header-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 /* Aluno dashboard */
@@ -323,6 +339,212 @@ body {
   font-weight: 500;
   text-align: center;
   line-height: 1.2;
+}
+
+/* Pedagógico - layout interno */
+.pedagogico-page {
+  padding: 0 0 1.5rem;
+  background: #f5f5f7;
+  min-height: 100%;
+}
+
+.pedagogico-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1rem 1.25rem;
+  background: #fff;
+  margin: 0 -1rem 0;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pedagogico-profile-photo {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #e5e7eb;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pedagogico-profile-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pedagogico-profile-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: #9ca3af;
+  font-size: 0.5rem;
+  font-weight: 600;
+}
+
+.pedagogico-profile-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.pedagogico-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin: 0 -1rem;
+  padding: 0.75rem 1rem;
+}
+
+.pedagogico-tab {
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  background: #16213e;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.pedagogico-tab:active {
+  transform: scale(0.98);
+}
+
+.pedagogico-tab.pedagogico-tab-active {
+  background: #3b82f6;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .pedagogico-tabs {
+    margin: 0 1rem;
+    padding: 0.75rem 0;
+  }
+
+  .pedagogico-tab {
+    min-height: 52px;
+    padding: 0.875rem 1rem;
+    font-size: 1rem;
+  }
+}
+
+.pedagogico-selectors {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1rem 1.25rem;
+  flex-wrap: wrap;
+}
+
+.pedagogico-select {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #fff;
+  color: #1f2937;
+}
+
+.pedagogico-content {
+  padding: 0 1rem 1.5rem;
+}
+
+.pedagogico-disciplina {
+  margin-bottom: 1.5rem;
+}
+
+.pedagogico-disciplina-nome {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.pedagogico-avaliacoes-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.pedagogico-avaliacoes-table {
+  width: 100%;
+  min-width: 280px;
+  border-collapse: collapse;
+}
+
+.pedagogico-avaliacoes-table th {
+  background: #16213e;
+  color: #fff;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.pedagogico-avaliacoes-table td {
+  padding: 0.5rem 0.75rem;
+  background: #e0f2fe;
+  font-size: 0.9rem;
+  color: #1f2937;
+  border-bottom: 1px solid #bae6fd;
+}
+
+.pedagogico-avaliacoes-table tr:last-child td {
+  border-bottom: none;
+}
+
+.pedagogico-avaliacoes-table .nota-aprovado {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.pedagogico-avaliacoes-table .nota-reprovado {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.pedagogico-boletim-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pedagogico-boletim-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.pedagogico-boletim-card-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+
+.pedagogico-boletim-card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 /* Dark mode - aluno profile card */

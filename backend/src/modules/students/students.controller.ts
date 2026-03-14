@@ -235,9 +235,31 @@ export class StudentsController {
 
     historico.sort((a, b) => a.materia.localeCompare(b.materia))
 
+    const TIPOS_PADRAO = ['Trabalho', 'Teste', 'Prova']
+    const avaliacoesPorDisciplina: Array<{ materia_id: number; materia: string; bimestre: string; avaliacoes: Array<{ tipo: string; valor: number; nota: number | null }> }> = []
+
+    for (const item of historico) {
+      for (const { bimestre, nota } of item.notas) {
+        const avaliacoes = TIPOS_PADRAO.map((tipo, idx) => ({
+          tipo,
+          valor: 10,
+          nota: idx === 2 ? nota : null,
+        }))
+        avaliacoesPorDisciplina.push({
+          materia_id: item.materia_id,
+          materia: item.materia,
+          bimestre,
+          avaliacoes,
+        })
+      }
+    }
+
     return {
       historico,
       resumo: historicoPresenca.resumo,
+      avaliacoesPorDisciplina: avaliacoesPorDisciplina.sort((a, b) =>
+        a.materia.localeCompare(b.materia) || a.bimestre.localeCompare(b.bimestre),
+      ),
     }
   }
 
