@@ -198,7 +198,8 @@ body {
   background: #f5f5f7;
 }
 
-.layout-aluno .layout-content-dashboard {
+.layout-aluno .layout-content-dashboard,
+.layout-professor .layout-content-dashboard {
   min-height: calc(100vh - 56px - 72px);
 }
 

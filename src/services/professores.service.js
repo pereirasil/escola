@@ -14,6 +14,7 @@ export const professoresService = {
     return api.post(`/teachers/${id}/photo`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
   },
   me: () => api.get('/teachers/me').then((r) => r.data),
+  headerInfo: () => api.get('/teachers/me/header-info').then((r) => r.data),
   minhasTurmas: () => api.get('/teachers/me/classes').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>
     api.patch('/teachers/me/password', { currentPassword, newPassword }).then((r) => r.data),

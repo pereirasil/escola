@@ -44,6 +44,13 @@ export class TeachersController {
     return this.service.findOne(req.user.id)
   }
 
+  @Get('me/header-info')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  getMyHeaderInfo(@Req() req: { user: { id: number } }) {
+    return this.service.getHeaderInfo(req.user.id)
+  }
+
   @Get('me/classes')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('teacher')

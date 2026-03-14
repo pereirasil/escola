@@ -13,6 +13,7 @@ import Notificacoes from '../modules/aluno/pages/Notificacoes';
 import AlterarSenha from '../modules/aluno/pages/AlterarSenha';
 import DatasImportantes from '../modules/aluno/pages/DatasImportantes';
 import MeusHorarios from '../modules/aluno/pages/MeusHorarios';
+import ProfessorDashboard from '../modules/professor/pages/ProfessorDashboard';
 import MinhasTurmas from '../modules/professor/pages/MinhasTurmas';
 import Presenca from '../modules/presenca/pages/Presenca';
 import Notas from '../modules/notas/pages/Notas';
@@ -48,7 +49,7 @@ export const router = createBrowserRouter([
       {
         element: <ProfessorLayout />,
         children: [
-          { index: true, element: <Navigate to="/professor/turmas" replace /> },
+          { index: true, element: <ProfessorDashboard /> },
           { path: 'turmas', element: <MinhasTurmas /> },
           { path: 'faltas', element: <Presenca /> },
           { path: 'notas', element: <Notas /> },
