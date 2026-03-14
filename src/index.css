@@ -1359,6 +1359,244 @@ body {
   margin-top: 0.25rem;
 }
 
+/* Meus Horários - agenda semanal */
+.meus-horarios-page {
+  padding-bottom: 2rem;
+}
+
+.meus-horarios-empty {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.meus-horarios-section-title {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.meus-horarios-hoje {
+  margin-bottom: 2rem;
+}
+
+.meus-horarios-hoje-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.meus-horarios-vazio-dia {
+  padding: 1.5rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+}
+
+.meus-horarios-aula-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.meus-horarios-aula-materia {
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 0.35rem;
+}
+
+.meus-horarios-aula-horario {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.25rem;
+}
+
+.meus-horarios-aula-meta {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 0.2rem;
+}
+
+.meus-horarios-aula-professor {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.meus-horarios-grade-tabs {
+  display: none;
+}
+
+.meus-horarios-grade-mobile {
+  display: none;
+}
+
+.meus-horarios-grade-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+.meus-horarios-grade-coluna {
+  min-width: 0;
+}
+
+.meus-horarios-dia-titulo {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(100, 108, 255, 0.5);
+}
+
+.meus-horarios-grade-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (max-width: 900px) {
+  .meus-horarios-grade-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .meus-horarios-page {
+    padding-bottom: 1.5rem;
+  }
+
+  .meus-horarios-section-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .meus-horarios-hoje {
+    margin-bottom: 1.5rem;
+  }
+
+  .meus-horarios-hoje-cards {
+    gap: 0.75rem;
+  }
+
+  .meus-horarios-aula-card {
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .meus-horarios-aula-materia {
+    font-size: 0.95rem;
+  }
+
+  .meus-horarios-aula-horario,
+  .meus-horarios-aula-meta,
+  .meus-horarios-aula-professor {
+    font-size: 0.825rem;
+  }
+
+  .meus-horarios-grade-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .meus-horarios-grade-tab {
+    flex-shrink: 0;
+    min-width: 52px;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.8);
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+
+  .meus-horarios-grade-tab:active {
+    transform: scale(0.98);
+  }
+
+  .meus-horarios-grade-tab-active {
+    background: #646cff;
+    border-color: #646cff;
+    color: #fff;
+  }
+
+  .meus-horarios-grade-mobile {
+    display: block;
+  }
+
+  .meus-horarios-grade-mobile-painel {
+    min-height: 120px;
+  }
+
+  .meus-horarios-grade-grid {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) and (prefers-color-scheme: light) {
+  .meus-horarios-grade-tab {
+    border-color: #ddd;
+    background: #f5f5f7;
+    color: #4b5563;
+  }
+
+  .meus-horarios-grade-tab-active {
+    background: #646cff;
+    border-color: #646cff;
+    color: #fff;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  .meus-horarios-empty {
+    color: #666;
+    background: #f5f5f7;
+    border-color: #ddd;
+  }
+  .meus-horarios-vazio-dia {
+    color: #888;
+    background: #f9f9f9;
+    border-color: #ddd;
+  }
+  .meus-horarios-aula-card {
+    background: #fff;
+    border-color: #e5e7eb;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
+  .meus-horarios-aula-materia {
+    color: #1f2937;
+  }
+  .meus-horarios-aula-horario {
+    color: #4b5563;
+  }
+  .meus-horarios-aula-meta {
+    color: #6b7280;
+  }
+  .meus-horarios-aula-professor {
+    color: #9ca3af;
+  }
+  .meus-horarios-section-title {
+    color: #1f2937;
+  }
+  .meus-horarios-dia-titulo {
+    color: #374151;
+    border-bottom-color: rgba(100, 108, 255, 0.4);
+  }
+}
+
 /* Page */
 .page h2 {
   margin-top: 0;
