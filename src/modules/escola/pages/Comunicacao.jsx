@@ -21,6 +21,10 @@ export default function ComunicacaoEscola() {
   const [novaSubject, setNovaSubject] = useState('')
   const [novaMensagem, setNovaMensagem] = useState('')
   const [criando, setCriando] = useState(false)
+  const [modalEncerradas, setModalEncerradas] = useState(false)
+
+  const conversasAbertas = conversas.filter((c) => c.status === 'open')
+  const conversasEncerradas = conversas.filter((c) => c.status === 'closed')
 
   const carregarConversas = () => {
     setLoading(true)
@@ -133,26 +137,34 @@ export default function ComunicacaoEscola() {
               </form>
             )}
 
+            <h4 className="comunicacao-lista-titulo">Conversas ativas</h4>
             <div className="comunicacao-conversa-lista">
               {loading ? (
                 <Spinner />
-              ) : conversas.length === 0 ? (
-                <div className="empty-state">Nenhuma conversa.</div>
+              ) : conversasAbertas.length === 0 ? (
+                <div className="empty-state">Nenhuma conversa ativa.</div>
               ) : (
-                conversas.map((c) => (
+                conversasAbertas.map((c) => (
                   <button
                     key={c.id}
                     type="button"
-                    className={`comunicacao-conversa-item ${selectedConversation?.id === c.id ? 'active' : ''} ${c.status === 'closed' ? 'closed' : ''}`}
+                    className={`comunicacao-conversa-item ${selectedConversation?.id === c.id ? 'active' : ''}`}
                     onClick={() => setSelectedConversation(c)}
                   >
                     <strong>{c.student_name || c.subject}</strong>
                     <span className="conversa-subject">{c.subject}</span>
-                    <small>{c.status === 'closed' ? 'Encerrada' : formatarData(c.last_message_at)}</small>
+                    <small>{formatarData(c.last_message_at)}</small>
                   </button>
                 ))
               )}
             </div>
+            <button
+              type="button"
+              className="btn-secondary comunicacao-btn-encerradas"
+              onClick={() => setModalEncerradas(true)}
+            >
+              Ver conversas encerradas
+            </button>
           </div>
           <div className="comunicacao-chat-main">
             {selectedConversation ? (
@@ -174,6 +186,38 @@ export default function ComunicacaoEscola() {
           </div>
         </div>
       </Card>
+
+      {modalEncerradas && (
+        <div className="modal-overlay" onClick={() => setModalEncerradas(false)}>
+          <div className="modal-content comunicacao-modal-encerradas" onClick={(e) => e.stopPropagation()}>
+            <h3>Conversas encerradas</h3>
+            <div className="comunicacao-conversa-lista">
+              {conversasEncerradas.length === 0 ? (
+                <div className="empty-state">Nenhuma conversa encerrada.</div>
+              ) : (
+                conversasEncerradas.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    className={`comunicacao-conversa-item comunicacao-conversa-item-encerrada ${selectedConversation?.id === c.id ? 'active' : ''}`}
+                    onClick={() => {
+                      setSelectedConversation(c)
+                      setModalEncerradas(false)
+                    }}
+                  >
+                    <strong>{c.student_name || c.subject}</strong>
+                    <span className="conversa-subject">{c.subject}</span>
+                    <small>{formatarData(c.closed_at)}</small>
+                  </button>
+                ))
+              )}
+            </div>
+            <button type="button" className="btn-secondary" onClick={() => setModalEncerradas(false)}>
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

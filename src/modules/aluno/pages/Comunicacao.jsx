@@ -32,6 +32,8 @@ export default function Comunicacao() {
   const [novaMensagem, setNovaMensagem] = useState('')
   const [novaTeacherId, setNovaTeacherId] = useState('')
   const [criando, setCriando] = useState(false)
+  const [modalEncerradasSecretaria, setModalEncerradasSecretaria] = useState(false)
+  const [modalEncerradasProfessor, setModalEncerradasProfessor] = useState(false)
 
   const conversasSecretaria = conversas.filter((c) => c.conversation_type === 'school')
   const conversasSecretariaAbertas = conversasSecretaria.filter((c) => c.status === 'open')
@@ -263,24 +265,13 @@ export default function Comunicacao() {
                   ))
                 )}
               </div>
-              <h4 className="comunicacao-lista-titulo">Encerradas</h4>
-              <div className="comunicacao-conversa-lista">
-                {conversasSecretariaEncerradas.length === 0 ? (
-                  <div className="empty-state">Nenhuma.</div>
-                ) : (
-                  conversasSecretariaEncerradas.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      className={`comunicacao-conversa-item comunicacao-conversa-item-encerrada ${selectedConversation?.id === c.id ? 'active' : ''}`}
-                      onClick={() => setSelectedConversation(c)}
-                    >
-                      <strong>{c.subject}</strong>
-                      <small>{formatarData(c.closed_at)}</small>
-                    </button>
-                  ))
-                )}
-              </div>
+              <button
+                type="button"
+                className="btn-secondary comunicacao-btn-encerradas"
+                onClick={() => setModalEncerradasSecretaria(true)}
+              >
+                Ver conversas encerradas
+              </button>
             </div>
             <div className="comunicacao-chat-main">
               {selectedConversation ? (
@@ -301,6 +292,37 @@ export default function Comunicacao() {
               )}
             </div>
           </section>
+        )}
+
+        {modalEncerradasSecretaria && (
+          <div className="modal-overlay" onClick={() => setModalEncerradasSecretaria(false)}>
+            <div className="modal-content comunicacao-modal-encerradas" onClick={(e) => e.stopPropagation()}>
+              <h3>Conversas encerradas - Secretaria</h3>
+              <div className="comunicacao-conversa-lista">
+                {conversasSecretariaEncerradas.length === 0 ? (
+                  <div className="empty-state">Nenhuma conversa encerrada.</div>
+                ) : (
+                  conversasSecretariaEncerradas.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`comunicacao-conversa-item comunicacao-conversa-item-encerrada ${selectedConversation?.id === c.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setSelectedConversation(c)
+                        setModalEncerradasSecretaria(false)
+                      }}
+                    >
+                      <strong>{c.subject}</strong>
+                      <small>{formatarData(c.closed_at)}</small>
+                    </button>
+                  ))
+                )}
+              </div>
+              <button type="button" className="btn-secondary" onClick={() => setModalEncerradasSecretaria(false)}>
+                Fechar
+              </button>
+            </div>
+          </div>
         )}
 
         {tab === 'professor' && (
@@ -379,24 +401,13 @@ export default function Comunicacao() {
                   ))
                 )}
               </div>
-              <h4 className="comunicacao-lista-titulo">Encerradas</h4>
-              <div className="comunicacao-conversa-lista">
-                {conversasProfessorEncerradas.length === 0 ? (
-                  <div className="empty-state">Nenhuma.</div>
-                ) : (
-                  conversasProfessorEncerradas.map((c) => (
-                    <button
-                      key={c.id}
-                      type="button"
-                      className={`comunicacao-conversa-item comunicacao-conversa-item-encerrada ${selectedConversation?.id === c.id ? 'active' : ''}`}
-                      onClick={() => setSelectedConversation(c)}
-                    >
-                      <strong>{c.teacher_name || c.subject}</strong>
-                      <small>{formatarData(c.closed_at)}</small>
-                    </button>
-                  ))
-                )}
-              </div>
+              <button
+                type="button"
+                className="btn-secondary comunicacao-btn-encerradas"
+                onClick={() => setModalEncerradasProfessor(true)}
+              >
+                Ver conversas encerradas
+              </button>
             </div>
             <div className="comunicacao-chat-main">
               {selectedConversation ? (
@@ -417,6 +428,37 @@ export default function Comunicacao() {
               )}
             </div>
           </section>
+        )}
+
+        {modalEncerradasProfessor && (
+          <div className="modal-overlay" onClick={() => setModalEncerradasProfessor(false)}>
+            <div className="modal-content comunicacao-modal-encerradas" onClick={(e) => e.stopPropagation()}>
+              <h3>Conversas encerradas - Professor</h3>
+              <div className="comunicacao-conversa-lista">
+                {conversasProfessorEncerradas.length === 0 ? (
+                  <div className="empty-state">Nenhuma conversa encerrada.</div>
+                ) : (
+                  conversasProfessorEncerradas.map((c) => (
+                    <button
+                      key={c.id}
+                      type="button"
+                      className={`comunicacao-conversa-item comunicacao-conversa-item-encerrada ${selectedConversation?.id === c.id ? 'active' : ''}`}
+                      onClick={() => {
+                        setSelectedConversation(c)
+                        setModalEncerradasProfessor(false)
+                      }}
+                    >
+                      <strong>{c.teacher_name || c.subject}</strong>
+                      <small>{formatarData(c.closed_at)}</small>
+                    </button>
+                  ))
+                )}
+              </div>
+              <button type="button" className="btn-secondary" onClick={() => setModalEncerradasProfessor(false)}>
+                Fechar
+              </button>
+            </div>
+          </div>
         )}
       </Card>
     </div>

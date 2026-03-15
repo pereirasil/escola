@@ -869,6 +869,17 @@ body {
   border-radius: 4px;
 }
 
+.comunicacao-btn-encerradas {
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.comunicacao-modal-encerradas .comunicacao-conversa-lista {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
 .chat-placeholder {
   display: flex;
   align-items: center;
