@@ -15,6 +15,7 @@ export const alunosService = {
   },
   me: () => api.get('/students/me').then((r) => r.data),
   headerInfo: () => api.get('/students/me/header-info').then((r) => r.data),
+  meusProfessores: () => api.get('/students/me/teachers').then((r) => r.data),
   minhasNotificacoes: () => api.get('/students/me/notifications').then((r) => r.data),
   contarNotificacoesNaoLidas: () => api.get('/students/me/notifications/count').then((r) => r.data),
   marcarNotificacoesComoLidas: () => api.patch('/students/me/notifications/read').then((r) => r.data),

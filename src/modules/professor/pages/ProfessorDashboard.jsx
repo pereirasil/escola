@@ -10,6 +10,7 @@ const gridItems = [
   { to: '/professor/turmas', label: 'Minhas Turmas', icon: 'turmas' },
   { to: '/professor/notas', label: 'Lançar Notas', icon: 'notas' },
   { to: '/professor/faltas', label: 'Chamada', icon: 'faltas' },
+  { to: '/professor/comunicacao', label: 'Comunicação', icon: 'aviso' },
   { to: '/professor/historico', label: 'Histórico', icon: 'historico' },
   { to: '/professor/alterar-senha', label: 'Alterar Senha', icon: 'senha' },
 ]

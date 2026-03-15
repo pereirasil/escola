@@ -15,7 +15,9 @@ export function ChatView({
   onClose,
   onConversationClosed,
   isStudent,
+  isTeacher,
   }) {
+  const viewerType = isTeacher ? 'teacher' : isStudent ? 'student' : 'school'
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
@@ -40,9 +42,12 @@ export function ChatView({
         setLoadingOlder(true)
       }
       try {
-        const getMsg = isStudent
-          ? () => communicationService.mensagensConversa(conversationId, pageNum, 30)
-          : () => communicationService.mensagensConversaEscola(conversationId, pageNum, 30)
+        const getMsg =
+          viewerType === 'student'
+            ? () => communicationService.mensagensConversa(conversationId, pageNum, 30)
+            : viewerType === 'teacher'
+              ? () => communicationService.mensagensConversaProfessor(conversationId, pageNum, 30)
+              : () => communicationService.mensagensConversaEscola(conversationId, pageNum, 30)
         const res = await getMsg()
         const newMessages = res.data || []
         if (append) {
@@ -59,7 +64,7 @@ export function ChatView({
         setLoadingOlder(false)
       }
     },
-    [conversationId, isStudent],
+    [conversationId, viewerType],
   )
 
   const handleNewMessage = useCallback(
@@ -113,9 +118,12 @@ export function ChatView({
     if (!text || sending || conversation?.status === 'closed') return
     setSending(true)
     try {
-      const send = isStudent
-        ? () => communicationService.enviarMensagem(conversationId, text)
-        : () => communicationService.enviarMensagemEscola(conversationId, text)
+      const send =
+        viewerType === 'student'
+          ? () => communicationService.enviarMensagem(conversationId, text)
+          : viewerType === 'teacher'
+            ? () => communicationService.enviarMensagemProfessor(conversationId, text)
+            : () => communicationService.enviarMensagemEscola(conversationId, text)
       const saved = await send()
       setMessages((prev) => [...prev, saved])
       setInputText('')
@@ -130,9 +138,12 @@ export function ChatView({
   const handleCloseConversation = async () => {
     setClosing(true)
     try {
-      const close = isStudent
-        ? () => communicationService.encerrarConversa(conversationId)
-        : () => communicationService.encerrarConversaEscola(conversationId)
+      const close =
+        viewerType === 'student'
+          ? () => communicationService.encerrarConversa(conversationId)
+          : viewerType === 'teacher'
+            ? () => communicationService.encerrarConversaProfessor(conversationId)
+            : () => communicationService.encerrarConversaEscola(conversationId)
       await close()
       setShowCloseModal(false)
       onConversationClosed?.()
@@ -143,8 +154,7 @@ export function ChatView({
     }
   }
 
-  const isOwnMessage = (msg) =>
-    isStudent ? msg.sender_type === 'student' : msg.sender_type === 'school'
+  const isOwnMessage = (msg) => msg.sender_type === viewerType
 
   if (!conversationId) return null
 

@@ -58,6 +58,13 @@ export class TeachersController {
     return this.classesService.findByTeacherId(req.user.id, req.user.school_id)
   }
 
+  @Get('me/students')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  findMyStudents(@Req() req: { user: { id: number; school_id?: number } }) {
+    return this.classesService.findStudentsByTeacherId(req.user.id, req.user.school_id)
+  }
+
   @Post('me/photo')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('teacher')

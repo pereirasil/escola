@@ -9,6 +9,10 @@ export class CreateConversationDto {
   @IsOptional()
   student_id?: number
 
+  @IsNumber()
+  @IsOptional()
+  teacher_id?: number
+
   @IsString()
   @IsOptional()
   initial_message?: string

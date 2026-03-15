@@ -72,6 +72,63 @@ export class CommunicationController {
     return result
   }
 
+  @Get('students/me/teacher-conversations')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  findMyTeacherConversations(@Req() req: { user: { id: number; school_id?: number } }) {
+    return this.communicationService.findConversationsByStudentWithTeachers(
+      req.user.id,
+      req.user.school_id,
+    )
+  }
+
+  @Post('students/me/teacher-conversations')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  createMyTeacherConversation(
+    @Req() req: { user: { id: number; school_id?: number } },
+    @Body() dto: CreateConversationDto,
+  ) {
+    return this.communicationService.createConversationByStudentWithTeacher(
+      req.user.id,
+      dto,
+      req.user.school_id,
+    )
+  }
+
+  @Get('students/me/teacher-conversations/:id/messages')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  async getMyTeacherConversationMessages(
+    @Param('id') id: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Req() req: { user: { id: number } },
+  ) {
+    await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
+    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30))
+  }
+
+  @Post('students/me/teacher-conversations/:id/messages')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  async sendMyTeacherConversationMessage(
+    @Param('id') id: string,
+    @Body() dto: SendMessageDto,
+    @Req() req: { user: { id: number; school_id?: number } },
+  ) {
+    await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
+    const { message } = await this.communicationService.addMessage(
+      +id,
+      'student',
+      req.user.id,
+      dto.message,
+      req.user.school_id,
+    )
+    this.chatGateway.emitNewMessage(+id, message)
+    return message
+  }
+
   @Get('school/conversations')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'school')
@@ -130,6 +187,72 @@ export class CommunicationController {
   ) {
     const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
     const result = await this.communicationService.closeConversation(+id, schoolId)
+    this.chatGateway.emitConversationClosed(+id)
+    return result
+  }
+
+  @Get('teacher/conversations')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  findTeacherConversations(@Req() req: { user: { id: number; school_id?: number } }) {
+    return this.communicationService.findConversationsByTeacher(req.user.id, req.user.school_id)
+  }
+
+  @Post('teacher/conversations')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  createTeacherConversation(
+    @Req() req: { user: { id: number; school_id?: number } },
+    @Body() dto: CreateConversationDto,
+  ) {
+    return this.communicationService.createConversationByTeacher(
+      req.user.id,
+      dto,
+      req.user.school_id,
+    )
+  }
+
+  @Get('teacher/conversations/:id/messages')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  async getTeacherConversationMessages(
+    @Param('id') id: string,
+    @Query('page') page: string,
+    @Query('limit') limit: string,
+    @Req() req: { user: { id: number } },
+  ) {
+    await this.communicationService.ensureTeacherConversationAccess(+id, req.user.id)
+    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30))
+  }
+
+  @Post('teacher/conversations/:id/messages')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  async sendTeacherConversationMessage(
+    @Param('id') id: string,
+    @Body() dto: SendMessageDto,
+    @Req() req: { user: { id: number; school_id?: number } },
+  ) {
+    await this.communicationService.ensureTeacherConversationAccess(+id, req.user.id)
+    const { message } = await this.communicationService.addMessage(
+      +id,
+      'teacher',
+      req.user.id,
+      dto.message,
+      req.user.school_id,
+    )
+    this.chatGateway.emitNewMessage(+id, message)
+    return message
+  }
+
+  @Patch('teacher/conversations/:id/close')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  async closeTeacherConversation(
+    @Param('id') id: string,
+    @Req() req: { user: { id: number } },
+  ) {
+    const result = await this.communicationService.closeConversationByTeacher(+id, req.user.id)
     this.chatGateway.emitConversationClosed(+id)
     return result
   }

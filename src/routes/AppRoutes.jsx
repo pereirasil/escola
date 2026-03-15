@@ -20,6 +20,7 @@ import Presenca from '../modules/presenca/pages/Presenca';
 import Notas from '../modules/notas/pages/Notas';
 import RelatorioPresenca from '../modules/presenca/pages/RelatorioPresenca';
 import AlterarSenhaProfessor from '../modules/professor/pages/AlterarSenhaProfessor';
+import ComunicacaoProfessor from '../modules/professor/pages/Comunicacao';
 
 export const router = createBrowserRouter([
   ...publicRoutes,
@@ -56,6 +57,7 @@ export const router = createBrowserRouter([
           { path: 'turmas', element: <MinhasTurmas /> },
           { path: 'faltas', element: <Presenca /> },
           { path: 'notas', element: <Notas /> },
+          { path: 'comunicacao', element: <ComunicacaoProfessor /> },
           { path: 'historico', element: <RelatorioPresenca /> },
           { path: 'alterar-senha', element: <AlterarSenhaProfessor /> },
         ],

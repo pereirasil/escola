@@ -1,11 +1,13 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In } from 'typeorm'
+import { Repository, In, IsNull } from 'typeorm'
 import { Conversation } from './entities/conversation.entity'
 import { ConversationMessage } from './entities/conversation-message.entity'
 import { Student } from '../students/entities/student.entity'
+import { Teacher } from '../teachers/entities/teacher.entity'
 import { CreateConversationDto } from './dto/create-conversation.dto'
 import { SendMessageDto } from './dto/send-message.dto'
+import { ClassesService } from '../classes/classes.service'
 
 @Injectable()
 export class CommunicationService {
@@ -16,6 +18,9 @@ export class CommunicationService {
     private msgRepo: Repository<ConversationMessage>,
     @InjectRepository(Student)
     private studentRepo: Repository<Student>,
+    @InjectRepository(Teacher)
+    private teacherRepo: Repository<Teacher>,
+    private classesService: ClassesService,
   ) {}
 
   async findConversationsByStudent(studentId: number, schoolId?: number) {
@@ -37,14 +42,22 @@ export class CommunicationService {
         lastMsgByConv.set(m.conversation_id, m.message)
       }
     }
+    const teacherIds = [...new Set(convs.map((c) => c.teacher_id).filter(Boolean))] as number[]
+    const teachers = teacherIds.length
+      ? await this.teacherRepo.find({ where: { id: In(teacherIds) }, select: ['id', 'name'] })
+      : []
+    const teacherMap = new Map(teachers.map((t) => [t.id, t]))
     return convs.map((c) => ({
       ...c,
       last_message: lastMsgByConv.get(c.id) ?? null,
+      conversation_type: c.teacher_id ? 'teacher' : 'school',
+      teacher_name: c.teacher_id ? teacherMap.get(c.teacher_id)?.name ?? '-' : null,
     }))
   }
 
   async findConversationsBySchool(schoolId?: number) {
-    const where = schoolId != null ? { school_id: schoolId } : {}
+    const where: any = { teacher_id: IsNull() }
+    if (schoolId != null) where.school_id = schoolId
     const convs = await this.convRepo.find({
       where,
       order: { last_message_at: 'DESC', created_at: 'DESC' },
@@ -76,6 +89,44 @@ export class CommunicationService {
     return this.convRepo.findOne({ where: { id: saved.id } })
   }
 
+  async createConversationByStudentWithTeacher(
+    studentId: number,
+    dto: CreateConversationDto,
+    schoolId?: number,
+  ) {
+    if (!dto.teacher_id) throw new ForbiddenException('teacher_id obrigatório')
+    const allowedTeachers = await this.classesService.findTeachersByStudentId(studentId, schoolId)
+    const allowedIds = new Set(allowedTeachers.map((t) => t.id))
+    if (!allowedIds.has(dto.teacher_id)) {
+      throw new ForbiddenException('Professor não encontrado ou não faz parte das suas turmas')
+    }
+    const student = await this.studentRepo.findOne({ where: { id: studentId }, select: ['school_id'] })
+    const sid = schoolId ?? student?.school_id
+    const conv = this.convRepo.create({
+      student_id: studentId,
+      school_id: sid,
+      teacher_id: dto.teacher_id,
+      subject: dto.subject,
+      status: 'open',
+    })
+    const saved = await this.convRepo.save(conv)
+    if (dto.initial_message) {
+      await this.addMessage(saved.id, 'student', studentId, dto.initial_message, sid)
+    }
+    const full = await this.convRepo.findOne({ where: { id: saved.id } })
+    const teacherName = await this.teacherRepo.findOne({
+      where: { id: dto.teacher_id },
+      select: ['name'],
+    })
+    return { ...full, teacher_name: teacherName?.name ?? '-', conversation_type: 'teacher' }
+  }
+
+  async findConversationsByStudentWithTeachers(studentId: number, schoolId?: number) {
+    return this.findConversationsByStudent(studentId, schoolId).then((convs) =>
+      convs.filter((c) => c.conversation_type === 'teacher'),
+    )
+  }
+
   async createConversationBySchool(dto: CreateConversationDto, schoolId?: number) {
     if (!dto.student_id) throw new ForbiddenException('student_id obrigatório para a escola')
     const student = await this.studentRepo.findOne({
@@ -93,6 +144,63 @@ export class CommunicationService {
       await this.addMessage(saved.id, 'school', schoolId!, dto.initial_message, schoolId)
     }
     return this.convRepo.findOne({ where: { id: saved.id } })
+  }
+
+  async findConversationsByTeacher(teacherId: number, schoolId?: number) {
+    const where: any = { teacher_id: teacherId }
+    if (schoolId != null) where.school_id = schoolId
+    const convs = await this.convRepo.find({
+      where,
+      order: { last_message_at: 'DESC', created_at: 'DESC' },
+    })
+    const studentIds = [...new Set(convs.map((c) => c.student_id))]
+    const students = studentIds.length
+      ? await this.studentRepo.find({ where: { id: In(studentIds) }, select: ['id', 'name'] })
+      : []
+    const studentMap = new Map(students.map((s) => [s.id, s]))
+    return convs.map((c) => ({
+      ...c,
+      student_name: studentMap.get(c.student_id)?.name ?? '-',
+    }))
+  }
+
+  async createConversationByTeacher(
+    teacherId: number,
+    dto: CreateConversationDto,
+    schoolId?: number,
+  ) {
+    if (!dto.student_id) throw new ForbiddenException('student_id obrigatório para o professor')
+    const teacher = await this.teacherRepo.findOne({
+      where: { id: teacherId },
+      select: ['school_id'],
+    })
+    const sid = schoolId ?? teacher?.school_id
+    const student = await this.studentRepo.findOne({
+      where: { id: dto.student_id, school_id: sid ?? undefined },
+    })
+    if (!student) throw new NotFoundException('Aluno não encontrado')
+    const conv = this.convRepo.create({
+      student_id: dto.student_id,
+      school_id: sid,
+      teacher_id: teacherId,
+      subject: dto.subject,
+      status: 'open',
+    })
+    const saved = await this.convRepo.save(conv)
+    if (dto.initial_message) {
+      await this.addMessage(saved.id, 'teacher', teacherId, dto.initial_message, sid)
+    }
+    return this.convRepo.findOne({ where: { id: saved.id } })
+  }
+
+  async ensureTeacherConversationAccess(
+    conversationId: number,
+    teacherId: number,
+  ) {
+    const conv = await this.convRepo.findOne({ where: { id: conversationId } })
+    if (!conv) throw new NotFoundException('Conversa não encontrada')
+    if (conv.teacher_id !== teacherId) throw new ForbiddenException('Acesso negado')
+    return conv
   }
 
   async getMessages(conversationId: number, page = 1, limit = 30) {
@@ -139,6 +247,15 @@ export class CommunicationService {
     if (schoolId != null && conv.school_id !== schoolId) {
       throw new ForbiddenException('Acesso negado')
     }
+    const now = new Date().toISOString()
+    await this.convRepo.update(conversationId, { status: 'closed', closed_at: now })
+    return this.convRepo.findOne({ where: { id: conversationId } })
+  }
+
+  async closeConversationByTeacher(conversationId: number, teacherId: number) {
+    const conv = await this.convRepo.findOne({ where: { id: conversationId } })
+    if (!conv) throw new NotFoundException('Conversa não encontrada')
+    if (conv.teacher_id !== teacherId) throw new ForbiddenException('Acesso negado')
     const now = new Date().toISOString()
     await this.convRepo.update(conversationId, { status: 'closed', closed_at: now })
     return this.convRepo.findOne({ where: { id: conversationId } })

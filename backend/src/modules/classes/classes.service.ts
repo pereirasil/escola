@@ -1,11 +1,13 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Repository, In } from 'typeorm'
 import { Class } from './entities/class.entity'
 import { Enrollment } from './entities/enrollment.entity'
 import { CreateClassDto } from './dto/create-class.dto'
 import { UpdateClassDto } from './dto/update-class.dto'
 import { Student } from '../students/entities/student.entity'
+import { Schedule } from '../schedules/entities/schedule.entity'
+import { Teacher } from '../teachers/entities/teacher.entity'
 
 @Injectable()
 export class ClassesService {
@@ -16,6 +18,10 @@ export class ClassesService {
     private enrollmentRepo: Repository<Enrollment>,
     @InjectRepository(Student)
     private studentRepo: Repository<Student>,
+    @InjectRepository(Schedule)
+    private scheduleRepo: Repository<Schedule>,
+    @InjectRepository(Teacher)
+    private teacherRepo: Repository<Teacher>,
   ) {}
 
   findAll(schoolId?: number) {
@@ -53,6 +59,25 @@ export class ClassesService {
     return qb.getMany()
   }
 
+  async findStudentsByTeacherId(teacherId: number, schoolId?: number) {
+    const classes = await this.findByTeacherId(teacherId, schoolId)
+    const classIds = classes.map((c) => c.id)
+    if (classIds.length === 0) return []
+    const qb = this.studentRepo
+      .createQueryBuilder('student')
+      .leftJoin(Enrollment, 'enrollment', 'enrollment.student_id = student.id')
+      .where(
+        '(student.class_id IN (:...ids) OR enrollment.class_id IN (:...ids))',
+        { ids: classIds },
+      )
+      .orderBy('student.name', 'ASC')
+      .distinct(true)
+    if (schoolId) {
+      qb.andWhere('student.school_id = :sid', { sid: schoolId })
+    }
+    return qb.getMany()
+  }
+
   async getClassIdsByStudent(studentId: number, schoolId?: number): Promise<number[]> {
     const student = await this.studentRepo.findOne({ where: { id: studentId } })
     const ids = new Set<number>()
@@ -68,6 +93,32 @@ export class ClassesService {
     }
 
     return [...ids]
+  }
+
+  async findTeachersByStudentId(studentId: number, schoolId?: number) {
+    const classIds = await this.getClassIdsByStudent(studentId, schoolId)
+    if (classIds.length === 0) return []
+    const teacherIds = new Set<number>()
+    const classes = await this.repo.find({ where: { id: In(classIds) }, select: ['teacher_id'] })
+    for (const c of classes) {
+      if (c.teacher_id) teacherIds.add(c.teacher_id)
+    }
+    const schedules = await this.scheduleRepo.find({
+      where: { class_id: In(classIds) },
+      select: ['teacher_id'],
+    })
+    for (const s of schedules) {
+      teacherIds.add(s.teacher_id)
+    }
+    const ids = [...teacherIds]
+    if (ids.length === 0) return []
+    const where: any = { id: In(ids) }
+    if (schoolId) where.school_id = schoolId
+    return this.teacherRepo.find({
+      where,
+      select: ['id', 'name'],
+      order: { name: 'ASC' },
+    })
   }
 
   async enrollStudent(classId: number, studentId: number, schoolId?: number) {

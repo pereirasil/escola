@@ -72,6 +72,13 @@ export class StudentsController {
     return this.service.getHeaderInfo(req.user.id)
   }
 
+  @Get('me/teachers')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  findMyTeachers(@Req() req: { user: { id: number; school_id?: number } }) {
+    return this.classesService.findTeachersByStudentId(req.user.id, req.user.school_id)
+  }
+
   @Get('me/notifications')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('student')

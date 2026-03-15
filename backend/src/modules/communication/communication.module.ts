@@ -3,13 +3,16 @@ import { TypeOrmModule } from '@nestjs/typeorm'
 import { Conversation } from './entities/conversation.entity'
 import { ConversationMessage } from './entities/conversation-message.entity'
 import { Student } from '../students/entities/student.entity'
+import { Teacher } from '../teachers/entities/teacher.entity'
+import { ClassesModule } from '../classes/classes.module'
 import { CommunicationService } from './communication.service'
 import { CommunicationController } from './communication.controller'
 import { ChatGateway } from './gateways/chat.gateway'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Conversation, ConversationMessage, Student]),
+    TypeOrmModule.forFeature([Conversation, ConversationMessage, Student, Teacher]),
+    ClassesModule,
   ],
   controllers: [CommunicationController],
   providers: [CommunicationService, ChatGateway],
