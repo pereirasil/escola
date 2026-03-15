@@ -69,15 +69,15 @@ export function ChatView({
 
   const handleNewMessage = useCallback(
     (msg) => {
-      if (msg && conversationId) {
-        setMessages((prev) => {
-          if (prev.some((m) => m.id === msg.id)) return prev
-          return [...prev, msg]
-        })
-        setTimeout(scrollToBottom, 100)
-      }
+      if (!msg || !conversationId) return
+      if (msg.sender_type === viewerType) return
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === msg.id)) return prev
+        return [...prev, msg]
+      })
+      setTimeout(scrollToBottom, 100)
     },
-    [conversationId],
+    [conversationId, viewerType],
   )
 
   const handleConversationClosed = useCallback(
