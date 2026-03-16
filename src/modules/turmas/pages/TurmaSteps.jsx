@@ -69,6 +69,7 @@ const initialAlunoForm = {
   name: '',
   birth_date: '',
   document: '',
+  email: '',
   password: '',
   confirmPassword: '',
   guardian_name: '',
@@ -892,6 +893,7 @@ export default function TurmaSteps() {
                 <div className="form-grid">
                   <FormInput label="Nome do aluno" id="modal-student-name" required value={alunoForm.name} onChange={(event) => setAlunoForm({ ...alunoForm, name: event.target.value })} />
                   <FormInput label="Data de nascimento" id="modal-student-birth-date" type="date" value={alunoForm.birth_date} onChange={(event) => setAlunoForm({ ...alunoForm, birth_date: event.target.value })} />
+                  <FormInput label="E-mail" id="modal-student-email" type="email" placeholder="Ex: aluno@email.com" value={alunoForm.email} onChange={(event) => setAlunoForm({ ...alunoForm, email: event.target.value })} />
                   <FormInput label="CPF" id="modal-student-document" required maxLength={14} value={alunoForm.document} onChange={(event) => setAlunoForm({ ...alunoForm, document: maskCpf(event.target.value) })} />
                   <FormInput label="Senha" id="modal-student-password" type="password" required value={alunoForm.password} onChange={(event) => setAlunoForm({ ...alunoForm, password: event.target.value })} />
                   <FormInput label="Confirmar senha" id="modal-student-confirm-password" type="password" required value={alunoForm.confirmPassword} onChange={(event) => setAlunoForm({ ...alunoForm, confirmPassword: event.target.value })} />

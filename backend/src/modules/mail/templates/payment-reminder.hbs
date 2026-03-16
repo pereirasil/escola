@@ -1,0 +1,15 @@
+<p>Olá {{studentName}},</p>
+
+<p>Este é um lembrete de que sua mensalidade vence em breve.</p>
+
+<p><strong>Valor:</strong> R$ {{amount}}</p>
+<p><strong>Vencimento:</strong> {{dueDate}}</p>
+
+{{#if boletoUrl}}
+<p>Clique no link para acessar o boleto:<br>
+<a href="{{boletoUrl}}">{{boletoUrl}}</a></p>
+{{/if}}
+
+<p>Evite multas por atraso realizando o pagamento até a data de vencimento.</p>
+
+<p>Atenciosamente,<br>Sistema de Gestão Escolar</p>

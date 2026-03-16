@@ -62,4 +62,18 @@ export class CreateStudentDto {
   @IsOptional()
   @IsNumber()
   class_id?: number
+
+  @IsOptional()
+  @IsNumber()
+  monthly_fee?: number
+
+  /** Dia do mês (1-31) de vencimento da mensalidade. */
+  @IsOptional()
+  @IsNumber()
+  payment_due_day?: number
+
+  /** Percentual de multa por atraso (ex: 2 para 2%). */
+  @IsOptional()
+  @IsNumber()
+  late_fee_percentage?: number
 }

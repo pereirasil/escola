@@ -9,7 +9,7 @@ import toast from 'react-hot-toast';
 export default function AlunoEditar() {
   const { id } = useParams();
   const [turmas, setTurmas] = useState([]);
-  const [form, setForm] = useState({ name: '', birth_date: '', document: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
+  const [form, setForm] = useState({ name: '', birth_date: '', document: '', email: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
   const [currentPhoto, setCurrentPhoto] = useState(null);
   const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,6 +30,7 @@ export default function AlunoEditar() {
             name: a.name || '',
             birth_date: a.birth_date || '',
             document: a.document ? maskCpf(a.document) : '',
+            email: a.email || '',
             guardian_name: a.guardian_name || '',
             guardian_phone: a.guardian_phone ? maskPhone(a.guardian_phone) : '',
             guardian_document: a.guardian_document ? maskCpf(a.guardian_document) : '',
@@ -73,6 +74,7 @@ export default function AlunoEditar() {
         name: form.name,
         birth_date: form.birth_date || null,
         document: form.document,
+        email: form.email || null,
         guardian_name: form.guardian_name || null,
         guardian_phone: form.guardian_phone || null,
         guardian_document: form.guardian_document || null,
@@ -113,6 +115,7 @@ export default function AlunoEditar() {
           <div className="form-grid">
             <FormInput label="Nome do aluno" id="name" placeholder="Ex: João da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <FormInput label="Data de nascimento" id="birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />
+            <FormInput label="E-mail" id="email" type="email" placeholder="Ex: aluno@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
             <FormInput label="CPF (usuário de acesso)" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
             <FormInput label="Nome do Responsável" id="guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
             <FormInput label="CPF do Responsável" id="guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />

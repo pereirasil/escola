@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common'
+import { BullModule } from '@nestjs/bullmq'
+import { ScheduleModule } from '@nestjs/schedule'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { AuthModule } from './modules/auth/auth.module'
 import { UsersModule } from './modules/users/users.module'
@@ -16,9 +18,31 @@ import { CalendarEventsModule } from './modules/calendar-events/calendar-events.
 import { StudentMessagesModule } from './modules/student-messages/student-messages.module'
 import { SchoolModule } from './modules/school/school.module'
 import { CommunicationModule } from './modules/communication/communication.module'
+import { BankAccountsModule } from './modules/bank-accounts/bank-accounts.module'
+import { BanksModule } from './modules/banks/banks.module'
+import { MailModule } from './modules/mail/mail.module'
+
+function isRedisConfigured(): boolean {
+  if (process.env.REDIS_ENABLED === 'false') return false
+  if (process.env.REDIS_URL) return true
+  if (process.env.REDIS_HOST && process.env.REDIS_HOST !== '') return true
+  return false
+}
+
+const redisUrl = process.env.REDIS_URL
+const redisHost = process.env.REDIS_HOST || 'localhost'
+const redisPort = Number(process.env.REDIS_PORT) || 6379
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
+    ...(isRedisConfigured()
+      ? [
+          BullModule.forRoot({
+            connection: redisUrl ? { url: redisUrl } : { host: redisHost, port: redisPort },
+          }),
+        ]
+      : []),
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.DB_HOST ?? 'localhost',
@@ -45,6 +69,9 @@ import { CommunicationModule } from './modules/communication/communication.modul
     StudentMessagesModule,
     SchoolModule,
     CommunicationModule,
+    BankAccountsModule,
+    BanksModule,
+    MailModule,
   ],
 })
 export class AppModule {}

@@ -1,0 +1,15 @@
+<p>Olá {{studentName}},</p>
+
+<p>Sua mensalidade está vencida. Por favor, regularize o pagamento o mais breve possível.</p>
+
+<p><strong>Valor:</strong> R$ {{amount}}</p>
+<p><strong>Vencimento:</strong> {{dueDate}}</p>
+
+{{#if boletoUrl}}
+<p>Clique no link para acessar o boleto:<br>
+<a href="{{boletoUrl}}">{{boletoUrl}}</a></p>
+{{/if}}
+
+<p>Em caso de dúvidas, entre em contato com a secretaria da escola.</p>
+
+<p>Atenciosamente,<br>Sistema de Gestão Escolar</p>

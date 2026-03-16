@@ -1,0 +1,17 @@
+<p>Olá {{studentName}},</p>
+
+<p>Uma nova mensalidade foi gerada em nosso sistema.</p>
+
+<p><strong>Valor:</strong> R$ {{amount}}</p>
+<p><strong>Vencimento:</strong> {{dueDate}}</p>
+
+<p>Você pode realizar o pagamento utilizando o boleto abaixo.</p>
+
+{{#if boletoUrl}}
+<p>Clique no link para acessar o boleto:<br>
+<a href="{{boletoUrl}}">{{boletoUrl}}</a></p>
+{{/if}}
+
+<p>Caso o pagamento já tenha sido realizado diretamente na escola, desconsidere esta mensagem.</p>
+
+<p>Atenciosamente,<br>Sistema de Gestão Escolar</p>

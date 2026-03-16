@@ -55,6 +55,17 @@ export class Student extends BaseEntity {
   @Column({ nullable: true })
   class_id: number
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  monthly_fee: number
+
+  /** Dia do mês (1-31) em que vence a mensalidade. Ex: 10 = dia 10 de cada mês. */
+  @Column({ type: 'int', nullable: true })
+  payment_due_day: number
+
+  /** Percentual de multa por atraso. Ex: 2 = 2% sobre o valor. */
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
+  late_fee_percentage: number
+
   @Column({ nullable: true })
   @Exclude()
   password_hash: string
