@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller'
 import { UsersModule } from '../users/users.module'
 import { StudentsModule } from '../students/students.module'
 import { TeachersModule } from '../teachers/teachers.module'
+import { PaymentsModule } from '../payments/payments.module'
 import { JwtStrategy } from './strategies/jwt.strategy'
 
 @Module({
@@ -13,6 +14,7 @@ import { JwtStrategy } from './strategies/jwt.strategy'
     UsersModule,
     StudentsModule,
     TeachersModule,
+    PaymentsModule,
     PassportModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET ?? 'chave-secreta-trocar-em-producao',

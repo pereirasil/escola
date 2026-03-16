@@ -4,7 +4,10 @@ import { JwtService } from '@nestjs/jwt'
 import { UsersService } from '../users/users.service'
 import { StudentsService } from '../students/students.service'
 import { TeachersService } from '../teachers/teachers.service'
+import { BoletoService } from '../payments/services/boleto.service'
 import { RegisterDto } from './dto/register.dto'
+
+const TAXA_CADASTRO = 99.99
 
 @Injectable()
 export class AuthService {
@@ -12,6 +15,7 @@ export class AuthService {
     private usersService: UsersService,
     private studentsService: StudentsService,
     private teachersService: TeachersService,
+    private boletoService: BoletoService,
     private jwtService: JwtService,
   ) {}
 
@@ -36,7 +40,7 @@ export class AuthService {
     if (existing) {
       throw new ConflictException('E-mail já cadastrado')
     }
-    return this.usersService.createSchool({
+    const user = await this.usersService.createSchool({
       name: dto.name,
       email: dto.email,
       password: dto.password,
@@ -44,6 +48,19 @@ export class AuthService {
       cnpj: dto.cnpj,
       phone: dto.phone,
     })
+    let pix: { qr_code: string; qr_code_text: string } | null = null
+    try {
+      const result = await this.boletoService.generatePix(
+        user.id,
+        TAXA_CADASTRO,
+        dto.name,
+        dto.email,
+      )
+      pix = { qr_code: result.qr_code, qr_code_text: result.qr_code_text }
+    } catch (err) {
+      console.error('[AuthService] Erro ao gerar PIX de cadastro:', err)
+    }
+    return { user, pix }
   }
 
   async loginStudent(cpf: string, password: string) {

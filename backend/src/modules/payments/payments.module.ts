@@ -21,5 +21,6 @@ import { StudentsModule } from '../students/students.module'
   ],
   controllers: [PaymentsController, MercadoPagoWebhookController],
   providers: [PaymentsService, BoletoService, MonthlyPaymentsService, PaymentNotificationsService, MercadoPagoWebhookService],
+  exports: [BoletoService],
 })
 export class PaymentsModule {}

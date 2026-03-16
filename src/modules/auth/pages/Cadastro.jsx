@@ -15,6 +15,7 @@ export default function Cadastro() {
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [pix, setPix] = useState(null)
   const [showPassword, setShowPassword] = useState(false)
 
   const handleChange = (e) => {
@@ -24,10 +25,12 @@ export default function Cadastro() {
   const handleSubmit = (e) => {
     e.preventDefault()
     setLoading(true)
+    setPix(null)
     authService
       .register(form)
-      .then(() => {
+      .then((res) => {
         setSuccess(true)
+        setPix(res.data?.pix || null)
         toast.success('Cadastro realizado!')
       })
       .catch((err) => {
@@ -68,9 +71,53 @@ export default function Cadastro() {
               <div className="auth-card auth-card-success">
                 <h2>Cadastro enviado</h2>
                 <p className="auth-card-subtitle">Confira seu e-mail para atualizações</p>
-                <p className="auth-message">
-                  Sua escola foi cadastrada. Você só terá acesso após o administrador geral aprovar seu cadastro. Aguarde e tente entrar mais tarde.
+                <p className="auth-message" style={{ whiteSpace: 'pre-line' }}>
+                  Cadastro realizado com sucesso! 
+
+Você garantiu uma vaga na promoção especial.
+
+<strong>Valor da mensalidade: R$ 99,99</strong>
+<strong>Bônus: o próximo mês é gratuito.</strong>
+
+Para ativar seu acesso, realize o pagamento utilizando o QR Code PIX abaixo.
+
+Assim que o pagamento for confirmado, em até 24 horas liberaremos seu acesso.
                 </p>
+                {pix && (
+                  <div className="auth-pix-cadastro" style={{ marginTop: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
+                    <p style={{ marginBottom: '0.75rem', fontWeight: 600 }}>Taxa de cadastro: R$ 99,99</p>
+                    <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: '#64748b' }}>
+                      Pague via PIX para concluir. O valor será creditado na conta configurada.
+                    </p>
+                    {pix.qr_code && (
+                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+                        <img
+                          src={`data:image/png;base64,${pix.qr_code}`}
+                          alt="QR Code PIX"
+                          width={180}
+                          height={180}
+                        />
+                      </div>
+                    )}
+                    {pix.qr_code_text && (
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        style={{ width: '100%' }}
+                        onClick={async () => {
+                          try {
+                            await navigator.clipboard.writeText(pix.qr_code_text)
+                            toast.success('Código PIX copiado.')
+                          } catch {
+                            toast.error('Não foi possível copiar.')
+                          }
+                        }}
+                      >
+                        Copiar código PIX
+                      </button>
+                    )}
+                  </div>
+                )}
                 <p className="auth-footer">
                   <Link to="/login">Voltar para o login</Link>
                 </p>
