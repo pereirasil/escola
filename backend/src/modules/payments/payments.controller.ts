@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Req, StreamableFile, UseGuards } from '@nestjs/common'
+import { Body, Controller, Delete, Get, Param, Post, Put, Req, StreamableFile, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { PaymentsService } from './payments.service'
 import { CreatePaymentDto } from './dto/create-payment.dto'
@@ -61,5 +61,11 @@ export class PaymentsController {
   @Roles('admin', 'school')
   update(@Param('id') id: string, @Body() dto: UpdatePaymentDto) {
     return this.service.update(+id, dto)
+  }
+
+  @Delete(':id')
+  @Roles('admin', 'school')
+  delete(@Param('id') id: string) {
+    return this.service.delete(+id)
   }
 }

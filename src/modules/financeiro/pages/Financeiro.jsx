@@ -25,6 +25,7 @@ export default function Financeiro() {
   const [contasBanco, setContasBanco] = useState([]);
   const [contaEditando, setContaEditando] = useState(null);
   const [contaExcluir, setContaExcluir] = useState(null);
+  const [pagamentoExcluir, setPagamentoExcluir] = useState(null);
   const [statusForm, setStatusForm] = useState('pending');
   const [enviandoBoletoId, setEnviandoBoletoId] = useState(null);
   const [gerandoBoletoId, setGerandoBoletoId] = useState(null);
@@ -99,6 +100,18 @@ export default function Financeiro() {
       loadBancos();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Erro ao excluir conta.');
+    }
+  };
+
+  const handleExcluirPagamento = async () => {
+    if (!pagamentoExcluir) return;
+    try {
+      await pagamentosService.excluir(pagamentoExcluir.id);
+      toast.success('Pagamento excluído.');
+      setPagamentoExcluir(null);
+      load();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Erro ao excluir pagamento.');
     }
   };
 
@@ -345,6 +358,14 @@ export default function Financeiro() {
                       >
                         Atualizar status
                       </button>
+                      <button
+                        type="button"
+                        className="btn-danger"
+                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}
+                        onClick={() => setPagamentoExcluir(p)}
+                      >
+                        Deletar
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -420,6 +441,16 @@ export default function Financeiro() {
         danger
         onConfirm={handleExcluirBanco}
         onCancel={() => setContaExcluir(null)}
+      />
+
+      <ConfirmModal
+        open={!!pagamentoExcluir}
+        title="Excluir pagamento"
+        message="Tem certeza que deseja excluir este pagamento? Esta ação não pode ser desfeita."
+        confirmLabel="Excluir"
+        danger
+        onConfirm={handleExcluirPagamento}
+        onCancel={() => setPagamentoExcluir(null)}
       />
 
       <FormModal

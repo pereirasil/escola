@@ -245,6 +245,14 @@ export class PaymentsService {
     )
   }
 
+  async delete(id: number) {
+    const payment = await this.repo.findOne({ where: { id } })
+    if (!payment) throw new BadRequestException('Pagamento não encontrado')
+    await this.invoiceRepo.delete({ payment_id: id })
+    await this.repo.delete(id)
+    return { deleted: true }
+  }
+
   async sendBoletoById(id: number): Promise<void> {
     const payment = await this.findOne(id)
     if (!payment) throw new BadRequestException('Pagamento não encontrado')

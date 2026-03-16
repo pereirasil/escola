@@ -9,4 +9,5 @@ export const pagamentosService = {
   gerarBoleto: (id) => api.post(`/payments/${id}/generate-boleto`),
   gerarPix: (id) => api.post(`/payments/${id}/generate-pix`),
   buscarBoletoPdf: (id) => api.get(`/payments/${id}/boleto-pdf`, { responseType: 'blob' }),
+  excluir: (id) => api.delete(`/payments/${id}`),
 }
