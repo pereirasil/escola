@@ -345,7 +345,7 @@ export default function Financeiro() {
                         onClick={() => handleEnviarBoleto(p)}
                         disabled={enviandoBoletoId === p.id}
                       >
-                        {enviandoBoletoId === p.id ? 'Enviando...' : 'Envia boleto'}
+                        {enviandoBoletoId === p.id ? 'Enviando...' : 'Enviar boleto'}
                       </button>
                       <button
                         type="button"
