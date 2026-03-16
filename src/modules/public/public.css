@@ -101,6 +101,33 @@
   padding-right: 2rem;
 }
 
+.termo-de-uso-date {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+  margin: 0 0 2rem;
+}
+
+.termo-de-uso-content {
+  line-height: 1.7;
+  color: inherit;
+}
+
+.termo-de-uso-content p {
+  margin: 0 0 0.75rem;
+}
+
+.termo-de-uso-h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+  text-align: left;
+}
+
+.termo-de-uso-ul {
+  margin: 0.5rem 0 0.75rem 1.5rem;
+  padding: 0;
+}
+
 .landing-section h2 {
   font-size: 2rem;
   font-weight: 700;
@@ -444,6 +471,10 @@
 
   .landing-section h2 {
     color: #213547;
+  }
+
+  .termo-de-uso-date {
+    color: #666;
   }
 
   .landing-section > p {

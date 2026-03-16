@@ -1,5 +1,6 @@
 import Login from '../modules/auth/pages/Login';
 import Cadastro from '../modules/auth/pages/Cadastro';
+import TermoDeUso from '../modules/public/pages/TermoDeUso';
 import LandingPage from '../modules/public/pages/LandingPage';
 import SistemaEscolar from '../modules/public/pages/SistemaEscolar';
 import Funcionalidades from '../modules/public/pages/Funcionalidades';
@@ -16,4 +17,5 @@ export const publicRoutes = [
   { path: '/gestao-de-notas', element: <GestaoDeNotas /> },
   { path: '/login', element: <Login /> },
   { path: '/cadastro', element: <Cadastro /> },
+  { path: '/termo-de-uso', element: <TermoDeUso /> },
 ];

@@ -135,6 +135,10 @@ export default function Login() {
             </div>
           </div>
 
+          <p className="auth-hero-trust">
+            Mais de <span className="auth-hero-trust-highlight">500 escolas</span> já confiam na nossa plataforma
+          </p>
+
           <p className="auth-hero-footer-text">
             Usado por escolas que buscam eficiência, organização e resultados.
           </p>

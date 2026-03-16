@@ -12,6 +12,7 @@ export default function Cadastro() {
     responsible_name: '',
     cnpj: '',
     phone: '',
+    accepted_terms: false,
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -26,8 +27,9 @@ export default function Cadastro() {
     e.preventDefault()
     setLoading(true)
     setPix(null)
+    const { accepted_terms, ...registerData } = form
     authService
-      .register(form)
+      .register(registerData)
       .then((res) => {
         setSuccess(true)
         setPix(res.data?.pix || null)
@@ -292,6 +294,19 @@ Assim que o pagamento for confirmado, em até 24 horas liberaremos seu acesso.
                     </button>
                   </div>
                 </label>
+                <div className="terms-container">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    name="accepted_terms"
+                    checked={form.accepted_terms}
+                    onChange={(e) => setForm({ ...form, accepted_terms: e.target.checked })}
+                    required
+                  />
+                  <label htmlFor="terms" className="terms-label">
+                    Li e concordo com o <Link to="/termo-de-uso">Termo de Uso</Link>
+                  </label>
+                </div>
                 <button type="submit" className="btn-primary" disabled={loading}>
                   {loading ? 'Cadastrando...' : 'Cadastrar'}
                 </button>
