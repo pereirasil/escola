@@ -2243,6 +2243,27 @@ body {
   min-width: 0;
 }
 
+.meus-horarios-grade-coluna-dia-atual {
+  background: rgba(34, 197, 94, 0.08);
+  border-radius: 12px;
+  padding: 0.75rem;
+}
+
+.meus-horarios-grade-coluna-dia-atual .meus-horarios-dia-titulo {
+  border-bottom-color: rgba(34, 197, 94, 0.6);
+  color: #22c55e;
+}
+
+.meus-horarios-grade-tab-dia-atual {
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.meus-horarios-grade-tab-dia-atual.meus-horarios-grade-tab-active {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #fff;
+}
+
 .meus-horarios-dia-titulo {
   margin: 0 0 0.75rem;
   font-size: 1rem;
@@ -2337,6 +2358,18 @@ body {
     min-height: 120px;
   }
 
+  .meus-horarios-grade-mobile-painel-dia-atual {
+    background: rgba(34, 197, 94, 0.08);
+    border-radius: 12px;
+    padding: 0.75rem;
+    border-left: 4px solid #22c55e;
+  }
+
+  .meus-horarios-grade-mobile-painel-dia-atual .meus-horarios-dia-titulo {
+    color: #22c55e;
+    border-bottom-color: rgba(34, 197, 94, 0.5);
+  }
+
   .meus-horarios-grade-grid {
     display: none;
   }
@@ -2390,6 +2423,29 @@ body {
   .meus-horarios-dia-titulo {
     color: #374151;
     border-bottom-color: rgba(100, 108, 255, 0.4);
+  }
+  .meus-horarios-grade-coluna-dia-atual {
+    background: rgba(34, 197, 94, 0.1);
+  }
+  .meus-horarios-grade-coluna-dia-atual .meus-horarios-dia-titulo {
+    color: #16a34a;
+    border-bottom-color: rgba(34, 197, 94, 0.5);
+  }
+  .meus-horarios-grade-tab-dia-atual {
+    border-color: rgba(34, 197, 94, 0.4);
+  }
+  .meus-horarios-grade-tab-dia-atual.meus-horarios-grade-tab-active {
+    background: #22c55e;
+    border-color: #22c55e;
+    color: #fff;
+  }
+  .meus-horarios-grade-mobile-painel-dia-atual {
+    background: rgba(34, 197, 94, 0.1);
+    border-left-color: #22c55e;
+  }
+  .meus-horarios-grade-mobile-painel-dia-atual .meus-horarios-dia-titulo {
+    color: #16a34a;
+    border-bottom-color: rgba(34, 197, 94, 0.5);
   }
 }
 

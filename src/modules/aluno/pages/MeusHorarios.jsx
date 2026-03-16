@@ -50,10 +50,6 @@ export default function MeusHorarios() {
   )
   const [diaSelecionado, setDiaSelecionado] = useState(diaInicialGrade)
 
-  const aulasHoje = useMemo(
-    () => horarios.filter((h) => h.day_of_week === diaAtual),
-    [horarios, diaAtual],
-  )
   const horariosPorDia = useMemo(() => {
     const mapa = {}
     for (const dia of DIAS_GRADE) {
@@ -76,21 +72,6 @@ export default function MeusHorarios() {
 
   return (
     <div className="page meus-horarios-page">
-      <section className="meus-horarios-hoje">
-        <h2 className="meus-horarios-section-title">Hoje - {diaAtual}</h2>
-        {aulasHoje.length > 0 ? (
-          <div className="meus-horarios-hoje-cards">
-            {aulasHoje.map((aula) => (
-              <AulaCard key={aula.id} aula={aula} />
-            ))}
-          </div>
-        ) : (
-          <div className="meus-horarios-vazio-dia">
-            Não há aulas para hoje.
-          </div>
-        )}
-      </section>
-
       <section className="meus-horarios-grade">
         <h2 className="meus-horarios-section-title">Grade semanal</h2>
         <div className="meus-horarios-grade-tabs" role="tablist" aria-label="Selecionar dia da semana">
@@ -102,7 +83,7 @@ export default function MeusHorarios() {
               aria-selected={diaSelecionado === dia}
               aria-controls={`grade-dia-${dia}`}
               id={`tab-${dia}`}
-              className={`meus-horarios-grade-tab ${diaSelecionado === dia ? 'meus-horarios-grade-tab-active' : ''}`}
+              className={`meus-horarios-grade-tab ${diaSelecionado === dia ? 'meus-horarios-grade-tab-active' : ''} ${dia === diaAtual ? 'meus-horarios-grade-tab-dia-atual' : ''}`}
               onClick={() => setDiaSelecionado(dia)}
             >
               {DIAS_GRADE_ABREV[idx]}
@@ -112,7 +93,7 @@ export default function MeusHorarios() {
         <div className="meus-horarios-grade-mobile">
           <div
             id={`grade-dia-${diaSelecionado}`}
-            className="meus-horarios-grade-mobile-painel"
+            className={`meus-horarios-grade-mobile-painel ${diaSelecionado === diaAtual ? 'meus-horarios-grade-mobile-painel-dia-atual' : ''}`}
             role="tabpanel"
             aria-labelledby={`tab-${diaSelecionado}`}
           >
@@ -130,7 +111,7 @@ export default function MeusHorarios() {
         </div>
         <div className="meus-horarios-grade-grid">
           {DIAS_GRADE.map((dia) => (
-            <div key={dia} className="meus-horarios-grade-coluna">
+            <div key={dia} className={`meus-horarios-grade-coluna ${dia === diaAtual ? 'meus-horarios-grade-coluna-dia-atual' : ''}`}>
               <h3 className="meus-horarios-dia-titulo">{dia}</h3>
               <div className="meus-horarios-grade-cards">
                 {(horariosPorDia[dia] || []).map((aula) => (
