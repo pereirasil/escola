@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, DataTable, FormModal, SelectField, Spinner, ConfirmModal } from '../../../components/ui';
+import { Card, PageHeader, DataTable, FormModal, FormInput, SelectField, Spinner, ConfirmModal } from '../../../components/ui';
 import { pagamentosService } from '../../../services/pagamentos.service';
 import { alunosService } from '../../../services/alunos.service';
 import { bancoService } from '../../../services/banco.service';
@@ -28,6 +28,8 @@ export default function Financeiro() {
   const [statusForm, setStatusForm] = useState('pending');
   const [enviandoBoletoId, setEnviandoBoletoId] = useState(null);
   const [gerandoBoletoId, setGerandoBoletoId] = useState(null);
+  const [filtroStatus, setFiltroStatus] = useState('all');
+  const [pesquisa, setPesquisa] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -196,6 +198,26 @@ export default function Financeiro() {
     return {};
   };
 
+  const pagamentosComPendencia = pagamentos.filter((p) => p.status === 'pending' || p.status === 'overdue');
+  const alunosComMaisDeUmaPendencia = [...new Set(pagamentosComPendencia.map((p) => p.student_id))]
+    .filter((studentId) => pagamentosComPendencia.filter((p) => p.student_id === studentId).length > 1);
+
+  const pagamentosPorStatus = filtroStatus === 'paid'
+    ? pagamentos.filter((p) => p.status === 'paid')
+    : filtroStatus === 'pending'
+      ? pagamentos.filter((p) => p.status !== 'paid')
+      : filtroStatus === 'overdue'
+        ? pagamentosComPendencia.filter((p) => alunosComMaisDeUmaPendencia.includes(p.student_id))
+        : pagamentos;
+
+  const termoPesquisa = pesquisa.trim().toLowerCase();
+  const pagamentosFiltrados = termoPesquisa
+    ? pagamentosPorStatus.filter((p) => {
+        const alunoNome = (p.student?.name || `Aluno #${p.student_id}`).toLowerCase();
+        return alunoNome.includes(termoPesquisa);
+      })
+    : pagamentosPorStatus;
+
   return (
     <div className="page">
       <PageHeader
@@ -216,12 +238,55 @@ export default function Financeiro() {
       </PageHeader>
 
       <Card title="Pagamentos">
+        {!loading && (
+          <div style={{ marginBottom: '1rem' }}>
+            <FormInput
+              label="Pesquisa"
+              id="pesquisa_pagamentos"
+              type="text"
+              placeholder="Buscar por nome do aluno..."
+              value={pesquisa}
+              onChange={(e) => setPesquisa(e.target.value)}
+              style={{ maxWidth: '220px', marginBottom: '0.75rem' }}
+            />
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className={filtroStatus === 'all' ? 'btn-primary' : 'btn-secondary'}
+                onClick={() => setFiltroStatus('all')}
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                className={filtroStatus === 'pending' ? 'btn-primary' : 'btn-secondary'}
+                onClick={() => setFiltroStatus('pending')}
+              >
+                Pendentes
+              </button>
+              <button
+                type="button"
+                className={filtroStatus === 'overdue' ? 'btn-primary' : 'btn-secondary'}
+                onClick={() => setFiltroStatus('overdue')}
+              >
+                Com pendências
+              </button>
+              <button
+                type="button"
+                className={filtroStatus === 'paid' ? 'btn-primary' : 'btn-secondary'}
+                onClick={() => setFiltroStatus('paid')}
+              >
+                Pagos
+              </button>
+            </div>
+          </div>
+        )}
         {loading ? (
           <Spinner />
         ) : (
           <DataTable
             columns={['Aluno', 'Valor', 'Vencimento', 'Status', 'Boleto', 'Ações']}
-            data={pagamentos}
+            data={pagamentosFiltrados}
             emptyMessage="Nenhum pagamento registrado."
             renderRow={(p) => {
               const alunoNome = p.student?.name || `Aluno #${p.student_id}`;
