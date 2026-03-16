@@ -138,6 +138,56 @@ export class BoletoService {
     }
   }
 
+  async generatePix(
+    paymentId: number,
+    amount: number,
+    studentName: string,
+    studentEmail: string | null,
+  ): Promise<{ qr_code: string; qr_code_text: string; provider_id: string }> {
+    const accessToken = this.getAccessToken()
+    const nameParts = (studentName || 'Aluno').trim().split(/\s+/, 2)
+    const firstName = nameParts[0] || 'Aluno'
+    const lastName = nameParts[1] || `#${paymentId}`
+
+    const body = {
+      transaction_amount: Number(amount),
+      description: `Mensalidade escolar - Ref ${paymentId}`,
+      payment_method_id: 'pix',
+      payer: {
+        email: this.normalizePayerEmail(studentEmail, paymentId),
+        first_name: firstName,
+        last_name: lastName,
+      },
+    }
+
+    const idempotencyKey = `pix-${paymentId}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+    const res = await fetch('https://api.mercadopago.com/v1/payments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        'X-Idempotency-Key': idempotencyKey,
+      },
+      body: JSON.stringify(body),
+    })
+
+    if (!res.ok) {
+      const errText = await res.text()
+      throw new Error(`Mercado Pago PIX: ${errText}`)
+    }
+
+    const mpPayment = await res.json()
+    const poi = mpPayment.point_of_interaction?.transaction_data
+    const qrCodeText = String(poi?.qr_code ?? '')
+    const qrCodeBase64 = String(poi?.qr_code_base64 ?? '')
+
+    return {
+      qr_code: qrCodeBase64,
+      qr_code_text: qrCodeText,
+      provider_id: String(mpPayment.id),
+    }
+  }
+
   async generatePdfLocal(
     paymentId: number,
     amount: number,

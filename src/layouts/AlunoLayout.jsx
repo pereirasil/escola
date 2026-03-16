@@ -10,6 +10,7 @@ import {
   Key,
   Bell,
   LogOut,
+  Banknote,
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
 import { alunosService } from '../services/alunos.service'
@@ -38,6 +39,7 @@ const menuSections = [
     items: [
       { to: '/aluno/historico', label: 'Histórico', icon: FileText, end: false },
       { to: '/aluno/horarios', label: 'Horários', icon: Calendar, end: false },
+      { to: '/aluno/financeiro', label: 'Financeiro', icon: Banknote, end: false },
       { to: '/aluno/datas', label: 'Datas Importantes', icon: CalendarDays, end: false },
       { to: '/aluno/reunioes', label: 'Reuniões', icon: Users, end: false },
     ],

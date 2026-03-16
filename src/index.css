@@ -463,6 +463,168 @@ body {
   line-height: 1.2;
 }
 
+/* Financeiro Aluno */
+.financeiro-aluno .page-title {
+  margin: 0 0 1.25rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+}
+
+.financeiro-resumo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.financeiro-resumo-card {
+  padding: 1rem;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.financeiro-resumo-pago { border-left: 4px solid #22c55e; }
+.financeiro-resumo-aberto { border-left: 4px solid #f59e0b; }
+.financeiro-resumo-proximo { border-left: 4px solid #3b82f6; }
+
+.financeiro-resumo-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.35rem;
+}
+
+.financeiro-resumo-valor {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.financeiro-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.financeiro-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.financeiro-table th,
+.financeiro-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.financeiro-table th {
+  font-weight: 600;
+  color: #374151;
+  background: #f9fafb;
+}
+
+.financeiro-row-pago { background: rgba(34, 197, 94, 0.12); }
+.financeiro-row-pendente { background: rgba(245, 158, 11, 0.12); }
+.financeiro-row-vencido { background: rgba(239, 68, 68, 0.12); }
+
+.financeiro-modal-opcoes {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.financeiro-opcao-btn {
+  flex: 1;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  background: transparent;
+  color: #3b82f6;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.financeiro-opcao-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.financeiro-modal-boleto,
+.financeiro-modal-pix {
+  margin-bottom: 1rem;
+}
+
+.financeiro-boleto-acoes,
+.financeiro-pix-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.financeiro-pix-qr {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.financeiro-pix-qr img {
+  display: block;
+}
+
+.financeiro-pix-copia {
+  margin: 0 0 0.75rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.financeiro-voltar {
+  margin-top: 0.5rem;
+}
+
+.financeiro-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.financeiro-modal .modal-header h3 {
+  margin: 0;
+}
+
+.financeiro-modal .modal-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.financeiro-modal .modal-close:hover {
+  opacity: 1;
+}
+
+.financeiro-modal .modal-body {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .financeiro-table th,
+  .financeiro-table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+}
+
 /* Pedagógico - layout interno */
 .pedagogico-page {
   padding: 0 0 1.5rem;

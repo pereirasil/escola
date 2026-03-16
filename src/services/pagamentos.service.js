@@ -7,5 +7,6 @@ export const pagamentosService = {
   atualizar: (id, data) => api.put(`/payments/${id}`, data),
   enviarBoleto: (id) => api.post(`/payments/${id}/send-boleto`),
   gerarBoleto: (id) => api.post(`/payments/${id}/generate-boleto`),
+  gerarPix: (id) => api.post(`/payments/${id}/generate-pix`),
   buscarBoletoPdf: (id) => api.get(`/payments/${id}/boleto-pdf`, { responseType: 'blob' }),
 }

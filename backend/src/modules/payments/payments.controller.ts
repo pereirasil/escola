@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, StreamableFile, UseGuards } from '@nestjs/common'
+import { Body, Controller, Get, Param, Post, Put, Req, StreamableFile, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { PaymentsService } from './payments.service'
 import { CreatePaymentDto } from './dto/create-payment.dto'
@@ -9,18 +9,21 @@ import { SchoolId } from '../../common/decorators/school-id.decorator'
 
 @Controller('payments')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles('admin', 'school')
+@Roles('admin', 'school', 'student')
 export class PaymentsController {
   constructor(private service: PaymentsService) {}
 
   @Get()
-  findAll(@SchoolId() schoolId: number | undefined) {
+  findAll(@SchoolId() schoolId: number | undefined, @Req() req: { user: { id: number; role: string } }) {
+    if (req.user?.role === 'student') {
+      return this.service.findAllByStudentId(req.user.id)
+    }
     return this.service.findAll(schoolId)
   }
 
   @Get(':id/boleto-pdf')
-  async getBoletoPdf(@Param('id') id: string) {
-    const buffer = await this.service.getBoletoPdfBuffer(+id)
+  async getBoletoPdf(@Param('id') id: string, @Req() req: { user: { id: number; role: string } }) {
+    const buffer = await this.service.getBoletoPdfBuffer(+id, req.user)
     return new StreamableFile(buffer, {
       type: 'application/pdf',
       disposition: 'inline',
@@ -28,26 +31,34 @@ export class PaymentsController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.service.findOne(+id)
+  findOne(@Param('id') id: string, @Req() req: { user: { id: number; role: string } }) {
+    return this.service.findOne(+id, req.user)
   }
 
   @Post()
+  @Roles('admin', 'school')
   create(@Body() dto: CreatePaymentDto, @SchoolId() schoolId: number | undefined) {
     return this.service.create(dto, schoolId)
   }
 
   @Post(':id/send-boleto')
+  @Roles('admin', 'school')
   sendBoleto(@Param('id') id: string) {
     return this.service.sendBoletoById(+id)
   }
 
   @Post(':id/generate-boleto')
-  generateBoleto(@Param('id') id: string) {
-    return this.service.generateBoletoById(+id)
+  generateBoleto(@Param('id') id: string, @Req() req: { user: { id: number; role: string } }) {
+    return this.service.generateBoletoById(+id, req.user)
+  }
+
+  @Post(':id/generate-pix')
+  generatePix(@Param('id') id: string, @Req() req: { user: { id: number; role: string } }) {
+    return this.service.generatePixById(+id, req.user)
   }
 
   @Put(':id')
+  @Roles('admin', 'school')
   update(@Param('id') id: string, @Body() dto: UpdatePaymentDto) {
     return this.service.update(+id, dto)
   }

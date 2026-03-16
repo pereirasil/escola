@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common'
+import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { In, Repository, type DeepPartial } from 'typeorm'
 import { Payment } from './entities/payment.entity'
@@ -20,6 +20,27 @@ export class PaymentsService {
     private mailQueue: MailQueueService,
     private studentsService: StudentsService,
   ) {}
+
+  async findAllByStudentId(studentId: number) {
+    const qb = this.repo
+      .createQueryBuilder('payment')
+      .leftJoinAndSelect('payment.student', 'student')
+      .where('payment.student_id = :studentId', { studentId })
+      .orderBy('payment.due_date', 'ASC')
+
+    const payments = await qb.getMany()
+    if (payments.length > 0) {
+      const paymentIds = payments.map((p) => p.id)
+      const invoices = await this.invoiceRepo.find({
+        where: { payment_id: In(paymentIds) },
+      })
+      const invByPayment = new Map(invoices.map((i) => [i.payment_id, i]))
+      for (const p of payments) {
+        ;(p as Payment & { invoice?: typeof invoices[0] }).invoice = invByPayment.get(p.id)
+      }
+    }
+    return payments
+  }
 
   async findAll(schoolId?: number) {
     const qb = this.repo
@@ -45,7 +66,7 @@ export class PaymentsService {
     return payments
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, user?: { id: number; role: string }) {
     const payment = await this.repo
       .createQueryBuilder('payment')
       .leftJoinAndSelect('payment.student', 'student')
@@ -53,6 +74,9 @@ export class PaymentsService {
       .getOne()
 
     if (payment) {
+      if (user?.role === 'student' && payment.student_id !== user.id) {
+        throw new ForbiddenException('Acesso negado a este pagamento.')
+      }
       const invoice = await this.invoiceRepo.findOne({ where: { payment_id: id } })
       ;(payment as Payment & { invoice?: { id: number; barcode?: string; linha_digitavel?: string; boleto_url?: string; status?: string } }).invoice = invoice ?? undefined
     }
@@ -260,8 +284,8 @@ export class PaymentsService {
     }
   }
 
-  async generateBoletoById(id: number) {
-    const payment = await this.findOne(id)
+  async generateBoletoById(id: number, user?: { id: number; role: string }) {
+    const payment = await this.findOne(id, user)
     if (!payment) throw new BadRequestException('Pagamento não encontrado')
 
     const student = payment.student
@@ -324,12 +348,49 @@ export class PaymentsService {
       await this.invoiceRepo.save(newInvoice)
     }
 
-    return this.findOne(id)
+    return this.findOne(id, user)
   }
 
-  async getBoletoPdfBuffer(id: number): Promise<Buffer> {
+  async generatePixById(id: number, user?: { id: number; role: string }) {
+    const payment = await this.findOne(id, user)
+    if (!payment) throw new BadRequestException('Pagamento não encontrado')
+    if (payment.status === 'paid') throw new BadRequestException('Pagamento já foi pago.')
+
+    const student = payment.student
+    const amount = Number(payment.amount)
+    const studentName = student?.name || 'Aluno'
+    const studentEmail = student?.email || null
+
+    const result = await this.boletoService.generatePix(
+      payment.id,
+      amount,
+      studentName,
+      studentEmail,
+    )
+
+    const existingInvoice = await this.invoiceRepo.findOne({ where: { payment_id: id } })
+    if (existingInvoice) {
+      await this.invoiceRepo.update(
+        { payment_id: id },
+        { pix_provider_id: result.provider_id },
+      )
+    } else {
+      await this.invoiceRepo.save(
+        this.invoiceRepo.create({
+          school_id: payment.school_id,
+          payment_id: id,
+          pix_provider_id: result.provider_id,
+          status: 'pending',
+        }),
+      )
+    }
+
+    return { qr_code: result.qr_code, qr_code_text: result.qr_code_text }
+  }
+
+  async getBoletoPdfBuffer(id: number, user?: { id: number; role: string }): Promise<Buffer> {
     try {
-      const payment = await this.findOne(id)
+      const payment = await this.findOne(id, user)
       if (!payment) throw new BadRequestException('Pagamento não encontrado')
       const student = payment.student
       const rawAmount = payment.amount

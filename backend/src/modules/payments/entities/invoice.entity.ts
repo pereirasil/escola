@@ -28,6 +28,9 @@ export class Invoice extends BaseEntity {
   @Column({ nullable: true })
   provider_id: string
 
+  @Column({ nullable: true })
+  pix_provider_id: string
+
   @Column({ default: 'pending' })
   status: string
 }
