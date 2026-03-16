@@ -155,7 +155,7 @@ export default function Dashboard() {
           />
         </Card>
 
-        <Card title="Relação de Alunos Recentes">
+        <Card title="Relação de Alunos Recentes" className="dashboard-alunos-recentes">
           <DataTable
             columns={['Aluno', 'Série', 'Sala']}
             data={alunos.slice(0, 5)}

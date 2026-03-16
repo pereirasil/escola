@@ -2991,6 +2991,14 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
 
+  .dashboard-alunos-recentes .table-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 280px;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+  }
+
   .header {
     padding: 0.5rem 0.75rem;
     flex-wrap: nowrap;
