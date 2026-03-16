@@ -1,17 +1,47 @@
-<p>Olá {{studentName}},</p>
+<p style="margin: 0 0 16px 0; font-size: 16px; line-height: 1.5; color: #1e293b;">Olá {{studentName}},</p>
 
-<p>Uma nova mensalidade foi gerada em nosso sistema.</p>
+<p style="margin: 0 0 24px 0; font-size: 15px; line-height: 1.6; color: #334155;">Uma nova mensalidade foi gerada em nosso sistema.</p>
 
-<p><strong>Valor:</strong> R$ {{amount}}</p>
-<p><strong>Vencimento:</strong> {{dueDate}}</p>
+<!-- Card de informações da cobrança -->
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 24px;">
+  <tr>
+    <td class="card-cell" style="background-color: #f1f5f9; border-radius: 8px; padding: 20px;">
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+        <tr>
+          <td style="padding-bottom: 12px;">
+            <span style="font-size: 13px; color: #64748b;">Valor da mensalidade</span><br>
+            <span style="font-size: 22px; font-weight: bold; color: #16a34a;">R$ {{amount}}</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span style="font-size: 13px; color: #64748b;">Data de vencimento</span><br>
+            <span style="font-size: 16px; font-weight: 600; color: #1e293b;">{{dueDate}}</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
 
-<p>Você pode realizar o pagamento utilizando o boleto abaixo.</p>
+<p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.6; color: #334155;">Você pode realizar o pagamento utilizando o boleto abaixo.</p>
 
 {{#if boletoUrl}}
-<p>Clique no link para acessar o boleto:<br>
-<a href="{{boletoUrl}}">{{boletoUrl}}</a></p>
+<!-- Botão de pagamento -->
+<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom: 24px;">
+  <tr>
+    <td class="btn-cell" align="center" style="padding: 20px 0;">
+      <a href="{{boletoUrl}}" class="btn" style="display: inline-block; background-color: {{primaryColor}}; color: #ffffff; font-size: 16px; font-weight: bold; text-decoration: none; padding: 14px 40px; border-radius: 8px; max-width: 280px; text-align: center; box-sizing: border-box;">Pagar boleto</a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin: 0 0 8px 0; font-size: 12px; color: #64748b;">Ou acesse o link diretamente:</p>
+<p style="margin: 0 0 24px 0; font-size: 12px;">
+  <a href="{{boletoUrl}}" style="color: #2563eb; word-break: break-all;">{{boletoUrl}}</a>
+</p>
 {{/if}}
 
-<p>Caso o pagamento já tenha sido realizado diretamente na escola, desconsidere esta mensagem.</p>
+<p style="margin: 0; font-size: 13px; color: #64748b; font-style: italic;">Se o pagamento já foi realizado diretamente na escola, desconsidere esta mensagem.</p>
 
-<p>Atenciosamente,<br>Sistema de Gestão Escolar</p>
+<p style="margin: 24px 0 0 0; font-size: 14px; color: #334155;">Atenciosamente,<br><strong>Sistema de Gestão Escolar</strong></p>

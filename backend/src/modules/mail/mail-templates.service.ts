@@ -11,11 +11,17 @@ export class MailTemplatesService {
   render(templateName: string, data: Record<string, unknown>): string {
     const layout = this.compile('layout')
     const content = this.compile(templateName)
+    const primaryColor = (data.primaryColor as string) ?? '#2563eb'
+    const schoolName = (data.schoolName as string) ?? 'Sistema de Gestão Escolar'
+    const schoolLogo = (data.schoolLogo as string) ?? undefined
+    const contentData = { ...data, primaryColor, schoolName, schoolLogo }
     const merged = {
-      schoolName: (data.schoolName as string) ?? 'Sistema de Gestão Escolar',
+      schoolName,
+      schoolLogo,
+      primaryColor,
       subject: (data.subject as string) ?? '',
       ...data,
-      content: content(data),
+      content: content(contentData),
     }
     return layout(merged)
   }
