@@ -364,7 +364,7 @@ export default function Financeiro() {
                         style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}
                         onClick={() => setPagamentoExcluir(p)}
                       >
-                        Deletar
+                        Excluir
                       </button>
                     </div>
                   </td>
