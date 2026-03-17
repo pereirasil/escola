@@ -12,7 +12,7 @@ export function useChatSocket(conversationId, onNewMessage, onConversationClosed
     const serverUrl = communicationService.getSocketUrl()
     const chatUrl = `${serverUrl}/chat`
     const s = io(chatUrl, {
-      path: '/socket.io',
+      path: communicationService.getSocketPath(),
       auth: { token },
       transports: ['websocket', 'polling'],
     })

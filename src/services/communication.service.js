@@ -39,6 +39,18 @@ export const communicationService = {
 
   getSocketUrl: () => (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, ''),
 
+  /** Path do Socket.io. Quando a API usa prefixo (ex: /api), o path deve ser /api/socket.io. */
+  getSocketPath: () => {
+    const url = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+    try {
+      const pathname = new URL(url).pathname
+      const base = pathname === '/' ? '' : pathname.replace(/\/$/, '')
+      return `${base}/socket.io`
+    } catch {
+      return '/socket.io'
+    }
+  },
+
   // Contagem de mensagens nao lidas (Comunicacao)
   contarNaoLidasAluno: () => api.get('/students/me/conversations/unread-count').then((r) => r.data),
   contarNaoLidasAlunoPorTipo: () =>
