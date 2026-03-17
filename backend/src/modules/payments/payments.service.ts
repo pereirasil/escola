@@ -9,6 +9,7 @@ import { BoletoService } from './services/boleto.service'
 import { MailQueueService } from '../mail/mail-queue.service'
 import { StudentsService } from '../students/students.service'
 import { UsersService } from '../users/users.service'
+import { ClassesService } from '../classes/classes.service'
 
 @Injectable()
 export class PaymentsService {
@@ -21,6 +22,7 @@ export class PaymentsService {
     private mailQueue: MailQueueService,
     private studentsService: StudentsService,
     private usersService: UsersService,
+    private classesService: ClassesService,
   ) {}
 
   async hasMercadoPagoConnected(schoolUserId: number): Promise<boolean> {
@@ -41,8 +43,18 @@ export class PaymentsService {
         where: { payment_id: In(paymentIds) },
       })
       const invByPayment = new Map(invoices.map((i) => [i.payment_id, i]))
+      const classIds = [...new Set(payments.map((p) => (p as Payment & { student?: { class_id?: number } }).student?.class_id).filter((id): id is number => id != null))]
+      const classesMap = new Map<number, string>()
+      for (const cid of classIds) {
+        const c = await this.classesService.findOne(cid)
+        if (c?.name) classesMap.set(cid, c.name)
+      }
       for (const p of payments) {
         ;(p as Payment & { invoice?: typeof invoices[0] }).invoice = invByPayment.get(p.id)
+        const st = (p as Payment & { student?: { class_id?: number; class_name?: string } }).student
+        if (st?.class_id && classesMap.has(st.class_id)) {
+          st.class_name = classesMap.get(st.class_id)
+        }
       }
     }
     return payments
@@ -65,8 +77,18 @@ export class PaymentsService {
         where: { payment_id: In(paymentIds) },
       })
       const invByPayment = new Map(invoices.map((i) => [i.payment_id, i]))
+      const classIds = [...new Set(payments.map((p) => (p as Payment & { student?: { class_id?: number } }).student?.class_id).filter((id): id is number => id != null))]
+      const classesMap = new Map<number, string>()
+      for (const cid of classIds) {
+        const c = await this.classesService.findOne(cid)
+        if (c?.name) classesMap.set(cid, c.name)
+      }
       for (const p of payments) {
         ;(p as Payment & { invoice?: typeof invoices[0] }).invoice = invByPayment.get(p.id)
+        const st = (p as Payment & { student?: { class_id?: number; class_name?: string } }).student
+        if (st?.class_id && classesMap.has(st.class_id)) {
+          st.class_name = classesMap.get(st.class_id)
+        }
       }
     }
     return payments
@@ -85,6 +107,11 @@ export class PaymentsService {
       }
       const invoice = await this.invoiceRepo.findOne({ where: { payment_id: id } })
       ;(payment as Payment & { invoice?: { id: number; barcode?: string; linha_digitavel?: string; boleto_url?: string; status?: string } }).invoice = invoice ?? undefined
+      const st = (payment as Payment & { student?: { class_id?: number; class_name?: string } }).student
+      if (st?.class_id) {
+        const c = await this.classesService.findOne(st.class_id)
+        if (c?.name) st.class_name = c.name
+      }
     }
     return payment
   }
@@ -562,7 +589,7 @@ export class PaymentsService {
     try {
       const payment = await this.findOne(id, user)
       if (!payment) throw new BadRequestException('Pagamento não encontrado')
-      const student = payment.student
+      const student = payment.student as { name?: string; guardian_name?: string; guardian_document?: string; class_name?: string } | undefined
       const rawAmount = payment.amount
       const amount = typeof rawAmount === 'string'
         ? parseFloat(String(rawAmount).replace(',', '.')) || 0
@@ -572,11 +599,19 @@ export class PaymentsService {
         payment.due_date ?? new Date().toISOString().slice(0, 10),
       )
       const studentName = (student?.name || 'Aluno').toString()
+      const status = (payment.status || 'pending').toString()
+      const guardianName = student?.guardian_name?.trim() || null
+      const guardianDocument = student?.guardian_document?.trim() || null
+      const turma = (student as { class_name?: string })?.class_name?.trim() || null
       const { pdfBuffer } = await this.boletoService.generatePdfLocal(
         payment.id,
         amount,
         dueDate,
         studentName,
+        status,
+        guardianName,
+        guardianDocument,
+        turma,
       )
       return pdfBuffer
     } catch (err) {

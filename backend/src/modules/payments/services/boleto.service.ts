@@ -229,17 +229,35 @@ export class BoletoService {
     }
   }
 
+  private formatCpf(doc: string | null): string {
+    if (!doc?.trim()) return '-'
+    const digits = doc.replace(/\D/g, '')
+    if (digits.length !== 11) return doc
+    return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`
+  }
+
   async generatePdfLocal(
     paymentId: number,
     amount: number,
     dueDate: string,
     studentName: string,
+    status: string = 'pending',
+    guardianName: string | null = null,
+    guardianDocument: string | null = null,
+    turma: string | null = null,
   ): Promise<BoletoLocalResult> {
     const seq = String(paymentId).padStart(10, '0')
     const barcode = seq
     const linhaDigitavel = seq
 
-    const doc = new PDFDocument({ size: 'A4', margin: 50 })
+    const pageWidth = 595
+    const pageHeight = 842
+    const cardWidth = 495
+    const cardLeft = (pageWidth - cardWidth) / 2
+    const cardTop = 80
+    const padding = 24
+
+    const doc = new PDFDocument({ size: 'A4', margin: 0 })
     const chunks: Buffer[] = []
     doc.on('data', (chunk: Buffer) => chunks.push(chunk))
 
@@ -258,30 +276,127 @@ export class BoletoService {
         currency: 'BRL',
       })
       const vencFormatado = dueDate
-        ? new Date(dueDate + 'T12:00:00')
-            .toLocaleDateString('pt-BR', {
-              day: '2-digit',
-              month: '2-digit',
-              year: 'numeric',
-            })
+        ? new Date(dueDate + 'T12:00:00').toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          })
         : '-'
+      const dataEmissao = new Date().toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
 
-      doc.fontSize(20).text('COMPROVANTE DE COBRANÇA', { align: 'center' })
-      doc.moveDown(0.5)
-      doc.fontSize(10).text('Mensalidade Escolar - Pagamento na secretaria ou via boleto (quando disponível)', {
+      const isPaid = status === 'paid'
+      const statusLabel = isPaid ? 'PAGO' : status === 'overdue' ? 'Vencido' : 'Pendente'
+      const textPrimary = '#1A1A1A'
+      const textSecondary = '#666666'
+      const borderColor = '#E5E7EB'
+      const statusPaidColor = '#15803D'
+
+      // Fundo da página
+      doc.rect(0, 0, pageWidth, pageHeight).fill('#F5F5F5')
+
+      // Card centralizado com bordas arredondadas e sombra simulada
+      const cardRadius = 8
+      const shadowOffset = 4
+      doc.save()
+      const cardHeight = 500
+      doc.roundedRect(cardLeft + shadowOffset, cardTop + shadowOffset, cardWidth, cardHeight, cardRadius)
+        .fill('#E8E8E8')
+      doc.restore()
+      doc.roundedRect(cardLeft, cardTop, cardWidth, cardHeight, cardRadius).fillAndStroke('#FFFFFF', '#E5E7EB')
+
+      let y = cardTop + padding
+
+      // Cabeçalho
+      doc.fontSize(22).font('Helvetica-Bold').fillColor(textPrimary)
+      doc.text(isPaid ? 'RECIBO DE PAGAMENTO' : 'COMPROVANTE DE COBRANÇA', cardLeft + padding, y, {
+        width: cardWidth - padding * 2,
         align: 'center',
       })
-      doc.moveDown(2)
-      doc.fontSize(11).text(`Aluno: ${studentName}`, { continued: false })
-      doc.text(`Valor: ${valorFormatado}`, { continued: false })
-      doc.text(`Vencimento: ${vencFormatado}`, { continued: false })
-      doc.text(`Referência: ${paymentId}`, { continued: false })
-      doc.moveDown(2)
-      doc.fontSize(9)
-        .text(
-          'Este comprovante pode ser pago na secretaria da escola. Para boleto bancário com código de barras, utilize a opção "Gerar" (requer Mercado Pago configurado).',
-          { align: 'center', width: 495 },
-        )
+      y += 14
+
+      doc.fontSize(12).font('Helvetica').fillColor(textSecondary)
+      doc.text(
+        isPaid ? 'Comprovante de quitação de mensalidade escolar' : 'Mensalidade Escolar - Pagamento na secretaria ou via boleto (quando disponível)',
+        cardLeft + padding,
+        y,
+        { width: cardWidth - padding * 2, align: 'center' },
+      )
+      y += 12
+
+      doc.fontSize(10)
+      doc.text(`Emitido em: ${dataEmissao}`, cardLeft + padding, y, {
+        width: cardWidth - padding * 2,
+        align: 'center',
+      })
+      y += 24
+
+      // Separador
+      doc.strokeColor(borderColor).lineWidth(1)
+      doc.moveTo(cardLeft + padding, y).lineTo(cardLeft + cardWidth - padding, y).stroke()
+      y += 24
+
+      // Seção de informações (grid)
+      const labelWidth = 120
+      const lineHeight = 22
+      const contentLeft = cardLeft + padding
+
+      const addRow = (label: string, value: string, highlight = false, valueColor?: string) => {
+        doc.fontSize(11).font('Helvetica-Bold').fillColor(textSecondary)
+        doc.text(label, contentLeft, y)
+        doc.font('Helvetica').fillColor(valueColor ?? textPrimary)
+        if (highlight) doc.fontSize(16).font('Helvetica-Bold')
+        doc.text(value, contentLeft + labelWidth, y, { width: cardWidth - padding * 2 - labelWidth })
+        if (highlight) doc.fontSize(11).font('Helvetica')
+        doc.fillColor(textPrimary)
+        y += lineHeight
+      }
+
+      addRow('Aluno:', studentName)
+      addRow('Responsável:', guardianName || '-')
+      addRow('CPF do responsável:', this.formatCpf(guardianDocument))
+      addRow('Turma:', turma || '-')
+      addRow('Valor:', valorFormatado, true)
+      addRow('Vencimento:', vencFormatado)
+      addRow('Referência:', String(paymentId))
+      addRow('Status:', statusLabel, false, isPaid ? statusPaidColor : status === 'overdue' ? '#DC2626' : undefined)
+
+      y += 16
+
+      // Separador
+      doc.strokeColor(borderColor)
+      doc.moveTo(cardLeft + padding, y).lineTo(cardLeft + cardWidth - padding, y).stroke()
+      y += 20
+
+      // Observação
+      doc.fontSize(11).font('Helvetica')
+      const obsText = isPaid
+        ? 'Este documento comprova a quitação da mensalidade descrita acima.'
+        : 'Este comprovante pode ser pago na secretaria da escola. Para boleto bancário com código de barras, utilize a opção "Gerar" (requer Mercado Pago configurado).'
+      doc.fillColor(isPaid ? statusPaidColor : textSecondary)
+      doc.text(obsText, contentLeft, y, {
+        width: cardWidth - padding * 2,
+        align: 'center',
+      })
+      y += 28
+      doc.fillColor(textSecondary)
+
+      // Separador
+      doc.strokeColor(borderColor)
+      doc.moveTo(cardLeft + padding, y).lineTo(cardLeft + cardWidth - padding, y).stroke()
+      y += 16
+
+      // Rodapé
+      doc.fontSize(10).fillColor(textSecondary)
+      doc.text('Documento gerado eletronicamente. Válido sem assinatura.', contentLeft, y, {
+        width: cardWidth - padding * 2,
+        align: 'center',
+      })
 
       doc.end()
     }) as Promise<BoletoLocalResult>

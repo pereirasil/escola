@@ -15,12 +15,14 @@ import { MercadoPagoOAuthController } from './mercadopago-oauth.controller'
 import { MailModule } from '../mail/mail.module'
 import { StudentsModule } from '../students/students.module'
 import { UsersModule } from '../users/users.module'
+import { ClassesModule } from '../classes/classes.module'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Payment, Invoice, Student]),
     MailModule,
     StudentsModule,
+    ClassesModule,
     forwardRef(() => UsersModule),
   ],
   controllers: [

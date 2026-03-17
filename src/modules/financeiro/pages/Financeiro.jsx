@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, PageHeader, DataTable, FormModal, FormInput, SelectField, Spinner, ConfirmModal } from '../../../components/ui';
+import { ReceiptCard } from '../../../components/ReceiptCard';
 import { pagamentosService } from '../../../services/pagamentos.service';
 import { alunosService } from '../../../services/alunos.service';
 import PagamentoForm from '../components/PagamentoForm';
@@ -28,6 +29,7 @@ export default function Financeiro() {
   const [pesquisa, setPesquisa] = useState('');
   const [mpConnected, setMpConnected] = useState(false);
   const [mpConnecting, setMpConnecting] = useState(false);
+  const [modalRecibo, setModalRecibo] = useState(null);
 
   const isSchool = user?.role === 'school';
 
@@ -167,21 +169,33 @@ export default function Financeiro() {
     }
   };
 
-  const handleVerBoleto = async (pagamento) => {
+  const handleVerBoleto = (pagamento) => {
+    setModalRecibo(pagamento);
+  };
+
+  const handleAbrirBoletoUrl = (pagamento) => {
     const rawUrl = pagamento.invoice?.boleto_url;
     const boletoUrl = rawUrl && !rawUrl.includes('example.com') ? rawUrl : null;
     if (boletoUrl) {
       window.open(boletoUrl, '_blank', 'noopener,noreferrer');
-      return;
+    } else {
+      toast.error('Link do boleto não disponível.');
     }
+  };
+
+  const handleBaixarPdf = async (pagamento) => {
     try {
       const res = await pagamentosService.buscarBoletoPdf(pagamento.id);
       const blob = new Blob([res.data], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
-      window.open(url, '_blank', 'noopener,noreferrer');
-      setTimeout(() => URL.revokeObjectURL(url), 60000);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `comprovante-${pagamento.id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('PDF baixado.');
     } catch (error) {
-      let msg = 'Erro ao abrir boleto.';
+      let msg = 'Erro ao baixar PDF.';
       const data = error.response?.data;
       if (data) {
         if (data instanceof Blob) {
@@ -196,6 +210,13 @@ export default function Financeiro() {
       }
       toast.error(msg);
     }
+  };
+
+  const handleImprimirRecibo = () => {
+    const prevTitle = document.title;
+    document.title = `Comprovante #${modalRecibo?.id || ''}`;
+    window.print();
+    document.title = prevTitle;
   };
 
   const formatarValor = (v) => {
@@ -441,6 +462,66 @@ export default function Financeiro() {
           </button>
         </div>
       </FormModal>
+
+      {modalRecibo && (
+        <div className="modal-overlay" onClick={() => setModalRecibo(null)}>
+          <div
+            className="modal-content modal-content-lg"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '640px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0 }}>
+                {modalRecibo.status === 'paid' ? 'Recibo de pagamento' : 'Comprovante de cobrança'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setModalRecibo(null)}
+                aria-label="Fechar"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  padding: '0.25rem 0.5rem',
+                  lineHeight: 1,
+                  opacity: 0.7,
+                }}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="receipt-print-root">
+              <ReceiptCard
+                aluno={modalRecibo.student?.name || `Aluno #${modalRecibo.student_id}`}
+                responsavel={modalRecibo.student?.guardian_name}
+                cpfResponsavel={modalRecibo.student?.guardian_document}
+                turma={modalRecibo.student?.class_name}
+                valor={modalRecibo.amount}
+                vencimento={modalRecibo.due_date}
+                referencia={modalRecibo.id}
+                status={modalRecibo.status || 'pending'}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+              {modalRecibo.invoice?.boleto_url && !modalRecibo.invoice.boleto_url.includes('example.com') && (
+                <button type="button" className="btn-primary" onClick={() => handleAbrirBoletoUrl(modalRecibo)}>
+                  Abrir boleto
+                </button>
+              )}
+              <button type="button" className="btn-secondary" onClick={() => handleBaixarPdf(modalRecibo)}>
+                Baixar PDF
+              </button>
+              <button type="button" className="btn-secondary" onClick={handleImprimirRecibo}>
+                Imprimir
+              </button>
+              <button type="button" className="btn-secondary" onClick={() => setModalRecibo(null)}>
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card, Spinner } from '../../../components/ui'
+import { ReceiptCard } from '../../../components/ReceiptCard'
 import { pagamentosService } from '../../../services/pagamentos.service'
 import { useAuthStore } from '../../../store/useAuthStore'
 import toast from 'react-hot-toast'
@@ -42,6 +43,7 @@ export default function FinanceiroAluno() {
   const [gerandoPix, setGerandoPix] = useState(false)
   const [boletoGerado, setBoletoGerado] = useState(null)
   const [pixGerado, setPixGerado] = useState(null)
+  const [modalRecibo, setModalRecibo] = useState(null)
 
   const carregar = useCallback(async () => {
     setLoading(true)
@@ -183,7 +185,7 @@ export default function FinanceiroAluno() {
   }
 
   const baixarPdf = async (pagamento) => {
-    const p = pagamento || modalPagar
+    const p = pagamento || modalPagar || modalRecibo
     if (!p) return
     try {
       const res = await pagamentosService.buscarBoletoPdf(p.id)
@@ -191,13 +193,24 @@ export default function FinanceiroAluno() {
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `boleto-${p.id}.pdf`
+      a.download = `recibo-${p.id}.pdf`
       a.click()
       window.URL.revokeObjectURL(url)
       toast.success('PDF baixado.')
     } catch {
       toast.error('Erro ao baixar PDF.')
     }
+  }
+
+  const imprimirRecibo = () => {
+    const prevTitle = document.title
+    document.title = `Recibo #${modalRecibo?.id || ''}`
+    window.print()
+    document.title = prevTitle
+  }
+
+  const abrirRecibo = (pagamento) => {
+    setModalRecibo(pagamento)
   }
 
   if (loading) return <div className="page"><Spinner /></div>
@@ -251,7 +264,7 @@ export default function FinanceiroAluno() {
                         <button
                           type="button"
                           className="btn-secondary btn-sm"
-                          onClick={() => baixarPdf(p)}
+                          onClick={() => abrirRecibo(p)}
                         >
                           Ver recibo
                         </button>
@@ -366,6 +379,60 @@ export default function FinanceiroAluno() {
                 onClick={() => { setOpcaoModal(null); setBoletoGerado(null); setPixGerado(null); }}
               >
                 Voltar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalRecibo && (
+        <div className="modal-overlay" onClick={() => setModalRecibo(null)}>
+          <div
+            className="modal-content modal-content-lg"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '640px' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <h3 style={{ margin: 0 }}>Recibo de pagamento</h3>
+              <button
+                type="button"
+                className="modal-close"
+                onClick={() => setModalRecibo(null)}
+                aria-label="Fechar"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                  padding: '0.25rem 0.5rem',
+                  lineHeight: 1,
+                  opacity: 0.7,
+                }}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="receipt-print-root">
+              <ReceiptCard
+                aluno={modalRecibo.student?.name || `Aluno #${modalRecibo.student_id}`}
+                responsavel={modalRecibo.student?.guardian_name}
+                cpfResponsavel={modalRecibo.student?.guardian_document}
+                turma={modalRecibo.student?.class_name}
+                valor={modalRecibo.amount}
+                vencimento={modalRecibo.due_date}
+                referencia={modalRecibo.id}
+                status={modalRecibo.status || 'paid'}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+              <button type="button" className="btn-primary" onClick={() => baixarPdf(modalRecibo)}>
+                Baixar PDF
+              </button>
+              <button type="button" className="btn-secondary" onClick={imprimirRecibo}>
+                Imprimir
+              </button>
+              <button type="button" className="btn-secondary" onClick={() => setModalRecibo(null)}>
+                Fechar
               </button>
             </div>
           </div>
