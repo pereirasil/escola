@@ -10,6 +10,9 @@ export const authService = {
   loginTeacher: (cpf, password) =>
     api.post('/auth/login-teacher', { cpf, password }).then((res) => res.data),
 
+  chooseSchool: (schoolId) =>
+    api.post('/auth/teacher/choose-school', { school_id: schoolId }).then((res) => res.data),
+
   register: (data) =>
     api.post('/auth/register', data),
 

@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common'
+import { Body, Controller, ForbiddenException, Get, Param, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { AuthGuard } from '@nestjs/passport'
 import { AuthService } from './auth.service'
+import { ChooseSchoolDto } from './dto/choose-school.dto'
 import { LoginDto } from './dto/login.dto'
 import { LoginStudentDto } from './dto/login-student.dto'
 import { RegisterDto } from './dto/register.dto'
@@ -21,6 +23,14 @@ export class AuthController {
   @Post('login-teacher')
   loginTeacher(@Body() dto: LoginStudentDto) {
     return this.authService.loginTeacher(dto.cpf, dto.password)
+  }
+
+  @Post('teacher/choose-school')
+  @UseGuards(AuthGuard('jwt'))
+  teacherChooseSchool(@Body() dto: ChooseSchoolDto, @Req() req: { user: { id: number; role: string; document?: string } }) {
+    if (req.user.role !== 'teacher') throw new ForbiddenException('Apenas professores podem usar esta funcionalidade')
+    if (!req.user.document) throw new UnauthorizedException('Sessão inválida')
+    return this.authService.teacherChooseSchool(req.user.document, dto.school_id)
   }
 
   @Post('register')

@@ -1,7 +1,7 @@
 import * as bcrypt from 'bcrypt'
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Brackets, Repository } from 'typeorm'
+import { Brackets, In, Repository } from 'typeorm'
 import { Teacher } from './entities/teacher.entity'
 import { User } from '../users/entities/user.entity'
 import { CreateTeacherDto } from './dto/create-teacher.dto'
@@ -76,13 +76,29 @@ export class TeachersService {
     return this.repo.find({ where: { document: normalized } })
   }
 
+  findByDocumentAndSchool(cpf: string, schoolId: number): Promise<Teacher | null> {
+    const normalized = normalizeCpf(cpf)
+    return this.repo.findOne({ where: { document: normalized, school_id: schoolId } })
+  }
+
+  async getSchoolsForTeachers(teachers: Teacher[]): Promise<{ id: number; name: string }[]> {
+    const schoolIds = [...new Set(teachers.map((t) => t.school_id).filter(Boolean))] as number[]
+    if (schoolIds.length === 0) return []
+    const schools = await this.userRepo.find({
+      where: { id: In(schoolIds), role: 'school' },
+      select: ['id', 'name'],
+    })
+    return schools.map((s) => ({ id: s.id, name: s.name || `Escola ${s.id}` }))
+  }
+
   async create(dto: CreateTeacherDto, schoolId?: number) {
     const normalizedDoc = normalizeCpf(dto.document)
-    const where: any = { document: normalizedDoc }
-    if (schoolId) where.school_id = schoolId
-    const existing = await this.repo.findOne({ where })
+    const existing =
+      schoolId != null
+        ? await this.findByDocumentAndSchool(normalizedDoc, schoolId)
+        : await this.repo.findOne({ where: { document: normalizedDoc } })
     if (existing) {
-      throw new ConflictException('CPF já cadastrado')
+      throw new ConflictException('CPF já cadastrado nesta escola')
     }
     const hash = await bcrypt.hash(dto.password, SALT_ROUNDS)
     const { password: _, ...rest } = dto

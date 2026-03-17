@@ -85,21 +85,44 @@ export class AuthService {
 
   async loginTeacher(cpf: string, password: string) {
     const teachers = await this.teachersService.findAllByDocument(cpf)
-    let matched: typeof teachers[0] | null = null
+    const matched: typeof teachers = []
     for (const t of teachers) {
       if (t.password_hash && (await bcrypt.compare(password, t.password_hash))) {
-        matched = t
-        break
+        matched.push(t)
       }
     }
-    if (!matched) {
+    if (matched.length === 0) {
       throw new UnauthorizedException('CPF ou senha inválidos')
     }
-    const payload = { sub: matched.id, role: 'teacher', document: matched.document, school_id: matched.school_id }
+    if (matched.length === 1) {
+      const m = matched[0]
+      const payload = { sub: m.id, role: 'teacher', document: m.document, school_id: m.school_id }
+      const access_token = this.jwtService.sign(payload)
+      return {
+        access_token,
+        user: { id: m.id, name: m.name, role: 'teacher', document: m.document, school_id: m.school_id, photo: m.photo },
+      }
+    }
+    const schools = await this.teachersService.getSchoolsForTeachers(matched)
+    const first = matched[0]
+    const payload = { sub: first.id, role: 'teacher', document: first.document, school_id: null }
+    const access_token = this.jwtService.sign(payload)
+    return {
+      requires_school_choice: true,
+      schools,
+      access_token,
+      user: { id: first.id, name: first.name, role: 'teacher', document: first.document, school_id: null, photo: first.photo },
+    }
+  }
+
+  async teacherChooseSchool(document: string, schoolId: number) {
+    const target = await this.teachersService.findByDocumentAndSchool(document, schoolId)
+    if (!target) throw new UnauthorizedException('Escola inválida ou você não possui cadastro nela')
+    const payload = { sub: target.id, role: 'teacher', document: target.document, school_id: target.school_id }
     const access_token = this.jwtService.sign(payload)
     return {
       access_token,
-      user: { id: matched.id, name: matched.name, role: 'teacher', document: matched.document, school_id: matched.school_id, photo: matched.photo },
+      user: { id: target.id, name: target.name, role: 'teacher', document: target.document, school_id: target.school_id, photo: target.photo },
     }
   }
 

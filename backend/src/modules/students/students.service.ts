@@ -92,13 +92,19 @@ export class StudentsService {
     return this.repo.find({ where: { document: normalized } })
   }
 
+  findByDocumentAndSchool(cpf: string, schoolId: number): Promise<Student | null> {
+    const normalized = normalizeCpf(cpf)
+    return this.repo.findOne({ where: { document: normalized, school_id: schoolId } })
+  }
+
   async create(dto: CreateStudentDto, schoolId?: number) {
     const normalizedDoc = normalizeCpf(dto.document)
-    const where: any = { document: normalizedDoc }
-    if (schoolId) where.school_id = schoolId
-    const existing = await this.repo.findOne({ where })
+    const existing =
+      schoolId != null
+        ? await this.findByDocumentAndSchool(normalizedDoc, schoolId)
+        : await this.repo.findOne({ where: { document: normalizedDoc } })
     if (existing) {
-      throw new ConflictException('CPF já cadastrado')
+      throw new ConflictException('CPF já cadastrado nesta escola')
     }
     const hash = await bcrypt.hash(dto.password, SALT_ROUNDS)
     const { password: _, ...rest } = dto

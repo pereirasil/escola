@@ -12,6 +12,8 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [schoolsToChoose, setSchoolsToChoose] = useState([])
+  const [choosingLoading, setChoosingLoading] = useState(false)
   const [avatar, setAvatar] = useState(null)
   const avatarTimeout = useRef(null)
   const navigate = useNavigate()
@@ -19,11 +21,16 @@ export default function Login() {
 
   useEffect(() => {
     if (isAuthenticated()) {
-      const role = useAuthStore.getState().user?.role
+      const { user, logout } = useAuthStore.getState()
+      const role = user?.role
+      if (role === 'teacher' && user?.school_id == null) {
+        if (schoolsToChoose.length === 0) logout()
+        return
+      }
       const target = role === 'student' ? '/aluno' : role === 'teacher' ? '/professor' : '/dashboard'
       navigate(target, { replace: true })
     }
-  }, [navigate, isAuthenticated])
+  }, [navigate, isAuthenticated, schoolsToChoose.length])
 
   useEffect(() => {
     clearTimeout(avatarTimeout.current)
@@ -59,6 +66,11 @@ export default function Login() {
           }
         }
       }
+      if (data.requires_school_choice && data.schools?.length) {
+        login(data.user, data.access_token)
+        setSchoolsToChoose(data.schools)
+        return
+      }
       login(data.user, data.access_token)
       toast.success('Bem-vindo de volta!')
       const role = data.user.role
@@ -81,6 +93,23 @@ export default function Login() {
       setLoading(false)
     }
   }
+
+  const handleChooseSchool = async (schoolId) => {
+    setChoosingLoading(true)
+    try {
+      const data = await authService.chooseSchool(schoolId)
+      login(data.user, data.access_token)
+      toast.success('Bem-vindo de volta!')
+      navigate('/professor', { replace: true })
+    } catch (err) {
+      const msg = err.response?.data?.message
+      toast.error(msg || 'Erro ao selecionar escola.')
+    } finally {
+      setChoosingLoading(false)
+    }
+  }
+
+  const showSchoolPicker = schoolsToChoose.length > 0
 
   return (
     <>
@@ -147,6 +176,36 @@ export default function Login() {
 
       <div className="auth-login-side">
         <div className="auth-card">
+          {showSchoolPicker ? (
+            <>
+              <h2>Escolha a escola</h2>
+              <p className="auth-card-subtitle">Você possui cadastro em mais de uma escola. Selecione em qual deseja entrar.</p>
+              <div className="auth-form" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {schoolsToChoose.map((s) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    className="btn-primary"
+                    disabled={choosingLoading}
+                    onClick={() => handleChooseSchool(s.id)}
+                    style={{ textAlign: 'left', padding: '1rem 1.25rem' }}
+                  >
+                    {s.name}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={choosingLoading}
+                  onClick={() => { useAuthStore.getState().logout(); setSchoolsToChoose([]) }}
+                  style={{ marginTop: '0.5rem' }}
+                >
+                  Voltar
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
           <h2>Entrar</h2>
           <p className="auth-card-subtitle">Acesse sua conta para continuar</p>
           {avatar && (
@@ -250,6 +309,8 @@ export default function Login() {
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
+            </>
+          )}
         </div>
       </div>
     </div>
