@@ -48,14 +48,16 @@ export class StudentsController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('q') q?: string,
+    @Req() req?: { user: { role: string } },
   ) {
+    const isAdmin = req?.user?.role === 'admin'
     if (q !== undefined) {
-      return this.service.search(schoolId, q, +(limit || 20))
+      return this.service.search(schoolId, q, +(limit || 20), isAdmin)
     }
     if (page) {
-      return this.service.findAllPaginated(schoolId, +page, +(limit || 10))
+      return this.service.findAllPaginated(schoolId, +page, +(limit || 10), isAdmin)
     }
-    return this.service.findAll(schoolId)
+    return this.service.findAll(schoolId, isAdmin)
   }
 
   @Get('me')
@@ -338,13 +340,17 @@ export class StudentsController {
 
   @Get(':id')
   @UseGuards(AuthGuard('jwt'))
-  async findOne(@Param('id') id: string, @Req() req: { user: { id: number; role: string } }) {
+  async findOne(
+    @Param('id') id: string,
+    @Req() req: { user: { id: number; role: string; school_id?: number } },
+  ) {
     const numId = +id
     if (req.user.role === 'student' && numId !== req.user.id) {
       throw new ForbiddenException('Acesso negado')
     }
     await this.teacherScope.ensureStudentAccess(req.user, numId)
-    return this.service.findOne(numId)
+    const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
+    return this.service.findOne(numId, schoolId)
   }
 
   @Post()
@@ -359,7 +365,7 @@ export class StudentsController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateStudentDto,
-    @Req() req: { user: { id: number; role: string } },
+    @Req() req: { user: { id: number; role: string; school_id?: number } },
   ) {
     const numId = +id
     if (req.user.role === 'teacher') {
@@ -368,7 +374,8 @@ export class StudentsController {
     if (req.user.role === 'student' && numId !== req.user.id) {
       throw new ForbiddenException('Acesso negado')
     }
-    return this.service.update(numId, dto)
+    const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
+    return this.service.update(numId, dto, schoolId)
   }
 
   @Post(':id/photo')
@@ -394,14 +401,21 @@ export class StudentsController {
   async uploadPhoto(
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File,
+    @Req() req: { user: { role: string; school_id?: number } },
+    @SchoolId() schoolId: number | undefined,
   ) {
-    return this.service.updatePhoto(+id, file.filename)
+    const sid = req.user.role === 'admin' ? undefined : schoolId ?? req.user.school_id
+    return this.service.updatePhoto(+id, file.filename, sid)
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'school')
-  remove(@Param('id') id: string) {
-    return this.service.remove(+id)
+  remove(
+    @Param('id') id: string,
+    @Req() req: { user: { role: string } },
+    @SchoolId() schoolId: number | undefined,
+  ) {
+    return this.service.remove(+id, req.user.role === 'admin' ? undefined : schoolId)
   }
 }

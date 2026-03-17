@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcrypt'
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common'
+import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Brackets, Repository } from 'typeorm'
 import { Student } from './entities/student.entity'
@@ -22,16 +22,18 @@ export class StudentsService {
     private userRepo: Repository<User>,
   ) {}
 
-  findAll(schoolId?: number) {
-    const where = schoolId ? { school_id: schoolId } : {}
+  findAll(schoolId?: number, isAdmin = false) {
+    if (!isAdmin && schoolId == null) throw new ForbiddenException('Identificação da escola não encontrada')
+    const where = schoolId != null ? { school_id: schoolId } : {}
     return this.repo.find({ where, order: { name: 'ASC' } })
   }
 
-  search(schoolId: number | undefined, query = '', limit = 20) {
+  search(schoolId: number | undefined, query = '', limit = 20, isAdmin = false) {
+    if (!isAdmin && schoolId == null) throw new ForbiddenException('Identificação da escola não encontrada')
     const normalizedQuery = query.trim()
     const qb = this.repo.createQueryBuilder('student').orderBy('student.name', 'ASC').take(limit)
 
-    if (schoolId) {
+    if (schoolId != null) {
       qb.andWhere('student.school_id = :schoolId', { schoolId })
     }
 
@@ -50,8 +52,9 @@ export class StudentsService {
     return qb.getMany()
   }
 
-  async findAllPaginated(schoolId: number | undefined, page: number, limit: number) {
-    const where = schoolId ? { school_id: schoolId } : {}
+  async findAllPaginated(schoolId: number | undefined, page: number, limit: number, isAdmin = false) {
+    if (!isAdmin && schoolId == null) throw new ForbiddenException('Identificação da escola não encontrada')
+    const where = schoolId != null ? { school_id: schoolId } : {}
     const [data, total] = await this.repo.findAndCount({
       where,
       order: { name: 'ASC' },
@@ -61,8 +64,10 @@ export class StudentsService {
     return { data, page, limit, total, totalPages: Math.ceil(total / limit) }
   }
 
-  findOne(id: number) {
-    return this.repo.findOne({ where: { id } })
+  findOne(id: number, schoolId?: number) {
+    const where: { id: number; school_id?: number } = { id }
+    if (schoolId != null) where.school_id = schoolId
+    return this.repo.findOne({ where })
   }
 
   async getHeaderInfo(studentId: number): Promise<{ guardian_name: string | null; school_name: string | null }> {
@@ -111,19 +116,26 @@ export class StudentsService {
     return this.repo.save(this.repo.create({ ...rest, document: normalizedDoc, password_hash: hash, school_id: schoolId }))
   }
 
-  update(id: number, dto: UpdateStudentDto) {
+  async update(id: number, dto: UpdateStudentDto, schoolId?: number) {
+    const existing = await this.findOne(id, schoolId)
+    if (!existing) throw new NotFoundException('Aluno não encontrado')
     const data = { ...dto } as any
     if (data.document) data.document = normalizeCpf(data.document)
-    return this.repo.update(id, data as Partial<Student>).then(() => this.findOne(id))
+    await this.repo.update({ id, ...(schoolId != null && { school_id: schoolId }) }, data as Partial<Student>)
+    return this.findOne(id, schoolId)
   }
 
-  remove(id: number) {
-    return this.repo.delete(id)
+  async remove(id: number, schoolId?: number) {
+    const existing = await this.findOne(id, schoolId)
+    if (!existing) throw new NotFoundException('Aluno não encontrado')
+    return this.repo.delete({ id, ...(schoolId != null && { school_id: schoolId }) })
   }
 
-  async updatePhoto(id: number, filename: string) {
-    await this.repo.update(id, { photo: filename })
-    return this.findOne(id)
+  async updatePhoto(id: number, filename: string, schoolId?: number) {
+    const existing = await this.findOne(id, schoolId)
+    if (!existing) throw new NotFoundException('Aluno não encontrado')
+    await this.repo.update({ id, ...(schoolId != null && { school_id: schoolId }) }, { photo: filename })
+    return this.findOne(id, schoolId)
   }
 
   async updatePassword(studentId: number, currentPassword: string, newPassword: string) {

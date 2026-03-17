@@ -73,7 +73,7 @@ export class TeacherScopeService {
 
   async ensureStudentAccess(user: UserContext, studentId: number): Promise<void> {
     if (user.role !== 'teacher') return
-    const student = await this.studentsService.findOne(studentId)
+    const student = await this.studentsService.findOne(studentId, user.school_id)
     if (!student) {
       throw new ForbiddenException('Aluno não encontrado')
     }
