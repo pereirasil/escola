@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/useAuthStore'
+import { NotificationBell } from '../components/ui'
 
 export default function Header({ onToggleSidebar }) {
   const navigate = useNavigate()
@@ -19,6 +20,7 @@ export default function Header({ onToggleSidebar }) {
         <h1 className="header-title">Gestão Escolar</h1>
       </div>
       <div className="header-actions">
+        {user?.role === 'school' && <NotificationBell />}
         <span className="header-user">{user?.name || user?.email || 'Usuário'}</span>
         <button type="button" className="header-logout" onClick={handleLogout}>
           Sair

@@ -22,6 +22,20 @@ export class CommunicationController {
     return this.communicationService.findConversationsByStudent(req.user.id, req.user.school_id)
   }
 
+  @Get('students/me/conversations/unread-count')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  countUnreadStudent(@Req() req: { user: { id: number; school_id?: number } }) {
+    return this.communicationService.countUnreadByStudent(req.user.id, req.user.school_id).then((count) => ({ count }))
+  }
+
+  @Get('students/me/conversations/unread-count-by-type')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('student')
+  countUnreadStudentByType(@Req() req: { user: { id: number; school_id?: number } }) {
+    return this.communicationService.countUnreadByStudentByType(req.user.id, req.user.school_id)
+  }
+
   @Post('students/me/conversations')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('student')
@@ -42,7 +56,10 @@ export class CommunicationController {
     @Req() req: { user: { id: number } },
   ) {
     await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
-    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30))
+    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30), {
+      type: 'student',
+      id: req.user.id,
+    })
   }
 
   @Post('students/me/conversations/:id/messages')
@@ -106,7 +123,10 @@ export class CommunicationController {
     @Req() req: { user: { id: number } },
   ) {
     await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
-    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30))
+    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30), {
+      type: 'student',
+      id: req.user.id,
+    })
   }
 
   @Post('students/me/teacher-conversations/:id/messages')
@@ -137,6 +157,14 @@ export class CommunicationController {
     return this.communicationService.findConversationsBySchool(schoolId)
   }
 
+  @Get('school/conversations/unread-count')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('school')
+  countUnreadSchool(@Req() req: { user: { id: number; school_id?: number } }) {
+    const sid = req.user.school_id ?? req.user.id
+    return this.communicationService.countUnreadBySchool(sid, req.user.id).then((count) => ({ count }))
+  }
+
   @Post('school/conversations')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'school')
@@ -160,7 +188,8 @@ export class CommunicationController {
   ) {
     const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
     await this.communicationService.ensureConversationAccess(+id, undefined, schoolId)
-    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30))
+    const reader = req.user.role === 'school' ? { type: 'school' as const, id: req.user.id } : undefined
+    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30), reader)
   }
 
   @Post('school/conversations/:id/messages')
@@ -198,6 +227,13 @@ export class CommunicationController {
     return this.communicationService.findConversationsByTeacher(req.user.id, req.user.school_id)
   }
 
+  @Get('teacher/conversations/unread-count')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  countUnreadTeacher(@Req() req: { user: { id: number } }) {
+    return this.communicationService.countUnreadByTeacher(req.user.id).then((count) => ({ count }))
+  }
+
   @Post('teacher/conversations')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('teacher')
@@ -222,7 +258,10 @@ export class CommunicationController {
     @Req() req: { user: { id: number } },
   ) {
     await this.communicationService.ensureTeacherConversationAccess(+id, req.user.id)
-    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30))
+    return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30), {
+      type: 'teacher',
+      id: req.user.id,
+    })
   }
 
   @Post('teacher/conversations/:id/messages')

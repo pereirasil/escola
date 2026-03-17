@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { alunosService } from '../../services/alunos.service'
+import { communicationService } from '../../services/communication.service'
+import { useAuthStore } from '../../store/useAuthStore'
 
 export function NotificationBell() {
   const [count, setCount] = useState(0)
@@ -10,18 +12,39 @@ export function NotificationBell() {
   const navigate = useNavigate()
   const intervalRef = useRef(null)
   const wrapperRef = useRef(null)
+  const { user } = useAuthStore()
 
   const fetchCount = () => {
-    alunosService.contarNotificacoesNaoLidas()
-      .then((data) => setCount(data.count || 0))
-      .catch(() => {})
+    const role = user?.role
+    if (role === 'student') {
+      Promise.all([
+        alunosService.contarNotificacoesNaoLidas(),
+        communicationService.contarNaoLidasAluno(),
+      ])
+        .then(([notif, comm]) => setCount((notif?.count || 0) + (comm?.count || 0)))
+        .catch(() => {})
+    } else if (role === 'school') {
+      communicationService.contarNaoLidasEscola()
+        .then((data) => setCount(data?.count || 0))
+        .catch(() => {})
+    } else if (role === 'teacher') {
+      communicationService.contarNaoLidasProfessor()
+        .then((data) => setCount(data?.count || 0))
+        .catch(() => {})
+    }
   }
 
   useEffect(() => {
+    if (!user?.role) return
     fetchCount()
-    intervalRef.current = setInterval(fetchCount, 30000)
-    return () => clearInterval(intervalRef.current)
-  }, [])
+    intervalRef.current = setInterval(fetchCount, 15000)
+    const onConversationRead = () => fetchCount()
+    window.addEventListener('communication:conversation-read', onConversationRead)
+    return () => {
+      clearInterval(intervalRef.current)
+      window.removeEventListener('communication:conversation-read', onConversationRead)
+    }
+  }, [user?.role, user?.id])
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -42,22 +65,34 @@ export function NotificationBell() {
     }
     setOpen(true)
     setLoading(true)
-    alunosService.minhasNotificacoes()
-      .then((data) => setLista(data || []))
-      .catch(() => setLista([]))
-      .finally(() => setLoading(false))
-
-    if (count > 0) {
-      try {
-        await alunosService.marcarNotificacoesComoLidas()
-        setCount(0)
-      } catch {}
+    const role = user?.role
+    if (role === 'student') {
+      alunosService.minhasNotificacoes()
+        .then((data) => setLista(data || []))
+        .catch(() => setLista([]))
+        .finally(() => setLoading(false))
+      if (count > 0) {
+        try {
+          await alunosService.marcarNotificacoesComoLidas()
+          fetchCount()
+        } catch {}
+      }
+    } else {
+      setLista([])
+      setLoading(false)
     }
+  }
+
+  const getComunicacaoPath = () => {
+    const role = user?.role
+    if (role === 'school') return '/comunicacao'
+    if (role === 'teacher') return '/professor/comunicacao'
+    return '/aluno/comunicacao'
   }
 
   const handleNotificacaoClick = () => {
     setOpen(false)
-    navigate('/aluno/comunicacao')
+    navigate(getComunicacaoPath())
   }
 
   return (
@@ -93,7 +128,15 @@ export function NotificationBell() {
         <div className="notification-dropdown">
           <div className="notification-dropdown-header">Comunicação</div>
           <div className="notification-dropdown-body">
-            {loading ? (
+            {user?.role !== 'student' ? (
+              <div className="notification-dropdown-empty">
+                {count > 0 ? `${count} mensagem(ns) não lida(s).` : 'Nenhuma mensagem nova.'}
+                <br />
+                <button type="button" className="btn-primary" style={{ marginTop: '0.5rem' }} onClick={handleNotificacaoClick}>
+                  Ver Comunicação
+                </button>
+              </div>
+            ) : loading ? (
               <div className="notification-dropdown-empty">Carregando...</div>
             ) : lista.length === 0 ? (
               <div className="notification-dropdown-empty">Nenhum aviso.</div>
@@ -111,7 +154,7 @@ export function NotificationBell() {
               ))
             )}
           </div>
-          {lista.length > 0 && (
+          {(lista.length > 0 || (user?.role !== 'student' && count > 0)) && (
             <div className="notification-dropdown-footer">
               <button type="button" onClick={handleNotificacaoClick}>Ver todas</button>
             </div>

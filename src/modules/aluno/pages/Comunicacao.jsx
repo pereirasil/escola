@@ -34,6 +34,7 @@ export default function Comunicacao() {
   const [criando, setCriando] = useState(false)
   const [modalEncerradasSecretaria, setModalEncerradasSecretaria] = useState(false)
   const [modalEncerradasProfessor, setModalEncerradasProfessor] = useState(false)
+  const [tabCounts, setTabCounts] = useState({ aviso: 0, secretaria: 0, professor: 0 })
 
   const conversasSecretaria = conversas.filter((c) => c.conversation_type === 'school')
   const conversasSecretariaAbertas = conversasSecretaria.filter((c) => c.status === 'open')
@@ -41,13 +42,29 @@ export default function Comunicacao() {
   const conversasProfessorAbertas = conversasProfessor.filter((c) => c.status === 'open')
   const conversasProfessorEncerradas = conversasProfessor.filter((c) => c.status === 'closed')
 
+  const fetchTabCounts = () => {
+    Promise.all([
+      alunosService.contarNotificacoesNaoLidas(),
+      communicationService.contarNaoLidasAlunoPorTipo(),
+    ])
+      .then(([notif, conv]) => setTabCounts({
+        aviso: notif?.count ?? 0,
+        secretaria: conv?.school ?? 0,
+        professor: conv?.teacher ?? 0,
+      }))
+      .catch(() => {})
+  }
+
   const carregarAvisos = () => {
     setAvisoLoading(true)
     alunosService
       .minhasNotificacoes()
       .then(setAvisoLista)
       .catch(() => toast.error('Erro ao carregar avisos.'))
-      .finally(() => setAvisoLoading(false))
+      .finally(() => {
+        setAvisoLoading(false)
+        fetchTabCounts()
+      })
     alunosService.marcarNotificacoesComoLidas().catch(() => {})
   }
 
@@ -71,6 +88,17 @@ export default function Comunicacao() {
 
   useEffect(() => {
     carregarAvisos()
+    fetchTabCounts()
+  }, [])
+
+  useEffect(() => {
+    const onConversationRead = () => fetchTabCounts()
+    window.addEventListener('communication:conversation-read', onConversationRead)
+    const interval = setInterval(fetchTabCounts, 15000)
+    return () => {
+      window.removeEventListener('communication:conversation-read', onConversationRead)
+      clearInterval(interval)
+    }
   }, [])
 
   useEffect(() => {
@@ -163,6 +191,11 @@ export default function Comunicacao() {
             onClick={() => { setTab('aviso'); setSelectedConversation(null) }}
           >
             Avisos
+            {tabCounts.aviso > 0 && (
+              <span className="comunicacao-tab-badge" aria-label={`${tabCounts.aviso} não lidos`}>
+                {tabCounts.aviso > 99 ? '99+' : tabCounts.aviso}
+              </span>
+            )}
           </button>
           <button
             type="button"
@@ -172,6 +205,11 @@ export default function Comunicacao() {
             onClick={() => { setTab('secretaria'); setSelectedConversation(null) }}
           >
             Secretaria
+            {tabCounts.secretaria > 0 && (
+              <span className="comunicacao-tab-badge" aria-label={`${tabCounts.secretaria} não lidas`}>
+                {tabCounts.secretaria > 99 ? '99+' : tabCounts.secretaria}
+              </span>
+            )}
           </button>
           <button
             type="button"
@@ -181,6 +219,11 @@ export default function Comunicacao() {
             onClick={() => { setTab('professor'); setSelectedConversation(null) }}
           >
             Professor
+            {tabCounts.professor > 0 && (
+              <span className="comunicacao-tab-badge" aria-label={`${tabCounts.professor} não lidas`}>
+                {tabCounts.professor > 99 ? '99+' : tabCounts.professor}
+              </span>
+            )}
           </button>
         </nav>
 

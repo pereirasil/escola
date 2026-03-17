@@ -38,4 +38,11 @@ export const communicationService = {
     api.post(`/students/me/teacher-conversations/${id}/messages`, { message }).then((r) => r.data),
 
   getSocketUrl: () => (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, ''),
+
+  // Contagem de mensagens nao lidas (Comunicacao)
+  contarNaoLidasAluno: () => api.get('/students/me/conversations/unread-count').then((r) => r.data),
+  contarNaoLidasAlunoPorTipo: () =>
+    api.get('/students/me/conversations/unread-count-by-type').then((r) => r.data),
+  contarNaoLidasEscola: () => api.get('/school/conversations/unread-count').then((r) => r.data),
+  contarNaoLidasProfessor: () => api.get('/teacher/conversations/unread-count').then((r) => r.data),
 }

@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/useAuthStore'
 import { professoresService } from '../services/professores.service'
 import BottomNav from '../components/BottomNav'
 import NoIndex from '../components/NoIndex'
+import { NotificationBell } from '../components/ui'
 
 const professorBottomNavItems = [
   { key: 'inicio', to: '/professor', label: 'Início', icon: 'dashboard', end: true },
@@ -70,6 +71,7 @@ export default function ProfessorLayout() {
             <span className="aluno-header-user">{headerInfo.teacher_name || user?.name || 'Professor'}</span>
           </div>
           <div className="aluno-header-right">
+            <NotificationBell />
             <span className="aluno-logo-badge">{headerInfo.school_name || 'Gestão Escolar'}</span>
           </div>
         </header>

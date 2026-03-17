@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In, IsNull } from 'typeorm'
+import { Repository, In, IsNull, Not } from 'typeorm'
 import { Conversation } from './entities/conversation.entity'
 import { ConversationMessage } from './entities/conversation-message.entity'
+import { ConversationRead } from './entities/conversation-read.entity'
 import { Student } from '../students/entities/student.entity'
 import { Teacher } from '../teachers/entities/teacher.entity'
 import { CreateConversationDto } from './dto/create-conversation.dto'
@@ -16,6 +17,8 @@ export class CommunicationService {
     private convRepo: Repository<Conversation>,
     @InjectRepository(ConversationMessage)
     private msgRepo: Repository<ConversationMessage>,
+    @InjectRepository(ConversationRead)
+    private readRepo: Repository<ConversationRead>,
     @InjectRepository(Student)
     private studentRepo: Repository<Student>,
     @InjectRepository(Teacher)
@@ -203,7 +206,10 @@ export class CommunicationService {
     return conv
   }
 
-  async getMessages(conversationId: number, page = 1, limit = 30) {
+  async getMessages(conversationId: number, page = 1, limit = 30, reader?: { type: string; id: number }) {
+    if (reader) {
+      await this.markConversationAsRead(conversationId, reader.type, reader.id)
+    }
     const [data, total] = await this.msgRepo.findAndCount({
       where: { conversation_id: conversationId },
       order: { created_at: 'DESC' },
@@ -216,6 +222,25 @@ export class CommunicationService {
       limit,
       total,
       totalPages: Math.ceil(total / limit) || 1,
+    }
+  }
+
+  async markConversationAsRead(conversationId: number, readerType: string, readerId: number) {
+    const now = new Date().toISOString()
+    const existing = await this.readRepo.findOne({
+      where: { conversation_id: conversationId, reader_type: readerType, reader_id: readerId },
+    })
+    if (existing) {
+      await this.readRepo.update(existing.id, { last_read_at: now })
+    } else {
+      await this.readRepo.save(
+        this.readRepo.create({
+          conversation_id: conversationId,
+          reader_type: readerType,
+          reader_id: readerId,
+          last_read_at: now,
+        }),
+      )
     }
   }
 
@@ -280,5 +305,76 @@ export class CommunicationService {
       ...conv,
       student_name: student?.name ?? '-',
     }
+  }
+
+  async countUnreadByStudent(studentId: number, schoolId?: number): Promise<number> {
+    const convs = await this.convRepo.find({
+      where: { student_id: studentId, ...(schoolId != null && { school_id: schoolId }) },
+      select: ['id', 'last_message_at'],
+    })
+    return this._countUnreadByLastRead(convs, 'student', studentId)
+  }
+
+  async countUnreadByStudentByType(
+    studentId: number,
+    schoolId?: number,
+  ): Promise<{ school: number; teacher: number }> {
+    const where: any = { student_id: studentId }
+    if (schoolId != null) where.school_id = schoolId
+    const [schoolConvs, teacherConvs] = await Promise.all([
+      this.convRepo.find({
+        where: { ...where, teacher_id: IsNull() },
+        select: ['id', 'last_message_at'],
+      }),
+      this.convRepo.find({
+        where: { ...where, teacher_id: Not(IsNull()) },
+        select: ['id', 'last_message_at'],
+      }),
+    ])
+    const [school, teacher] = await Promise.all([
+      this._countUnreadByLastRead(schoolConvs, 'student', studentId),
+      this._countUnreadByLastRead(teacherConvs, 'student', studentId),
+    ])
+    return { school, teacher }
+  }
+
+  async countUnreadBySchool(schoolId: number, schoolUserId: number): Promise<number> {
+    const convs = await this.convRepo.find({
+      where: { school_id: schoolId, teacher_id: IsNull() },
+      select: ['id', 'last_message_at'],
+    })
+    return this._countUnreadByLastRead(convs, 'school', schoolUserId)
+  }
+
+  async countUnreadByTeacher(teacherId: number): Promise<number> {
+    const convs = await this.convRepo.find({
+      where: { teacher_id: teacherId },
+      select: ['id', 'last_message_at'],
+    })
+    return this._countUnreadByLastRead(convs, 'teacher', teacherId)
+  }
+
+  private async _countUnreadByLastRead(
+    convs: { id: number; last_message_at: string | null }[],
+    readerType: string,
+    readerId: number,
+  ): Promise<number> {
+    if (convs.length === 0) return 0
+    const ids = convs.map((c) => c.id)
+    const reads = await this.readRepo.find({
+      where: { conversation_id: In(ids), reader_type: readerType, reader_id: readerId },
+      select: ['conversation_id', 'last_read_at'],
+    })
+    const readByConv = new Map(reads.map((r) => [r.conversation_id, r.last_read_at]))
+    let count = 0
+    for (const c of convs) {
+      const lastRead = readByConv.get(c.id)
+      const lastMsgAt = c.last_message_at ?? ''
+      if (!lastMsgAt) continue
+      if (!lastRead || lastMsgAt > lastRead) {
+        count++
+      }
+    }
+    return count
   }
 }

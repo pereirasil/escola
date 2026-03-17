@@ -54,6 +54,7 @@ export function ChatView({
           setMessages((prev) => [...newMessages, ...prev])
         } else {
           setMessages(newMessages)
+          if (pageNum === 1) window.dispatchEvent(new CustomEvent('communication:conversation-read'))
         }
         setHasMore(res.totalPages > pageNum)
       } catch {

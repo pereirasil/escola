@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { Conversation } from './entities/conversation.entity'
 import { ConversationMessage } from './entities/conversation-message.entity'
+import { ConversationRead } from './entities/conversation-read.entity'
 import { Student } from '../students/entities/student.entity'
 import { Teacher } from '../teachers/entities/teacher.entity'
 import { ClassesModule } from '../classes/classes.module'
@@ -11,7 +12,7 @@ import { ChatGateway } from './gateways/chat.gateway'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Conversation, ConversationMessage, Student, Teacher]),
+    TypeOrmModule.forFeature([Conversation, ConversationMessage, ConversationRead, Student, Teacher]),
     ClassesModule,
   ],
   controllers: [CommunicationController],

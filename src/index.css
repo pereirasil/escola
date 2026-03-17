@@ -725,6 +725,7 @@ body {
 }
 
 .comunicacao-tab {
+  position: relative;
   padding: 0.75rem 1.25rem;
   background: none;
   border: none;
@@ -733,6 +734,23 @@ body {
   font-weight: 500;
   color: #6b7280;
   cursor: pointer;
+}
+
+.comunicacao-tab-badge {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  border-radius: 9999px;
+  padding: 0 4px;
+  pointer-events: none;
 }
 
 .comunicacao-tab:hover {
