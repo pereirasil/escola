@@ -90,6 +90,29 @@ export class BoletoService {
     )
   }
 
+  /** Mercado Pago: expiration date cannot exceed 29 days from creation. Usar 28 dias max para margem. */
+  private clampExpirationDate(dueDateStr: string | null): string {
+    const raw = dueDateStr || new Date().toISOString().slice(0, 10)
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const maxDate = new Date(today)
+    maxDate.setDate(maxDate.getDate() + 28)
+    let due: Date
+    if (raw.length <= 10) {
+      const [y, m, d] = raw.split('-').map(Number)
+      due = new Date(y, (m ?? 1) - 1, d ?? 1)
+    } else {
+      due = new Date(raw)
+    }
+    if (Number.isNaN(due.getTime())) due = today
+    if (due < today) due = today
+    if (due > maxDate) due = maxDate
+    const y = due.getFullYear()
+    const m = String(due.getMonth() + 1).padStart(2, '0')
+    const d = String(due.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}T23:59:59.000-03:00`
+  }
+
   private async generateViaMercadoPago(
     accessToken: string,
     paymentId: number,
@@ -100,8 +123,7 @@ export class BoletoService {
     address?: PayerAddress | null,
     schoolId?: number,
   ): Promise<BoletoResult> {
-    const dueRaw = dueDate || new Date().toISOString().slice(0, 10)
-    const due = dueRaw.length <= 10 ? `${dueRaw}T23:59:59.000-03:00` : dueRaw
+    const due = this.clampExpirationDate(dueDate)
     const nameParts = (studentName || 'Aluno').trim().split(/\s+/, 2)
     const firstName = nameParts[0] || 'Aluno'
     const lastName = nameParts[1] || `#${paymentId}`

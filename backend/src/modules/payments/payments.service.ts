@@ -420,6 +420,9 @@ export class PaymentsService {
   async generateBoletoById(id: number, user?: { id: number; role: string }) {
     const payment = await this.findOne(id, user)
     if (!payment) throw new BadRequestException('Pagamento não encontrado')
+    if (payment.status === 'paid') {
+      throw new BadRequestException('Pagamento já foi pago. Não é possível gerar novo boleto.')
+    }
 
     const schoolId = payment.school_id
     if (schoolId == null) throw new BadRequestException('Pagamento sem escola vinculada.')
@@ -465,7 +468,21 @@ export class PaymentsService {
       )
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
-      throw new BadRequestException(`Erro ao gerar boleto: ${msg}`)
+      let friendlyMsg = `Erro ao gerar boleto: ${msg}`
+      if (typeof msg === 'string' && (msg.includes('expiration') || msg.includes('7522'))) {
+        friendlyMsg = 'A data de vencimento do boleto não pode ser superior a 29 dias. Tente novamente.'
+      } else {
+        try {
+          const jsonStr = msg.replace(/^Mercado Pago:\s*/, '')
+          const parsed = typeof msg === 'string' && msg.includes('Mercado Pago:') ? JSON.parse(jsonStr) : null
+          if (parsed?.message) {
+            friendlyMsg = parsed.message
+          }
+        } catch {
+          // mantém friendlyMsg original
+        }
+      }
+      throw new BadRequestException(friendlyMsg)
     }
 
     const invoiceData = {
