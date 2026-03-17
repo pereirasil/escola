@@ -39,7 +39,7 @@ export default function Sidebar({ open, onClose }) {
           <div className="sidebar-section-title">Gestão</div>
           <NavLink to="/financeiro" className={linkClass} onClick={handleClick}>Financeiro</NavLink>
           <NavLink to="/reunioes" className={linkClass} onClick={handleClick}>Reuniões</NavLink>
-          <NavLink to="/datas-comemorativas" className={linkClass} onClick={handleClick}>Datas Comemorativas</NavLink>
+          <NavLink to="/datas-comemorativas" className={linkClass} onClick={handleClick}>Criar Aviso</NavLink>
           <NavLink to="/comunicacao" className={linkClass} onClick={handleClick}>Comunicação</NavLink>
         </nav>
       </aside>

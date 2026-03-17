@@ -161,7 +161,7 @@ export default function Funcionalidades() {
               <h3>Reuniões e Eventos</h3>
               <p>
                 Agende reuniões com responsáveis, registre pautas e
-                gerencie o calendário escolar com datas comemorativas
+                gerencie o calendário escolar com avisos
                 e eventos importantes da instituição.
               </p>
             </article>

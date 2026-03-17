@@ -94,7 +94,7 @@ export class NotificationsService {
       return this.notificationRepo.create({
         student_id: studentId,
         title: event.title,
-        message: event.description || `Data comemorativa: ${event.title} em ${formattedDate}.`,
+        message: event.description || `Aviso: ${event.title} em ${formattedDate}.`,
         type: 'calendar_event',
         reference_id: event.id,
       })
@@ -142,7 +142,7 @@ export class NotificationsService {
         this.notificationRepo.create({
           student_id: s.id,
           title: event.title,
-          message: event.description || `Data comemorativa: ${event.title} em ${formattedDate}.`,
+          message: event.description || `Aviso: ${event.title} em ${formattedDate}.`,
           type: 'calendar_event',
           reference_id: event.id,
           school_id: schoolId,

@@ -119,7 +119,7 @@ export default function LandingPage() {
             <p>
               Montagem de turmas, definição de grade horária, atribuição de
               professores por disciplina e gestão completa do calendário
-              escolar com datas comemorativas.
+              escolar com avisos.
             </p>
           </article>
         </div>

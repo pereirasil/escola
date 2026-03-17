@@ -28,7 +28,7 @@ export default function DatasImportantes() {
     <div className="page">
       <Card title="Datas Importantes">
         {eventos.length === 0 ? (
-          <div className="empty-state">Nenhuma data comemorativa para a sua série.</div>
+          <div className="empty-state">Nenhum aviso para a sua série.</div>
         ) : (
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {eventos.map((ev) => (

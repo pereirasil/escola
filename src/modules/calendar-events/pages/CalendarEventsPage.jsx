@@ -195,7 +195,7 @@ export default function CalendarEventsPage() {
 
   return (
     <div className="page">
-      <PageHeader title="Datas Comemorativas" description="Gerencie as datas comemorativas do calendário escolar.">
+      <PageHeader title="Criar Aviso" description="Gerencie os avisos do calendário escolar.">
         <button type="button" className="btn-primary" onClick={() => setCreateModalOpen(true)}>
           + Adicionar Evento
         </button>
@@ -234,7 +234,7 @@ export default function CalendarEventsPage() {
         />
       </Card>
 
-      <FormModal open={createModalOpen} title="Nova Data Comemorativa" onClose={() => setCreateModalOpen(false)}>
+      <FormModal open={createModalOpen} title="Criar Aviso" onClose={() => setCreateModalOpen(false)}>
         <CalendarEventForm gradesDisponiveis={gradesDisponiveis} onSuccess={handleCreateSuccess} />
       </FormModal>
 
