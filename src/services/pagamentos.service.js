@@ -10,4 +10,6 @@ export const pagamentosService = {
   gerarPix: (id) => api.post(`/payments/${id}/generate-pix`),
   buscarBoletoPdf: (id) => api.get(`/payments/${id}/boleto-pdf`, { responseType: 'blob' }),
   excluir: (id) => api.delete(`/payments/${id}`),
+  getMercadoPagoConnectUrl: () => api.get('/payments/mercadopago/connect'),
+  getMercadoPagoStatus: () => api.get('/payments/mercadopago/status'),
 }

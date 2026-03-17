@@ -8,6 +8,7 @@ import { UpdatePaymentDto } from './dto/update-payment.dto'
 import { BoletoService } from './services/boleto.service'
 import { MailQueueService } from '../mail/mail-queue.service'
 import { StudentsService } from '../students/students.service'
+import { UsersService } from '../users/users.service'
 
 @Injectable()
 export class PaymentsService {
@@ -19,7 +20,12 @@ export class PaymentsService {
     private boletoService: BoletoService,
     private mailQueue: MailQueueService,
     private studentsService: StudentsService,
+    private usersService: UsersService,
   ) {}
+
+  async hasMercadoPagoConnected(schoolUserId: number): Promise<boolean> {
+    return this.usersService.hasMercadoPagoConnected(schoolUserId)
+  }
 
   async findAllByStudentId(studentId: number) {
     const qb = this.repo
@@ -99,6 +105,14 @@ export class PaymentsService {
     lateFeePercentage: number | null,
     schoolId?: number,
   ) {
+    if (schoolId == null) return null
+
+    const connected = await this.hasMercadoPagoConnected(schoolId)
+    if (!connected) return null
+
+    const accessToken = await this.usersService.getSchoolAccessToken(schoolId)
+    const student = await this.studentsService.findOne(studentId)
+
     const entity = this.repo.create({
       student_id: studentId,
       amount,
@@ -110,30 +124,85 @@ export class PaymentsService {
     })
     const payment = await this.repo.save(entity)
 
-    const student = await this.studentsService.findOne(studentId)
-    const boleto = await this.boletoService.generateAndSend(payment, student, schoolId)
+    const address = student
+      ? {
+          zip_code: student.cep,
+          street_name: student.street,
+          street_number: student.number,
+          neighborhood: student.neighborhood,
+          city: student.city,
+          federal_unit: student.state,
+        }
+      : null
+
+    const boleto = await this.boletoService.generate(
+      accessToken,
+      payment.id,
+      amount,
+      dueDate,
+      student?.name || 'Aluno',
+      student?.email || null,
+      address,
+      schoolId,
+    )
 
     const invoiceData: DeepPartial<Invoice> = {
       school_id: schoolId,
       payment_id: payment.id,
       barcode: boleto.barcode,
       linha_digitavel: boleto.linha_digitavel,
+      boleto_url: boleto.bankSlipUrl,
+      provider_id: boleto.provider_id,
       status: 'pending',
     }
     const invoice = this.invoiceRepo.create(invoiceData)
     await this.invoiceRepo.save(invoice)
+
+    if (student?.email) {
+      const amountFormatted = Number(amount).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+      this.mailQueue
+        .add({
+          to: student.email,
+          subject: 'Nova mensalidade gerada',
+          template: 'payment-created',
+          data: {
+            studentName: student.name || 'Aluno',
+            amount: amountFormatted,
+            dueDate,
+            boletoUrl: boleto.bankSlipUrl || undefined,
+          },
+          schoolId,
+        })
+        .catch((err) => console.error('[PaymentsService] Erro ao enfileirar email:', err))
+    }
 
     return this.findOne(payment.id)
   }
 
   async create(dto: CreatePaymentDto, schoolId?: number) {
     const student = await this.studentsService.findOne(dto.student_id)
+    const effectiveSchoolId = schoolId ?? student?.school_id
+    if (effectiveSchoolId == null) {
+      throw new BadRequestException('Não foi possível identificar a escola do pagamento.')
+    }
+
+    const connected = await this.hasMercadoPagoConnected(effectiveSchoolId)
+    if (!connected) {
+      throw new BadRequestException(
+        'Conecte o Mercado Pago antes de criar pagamentos. Acesse Financeiro e clique em "Conectar Mercado Pago".',
+      )
+    }
+
+    const accessToken = await this.usersService.getSchoolAccessToken(effectiveSchoolId)
     const lateFeePct = student?.late_fee_percentage != null ? Number(student.late_fee_percentage) : undefined
 
     const payment = await this.repo.save(
       this.repo.create({
         ...dto,
-        school_id: schoolId,
+        school_id: effectiveSchoolId,
         late_fee_percentage: lateFeePct,
         late_fee_applied: false,
       }),
@@ -151,16 +220,18 @@ export class PaymentsService {
         }
       : null
     const boleto = await this.boletoService.generate(
+      accessToken,
       payment.id,
       dto.amount,
       dto.due_date || null,
       student?.name || 'Aluno',
       student?.email || null,
       address,
+      effectiveSchoolId,
     )
 
     const invoice = this.invoiceRepo.create({
-      school_id: schoolId,
+      school_id: effectiveSchoolId,
       payment_id: payment.id,
       barcode: boleto.barcode,
       linha_digitavel: boleto.linha_digitavel,
@@ -187,7 +258,7 @@ export class PaymentsService {
             dueDate,
             boletoUrl: boleto.bankSlipUrl || undefined,
           },
-          schoolId,
+          schoolId: effectiveSchoolId,
         })
         .catch((err) => console.error('[PaymentsService] Erro ao enfileirar email:', err))
     }
@@ -257,6 +328,13 @@ export class PaymentsService {
     const payment = await this.findOne(id)
     if (!payment) throw new BadRequestException('Pagamento não encontrado')
 
+    const schoolId = payment.school_id
+    if (schoolId == null) throw new BadRequestException('Pagamento sem escola vinculada.')
+    const connected = await this.hasMercadoPagoConnected(schoolId)
+    if (!connected) {
+      throw new BadRequestException('Escola não possui Mercado Pago conectado.')
+    }
+
     const student = payment.student
     const emailTo = student?.email
     if (!emailTo) throw new BadRequestException('Aluno sem e-mail cadastrado')
@@ -284,17 +362,71 @@ export class PaymentsService {
             dueDate,
             boletoUrl: invoice.boleto_url,
           },
-          schoolId: payment.school_id,
+          schoolId,
         })
         .catch((err) => console.error('[PaymentsService] Erro ao enfileirar email:', err))
     } else {
-      await this.boletoService.generateAndSend(payment, student, payment.school_id)
+      const accessToken = await this.usersService.getSchoolAccessToken(schoolId)
+      const address = student
+        ? {
+            zip_code: student.cep,
+            street_name: student.street,
+            street_number: student.number,
+            neighborhood: student.neighborhood,
+            city: student.city,
+            federal_unit: student.state,
+          }
+        : null
+      const boleto = await this.boletoService.generate(
+        accessToken,
+        payment.id,
+        amount,
+        dueDate,
+        studentName,
+        student?.email || null,
+        address,
+        schoolId,
+      )
+      await this.invoiceRepo.update(
+        { payment_id: id },
+        {
+          barcode: boleto.barcode,
+          linha_digitavel: boleto.linha_digitavel,
+          boleto_url: boleto.bankSlipUrl,
+          provider_id: boleto.provider_id,
+        },
+      )
+      const amountFormatted = Number(amount).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+      this.mailQueue
+        .add({
+          to: emailTo,
+          subject: 'Nova mensalidade gerada',
+          template: 'payment-created',
+          data: {
+            studentName,
+            amount: amountFormatted,
+            dueDate,
+            boletoUrl: boleto.bankSlipUrl || undefined,
+          },
+          schoolId,
+        })
+        .catch((err) => console.error('[PaymentsService] Erro ao enfileirar email:', err))
     }
   }
 
   async generateBoletoById(id: number, user?: { id: number; role: string }) {
     const payment = await this.findOne(id, user)
     if (!payment) throw new BadRequestException('Pagamento não encontrado')
+
+    const schoolId = payment.school_id
+    if (schoolId == null) throw new BadRequestException('Pagamento sem escola vinculada.')
+    const connected = await this.hasMercadoPagoConnected(schoolId)
+    if (!connected) {
+      throw new BadRequestException('Conecte o Mercado Pago antes de gerar boletos.')
+    }
 
     const student = payment.student
     const amount = Number(payment.amount)
@@ -305,7 +437,7 @@ export class PaymentsService {
     const existingInvoice = await this.invoiceRepo.findOne({ where: { payment_id: id } })
 
     if (existingInvoice?.boleto_url) {
-      return this.findOne(id)
+      return this.findOne(id, user)
     }
 
     const address = student
@@ -318,15 +450,18 @@ export class PaymentsService {
           federal_unit: student.state,
         }
       : null
+    const accessToken = await this.usersService.getSchoolAccessToken(schoolId)
     let boleto
     try {
       boleto = await this.boletoService.generate(
+        accessToken,
         payment.id,
         amount,
         dueDate,
         studentName,
         studentEmail,
         address,
+        schoolId,
       )
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -364,16 +499,26 @@ export class PaymentsService {
     if (!payment) throw new BadRequestException('Pagamento não encontrado')
     if (payment.status === 'paid') throw new BadRequestException('Pagamento já foi pago.')
 
+    const schoolId = payment.school_id
+    if (schoolId == null) throw new BadRequestException('Pagamento sem escola vinculada.')
+    const connected = await this.hasMercadoPagoConnected(schoolId)
+    if (!connected) {
+      throw new BadRequestException('Conecte o Mercado Pago antes de gerar PIX.')
+    }
+
+    const accessToken = await this.usersService.getSchoolAccessToken(schoolId)
     const student = payment.student
     const amount = Number(payment.amount)
     const studentName = student?.name || 'Aluno'
     const studentEmail = student?.email || null
 
     const result = await this.boletoService.generatePix(
+      accessToken,
       payment.id,
       amount,
       studentName,
       studentEmail,
+      schoolId,
     )
 
     const existingInvoice = await this.invoiceRepo.findOne({ where: { payment_id: id } })

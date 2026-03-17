@@ -50,7 +50,9 @@ export class AuthService {
     })
     let pix: { qr_code: string; qr_code_text: string } | null = null
     try {
+      const platformToken = this.boletoService.getPlatformToken()
       const result = await this.boletoService.generatePix(
+        platformToken,
         user.id,
         TAXA_CADASTRO,
         dto.name,

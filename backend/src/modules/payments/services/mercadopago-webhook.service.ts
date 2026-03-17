@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Invoice } from '../entities/invoice.entity'
 import { Payment } from '../entities/payment.entity'
+import { UsersService } from '../../users/users.service'
 
 @Injectable()
 export class MercadoPagoWebhookService {
@@ -11,16 +12,26 @@ export class MercadoPagoWebhookService {
     private invoiceRepo: Repository<Invoice>,
     @InjectRepository(Payment)
     private paymentRepo: Repository<Payment>,
+    private usersService: UsersService,
   ) {}
 
-  private getAccessToken(): string {
+  private getPlatformToken(): string {
     const token = (process.env.MERCADOPAGO_ACCESS_TOKEN ?? '').trim()
     if (!token) return ''
     return token
   }
 
-  async fetchMpPaymentStatus(mpPaymentId: string): Promise<string | null> {
-    const accessToken = this.getAccessToken()
+  async fetchMpPaymentStatus(mpPaymentId: string, schoolId?: number): Promise<string | null> {
+    let accessToken: string
+    if (schoolId != null) {
+      try {
+        accessToken = await this.usersService.getSchoolAccessToken(schoolId)
+      } catch {
+        accessToken = this.getPlatformToken()
+      }
+    } else {
+      accessToken = this.getPlatformToken()
+    }
     if (!accessToken) return null
 
     const res = await fetch(`https://api.mercadopago.com/v1/payments/${mpPaymentId}`, {
@@ -33,9 +44,6 @@ export class MercadoPagoWebhookService {
   }
 
   async markAsPaidIfApproved(mpPaymentId: string): Promise<boolean> {
-    const status = await this.fetchMpPaymentStatus(mpPaymentId)
-    if (status !== 'approved') return false
-
     const invoice = await this.invoiceRepo.findOne({
       where: [
         { provider_id: mpPaymentId },
@@ -43,6 +51,12 @@ export class MercadoPagoWebhookService {
       ],
     })
     if (!invoice) return false
+
+    const payment = await this.paymentRepo.findOne({ where: { id: invoice.payment_id } })
+    const schoolId = payment?.school_id
+
+    const status = await this.fetchMpPaymentStatus(mpPaymentId, schoolId)
+    if (status !== 'approved') return false
 
     await this.paymentRepo.update(
       { id: invoice.payment_id },

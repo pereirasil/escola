@@ -26,4 +26,12 @@ export class User extends BaseEntity {
 
   @Column({ nullable: true })
   phone: string
+
+  /** Token OAuth do Mercado Pago (conta conectada pela escola). Nunca expor no frontend. */
+  @Column({ type: 'text', nullable: true })
+  mercadopago_access_token: string | null
+
+  /** user_id retornado pelo Mercado Pago no OAuth. */
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  mercadopago_user_id: string | null
 }

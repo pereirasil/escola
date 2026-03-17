@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Card, PageHeader, DataTable, FormModal, FormInput, SelectField, Spinner, ConfirmModal } from '../../../components/ui';
 import { pagamentosService } from '../../../services/pagamentos.service';
 import { alunosService } from '../../../services/alunos.service';
-import { bancoService } from '../../../services/banco.service';
 import PagamentoForm from '../components/PagamentoForm';
-import BancoForm from '../components/BancoForm';
 import toast from 'react-hot-toast';
+import { useAuthStore } from '../../../store/useAuthStore';
 
 const STATUS_OPTIONS = [
   { value: 'pending', label: 'Pendente' },
@@ -15,39 +14,36 @@ const STATUS_OPTIONS = [
 ];
 
 export default function Financeiro() {
+  const { user } = useAuthStore();
   const [pagamentos, setPagamentos] = useState([]);
   const [alunos, setAlunos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalCriar, setModalCriar] = useState(false);
   const [modalStatus, setModalStatus] = useState(null);
-  const [modalBanco, setModalBanco] = useState(false);
-  const [modalBancoCadastrado, setModalBancoCadastrado] = useState(false);
-  const [contasBanco, setContasBanco] = useState([]);
-  const [contaEditando, setContaEditando] = useState(null);
-  const [contaExcluir, setContaExcluir] = useState(null);
   const [pagamentoExcluir, setPagamentoExcluir] = useState(null);
   const [statusForm, setStatusForm] = useState('pending');
   const [enviandoBoletoId, setEnviandoBoletoId] = useState(null);
   const [gerandoBoletoId, setGerandoBoletoId] = useState(null);
   const [filtroStatus, setFiltroStatus] = useState('all');
   const [pesquisa, setPesquisa] = useState('');
+  const [mpConnected, setMpConnected] = useState(false);
+  const [mpConnecting, setMpConnecting] = useState(false);
+
+  const isSchool = user?.role === 'school';
 
   const load = async () => {
     setLoading(true);
     try {
-      const [resPay, resAlunos, resBanco] = await Promise.all([
+      const [resPay, resAlunos] = await Promise.all([
         pagamentosService.listar().catch((err) => {
           toast.error('Erro ao carregar pagamentos.');
           return { data: [] };
         }),
         alunosService.listar(),
-        bancoService.listar().catch(() => ({ data: [] })),
       ]);
       setPagamentos(Array.isArray(resPay?.data) ? resPay.data : []);
       const alunosList = resAlunos?.data ?? (Array.isArray(resAlunos) ? resAlunos : []);
       setAlunos(Array.isArray(alunosList) ? alunosList : []);
-      const listaBanco = resBanco?.data ?? resBanco;
-      setContasBanco(Array.isArray(listaBanco) ? listaBanco : []);
     } catch (error) {
       toast.error('Erro ao carregar dados.');
       setPagamentos([]);
@@ -57,23 +53,20 @@ export default function Financeiro() {
     }
   };
 
-  const loadBancos = async () => {
+  const loadMpStatus = async () => {
+    if (!isSchool) return;
     try {
-      const res = await bancoService.listar();
-      const lista = res?.data ?? res;
-      setContasBanco(Array.isArray(lista) ? lista : []);
-    } catch (err) {
-      setContasBanco([]);
+      const res = await pagamentosService.getMercadoPagoStatus();
+      setMpConnected(res?.data?.connected ?? false);
+    } catch {
+      setMpConnected(false);
     }
   };
 
   useEffect(() => {
     load();
+    loadMpStatus();
   }, []);
-
-  useEffect(() => {
-    if (modalBancoCadastrado) loadBancos();
-  }, [modalBancoCadastrado]);
 
   useEffect(() => {
     if (modalCriar) {
@@ -91,17 +84,37 @@ export default function Financeiro() {
     load();
   };
 
-  const handleExcluirBanco = async () => {
-    if (!contaExcluir) return;
+  const handleConectarMercadoPago = async () => {
+    if (mpConnecting || !isSchool) return;
+    setMpConnecting(true);
     try {
-      await bancoService.excluir(contaExcluir.id);
-      toast.success('Conta excluída.');
-      setContaExcluir(null);
-      loadBancos();
+      const res = await pagamentosService.getMercadoPagoConnectUrl();
+      const url = res?.data?.url;
+      if (url) {
+        window.location.href = url;
+      } else {
+        toast.error('Erro ao obter URL de conexão.');
+        setMpConnecting(false);
+      }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Erro ao excluir conta.');
+      toast.error(error.response?.data?.message || 'Erro ao conectar Mercado Pago.');
+      setMpConnecting(false);
     }
   };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const mp = params.get('mercadopago');
+    if (mp === 'connected') {
+      toast.success('Mercado Pago conectado com sucesso.');
+      setMpConnected(true);
+      window.history.replaceState({}, '', window.location.pathname);
+    } else if (mp === 'error') {
+      const reason = params.get('reason') || 'Erro ao conectar';
+      toast.error(`Falha ao conectar Mercado Pago: ${reason}`);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const handleExcluirPagamento = async () => {
     if (!pagamentoExcluir) return;
@@ -238,17 +251,32 @@ export default function Financeiro() {
         description="Boletos, mensalidades e controle de pagamentos."
       >
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button type="button" className="btn-secondary" onClick={() => setModalBancoCadastrado(true)}>
-            Banco cadastrado
-          </button>
-          <button type="button" className="btn-secondary" onClick={() => { setContaEditando(null); setModalBanco(true); }}>
-            Banco
-          </button>
-          <button type="button" className="btn-primary" onClick={() => setModalCriar(true)}>
+          {isSchool && (
+            <button
+              type="button"
+              className={mpConnected ? 'btn-secondary' : 'btn-primary'}
+              onClick={handleConectarMercadoPago}
+              disabled={mpConnecting}
+            >
+              {mpConnecting ? 'Redirecionando...' : mpConnected ? 'Reconectar Mercado Pago' : 'Conectar Mercado Pago'}
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={() => setModalCriar(true)}
+            disabled={isSchool && !mpConnected}
+          >
             + Criar pagamento
           </button>
         </div>
       </PageHeader>
+
+      {isSchool && !mpConnected && (
+        <div style={{ padding: '1rem', marginBottom: '1rem', background: '#fef3c7', border: '1px solid #f59e0b', borderRadius: '8px', color: '#92400e' }}>
+          Conecte sua conta do Mercado Pago para criar pagamentos e receber boletos/PIX. Clique em &quot;Conectar Mercado Pago&quot; acima.
+        </div>
+      )}
 
       <Card title="Pagamentos">
         {!loading && (
@@ -382,66 +410,6 @@ export default function Financeiro() {
       >
         <PagamentoForm alunos={alunos} onSuccess={handleCriarSuccess} />
       </FormModal>
-
-      <FormModal
-        open={modalBancoCadastrado}
-        title="Banco cadastrado"
-        onClose={() => setModalBancoCadastrado(false)}
-        size="lg"
-      >
-        {contasBanco.length === 0 ? (
-          <div style={{ padding: '1rem 0', textAlign: 'center' }}>
-            <p style={{ color: '#64748b', marginBottom: '1rem' }}>Nenhum banco cadastrado.</p>
-            <button type="button" className="btn-primary" onClick={() => { setModalBancoCadastrado(false); setContaEditando(null); setModalBanco(true); }}>
-              Cadastrar banco
-            </button>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {contasBanco.map((c) => (
-              <div key={c.id} style={{ padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem 1.5rem', marginBottom: '1rem' }}>
-                  <div><strong style={{ color: '#64748b', fontSize: '0.75rem' }}>Banco</strong><p style={{ margin: '0.25rem 0 0' }}>{c.bank_name || c.bank_code || '-'}</p></div>
-                  <div><strong style={{ color: '#64748b', fontSize: '0.75rem' }}>Código</strong><p style={{ margin: '0.25rem 0 0' }}>{c.bank_code || '-'}</p></div>
-                  <div><strong style={{ color: '#64748b', fontSize: '0.75rem' }}>Agência</strong><p style={{ margin: '0.25rem 0 0' }}>{c.agency || '-'}{c.agency_digit ? `-${c.agency_digit}` : ''}</p></div>
-                  <div><strong style={{ color: '#64748b', fontSize: '0.75rem' }}>Conta</strong><p style={{ margin: '0.25rem 0 0' }}>{c.account || '-'}{c.account_digit ? `-${c.account_digit}` : ''}</p></div>
-                  <div><strong style={{ color: '#64748b', fontSize: '0.75rem' }}>Tipo</strong><p style={{ margin: '0.25rem 0 0' }}>{c.account_type === 'poupanca' ? 'Poupança' : 'Conta Corrente'}</p></div>
-                  <div><strong style={{ color: '#64748b', fontSize: '0.75rem' }}>Titular</strong><p style={{ margin: '0.25rem 0 0' }}>{c.beneficiary_name || '-'}</p></div>
-                  <div><strong style={{ color: '#64748b', fontSize: '0.75rem' }}>CPF/CNPJ</strong><p style={{ margin: '0.25rem 0 0' }}>{c.document || '-'}</p></div>
-                  <div><strong style={{ color: '#64748b', fontSize: '0.75rem' }}>Chave PIX</strong><p style={{ margin: '0.25rem 0 0' }}>{c.pix_key || '-'}</p></div>
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button type="button" className="btn-secondary" style={{ fontSize: '0.85rem' }} onClick={() => { setModalBancoCadastrado(false); setContaEditando(c); setModalBanco(true); }}>
-                    Editar
-                  </button>
-                  <button type="button" className="btn-danger" style={{ fontSize: '0.85rem' }} onClick={() => setContaExcluir(c)}>
-                    Excluir
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </FormModal>
-
-      <FormModal
-        open={modalBanco}
-        title={contaEditando ? 'Editar dados bancários' : 'Cadastrar dados bancários'}
-        onClose={() => { setModalBanco(false); setContaEditando(null); }}
-        size="lg"
-      >
-        <BancoForm conta={contaEditando} onSuccess={() => { setModalBanco(false); setContaEditando(null); load(); }} />
-      </FormModal>
-
-      <ConfirmModal
-        open={!!contaExcluir}
-        title="Excluir conta bancária"
-        message="Tem certeza que deseja excluir esta conta? Esta ação não pode ser desfeita."
-        confirmLabel="Excluir"
-        danger
-        onConfirm={handleExcluirBanco}
-        onCancel={() => setContaExcluir(null)}
-      />
 
       <ConfirmModal
         open={!!pagamentoExcluir}

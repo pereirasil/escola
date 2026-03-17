@@ -50,6 +50,45 @@ export class UsersService {
     return this.repo.findOne({ where: { email } })
   }
 
+  findById(id: number): Promise<User | null> {
+    return this.repo.findOne({ where: { id } })
+  }
+
+  findSchoolById(id: number): Promise<User | null> {
+    return this.repo.findOne({ where: { id, role: 'school' } })
+  }
+
+  async hasMercadoPagoConnected(schoolUserId: number): Promise<boolean> {
+    const user = await this.repo.findOne({
+      where: { id: schoolUserId, role: 'school' },
+      select: ['id', 'mercadopago_access_token'],
+    })
+    return !!(user?.mercadopago_access_token?.trim())
+  }
+
+  async getSchoolAccessToken(schoolUserId: number): Promise<string> {
+    const user = await this.repo.findOne({
+      where: { id: schoolUserId, role: 'school' },
+      select: ['id', 'mercadopago_access_token'],
+    })
+    const token = user?.mercadopago_access_token?.trim()
+    if (!token) {
+      throw new Error('Escola não possui Mercado Pago conectado.')
+    }
+    return token
+  }
+
+  async updateMercadoPagoCredentials(
+    schoolUserId: number,
+    accessToken: string,
+    mercadopagoUserId: string,
+  ): Promise<void> {
+    await this.repo.update(
+      { id: schoolUserId, role: 'school' },
+      { mercadopago_access_token: accessToken.trim(), mercadopago_user_id: mercadopagoUserId.trim() || null },
+    )
+  }
+
   async createSchool(data: { name: string; email: string; password: string; responsible_name: string; cnpj?: string; phone: string }): Promise<User> {
     const password_hash = await bcrypt.hash(data.password, SALT_ROUNDS)
     const user = this.repo.create({

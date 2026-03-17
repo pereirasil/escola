@@ -56,7 +56,8 @@ export class BoletoService {
     return `aluno${paymentId}@escola.com.br`
   }
 
-  private getAccessToken(): string {
+  /** Token da plataforma (cadastro, etc). Nao usar para pagamentos de escolas. */
+  getPlatformToken(): string {
     const token = (process.env.MERCADOPAGO_ACCESS_TOKEN ?? '').trim()
     if (!token) {
       throw new Error(
@@ -66,16 +67,27 @@ export class BoletoService {
     return token
   }
 
+  /** accessToken obrigatório: token OAuth da escola. Para fluxo de cadastro usa getPlatformAccessToken. */
   async generate(
+    accessToken: string,
     paymentId: number,
     amount: number,
     dueDate: string | null,
     studentName: string,
     studentEmail: string | null,
     address?: PayerAddress | null,
+    schoolId?: number,
   ): Promise<BoletoResult> {
-    const accessToken = this.getAccessToken()
-    return this.generateViaMercadoPago(accessToken, paymentId, amount, dueDate, studentName, studentEmail, address)
+    return this.generateViaMercadoPago(
+      accessToken,
+      paymentId,
+      amount,
+      dueDate,
+      studentName,
+      studentEmail,
+      address,
+      schoolId,
+    )
   }
 
   private async generateViaMercadoPago(
@@ -86,6 +98,7 @@ export class BoletoService {
     studentName: string,
     studentEmail: string | null,
     address?: PayerAddress | null,
+    schoolId?: number,
   ): Promise<BoletoResult> {
     const dueRaw = dueDate || new Date().toISOString().slice(0, 10)
     const due = dueRaw.length <= 10 ? `${dueRaw}T23:59:59.000-03:00` : dueRaw
@@ -94,11 +107,12 @@ export class BoletoService {
     const lastName = nameParts[1] || `#${paymentId}`
 
     const addr = this.buildPayerAddress(address)
-    const body = {
+    const body: Record<string, unknown> = {
       transaction_amount: Number(amount),
       description: `Mensalidade escolar - Ref ${paymentId}`,
       payment_method_id: 'bolbradesco',
       date_of_expiration: due,
+      metadata: schoolId != null ? { school_id: String(schoolId), payment_id: String(paymentId) } : undefined,
       payer: {
         email: this.normalizePayerEmail(studentEmail, paymentId),
         first_name: firstName,
@@ -107,6 +121,7 @@ export class BoletoService {
         address: addr,
       },
     }
+    if (body.metadata === undefined) delete body.metadata
 
     const idempotencyKey = `${paymentId}-${Date.now()}-${Math.random().toString(36).slice(2)}`
     const res = await fetch('https://api.mercadopago.com/v1/payments', {
@@ -138,27 +153,31 @@ export class BoletoService {
     }
   }
 
+  /** accessToken obrigatório: token OAuth da escola. Para cadastro usa getPlatformAccessToken. */
   async generatePix(
+    accessToken: string,
     paymentId: number,
     amount: number,
     studentName: string,
     studentEmail: string | null,
+    schoolId?: number,
   ): Promise<{ qr_code: string; qr_code_text: string; provider_id: string }> {
-    const accessToken = this.getAccessToken()
     const nameParts = (studentName || 'Aluno').trim().split(/\s+/, 2)
     const firstName = nameParts[0] || 'Aluno'
     const lastName = nameParts[1] || `#${paymentId}`
 
-    const body = {
+    const body: Record<string, unknown> = {
       transaction_amount: Number(amount),
       description: `Mensalidade escolar - Ref ${paymentId}`,
       payment_method_id: 'pix',
+      metadata: schoolId != null ? { school_id: String(schoolId), payment_id: String(paymentId) } : undefined,
       payer: {
         email: this.normalizePayerEmail(studentEmail, paymentId),
         first_name: firstName,
         last_name: lastName,
       },
     }
+    if (body.metadata === undefined) delete body.metadata
 
     const idempotencyKey = `pix-${paymentId}-${Date.now()}-${Math.random().toString(36).slice(2)}`
     const res = await fetch('https://api.mercadopago.com/v1/payments', {
