@@ -9,6 +9,7 @@ import {
 } from '@nestjs/websockets'
 import { Server } from 'socket.io'
 import { CommunicationService } from '../communication.service'
+import { Conversation } from '../entities/conversation.entity'
 
 @WebSocketGateway({
   cors: { origin: true },
@@ -25,6 +26,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleDisconnect() {}
+
+  @SubscribeMessage('join_notifications')
+  async handleJoinNotifications(
+    @MessageBody() payload: { role: string; studentId?: number; schoolId?: number; teacherId?: number },
+    @ConnectedSocket() client: any,
+  ) {
+    const { role } = payload
+    if (role === 'student' && payload.studentId) {
+      await client.join(`notifications:student:${payload.studentId}`)
+    } else if (role === 'school' && payload.schoolId) {
+      await client.join(`notifications:school:${payload.schoolId}`)
+    } else if (role === 'teacher' && payload.teacherId) {
+      await client.join(`notifications:teacher:${payload.teacherId}`)
+    }
+  }
 
   @SubscribeMessage('join_conversation')
   async handleJoinConversation(
@@ -78,5 +94,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   emitNewMessage(conversationId: number, message: any) {
     const room = `conversation:${conversationId}`
     this.server.to(room).emit('new_message', { conversationId, message })
+  }
+
+  emitUnreadCountUpdate(conv: Conversation, senderType: string) {
+    if (senderType === 'student') {
+      if (conv.teacher_id) {
+        this.server.to(`notifications:teacher:${conv.teacher_id}`).emit('unread_count_changed')
+      } else if (conv.school_id) {
+        this.server.to(`notifications:school:${conv.school_id}`).emit('unread_count_changed')
+      }
+    } else if (senderType === 'school' || senderType === 'teacher') {
+      if (conv.student_id) {
+        this.server.to(`notifications:student:${conv.student_id}`).emit('unread_count_changed')
+      }
+    }
   }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { alunosService } from '../../services/alunos.service'
 import { communicationService } from '../../services/communication.service'
 import { useAuthStore } from '../../store/useAuthStore'
+import { useNotificationSocket } from '../../hooks/useNotificationSocket'
 
 export function NotificationBell() {
   const [count, setCount] = useState(0)
@@ -13,6 +14,8 @@ export function NotificationBell() {
   const intervalRef = useRef(null)
   const wrapperRef = useRef(null)
   const { user } = useAuthStore()
+
+  useNotificationSocket()
 
   const fetchCount = () => {
     const role = user?.role
@@ -37,12 +40,15 @@ export function NotificationBell() {
   useEffect(() => {
     if (!user?.role) return
     fetchCount()
-    intervalRef.current = setInterval(fetchCount, 15000)
+    intervalRef.current = setInterval(fetchCount, 60000)
     const onConversationRead = () => fetchCount()
+    const onUnreadChanged = () => fetchCount()
     window.addEventListener('communication:conversation-read', onConversationRead)
+    window.addEventListener('communication:unread-changed', onUnreadChanged)
     return () => {
       clearInterval(intervalRef.current)
       window.removeEventListener('communication:conversation-read', onConversationRead)
+      window.removeEventListener('communication:unread-changed', onUnreadChanged)
     }
   }, [user?.role, user?.id])
 

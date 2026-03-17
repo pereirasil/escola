@@ -93,10 +93,13 @@ export default function Comunicacao() {
 
   useEffect(() => {
     const onConversationRead = () => fetchTabCounts()
+    const onUnreadChanged = () => fetchTabCounts()
     window.addEventListener('communication:conversation-read', onConversationRead)
-    const interval = setInterval(fetchTabCounts, 15000)
+    window.addEventListener('communication:unread-changed', onUnreadChanged)
+    const interval = setInterval(fetchTabCounts, 60000)
     return () => {
       window.removeEventListener('communication:conversation-read', onConversationRead)
+      window.removeEventListener('communication:unread-changed', onUnreadChanged)
       clearInterval(interval)
     }
   }, [])

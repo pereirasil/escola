@@ -71,8 +71,15 @@ export class CommunicationController {
     @Req() req: { user: { id: number; school_id?: number } },
   ) {
     await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
-    const { message } = await this.communicationService.addMessage(+id, 'student', req.user.id, dto.message, req.user.school_id)
+    const { message, conversation } = await this.communicationService.addMessage(
+      +id,
+      'student',
+      req.user.id,
+      dto.message,
+      req.user.school_id,
+    )
     this.chatGateway.emitNewMessage(+id, message)
+    this.chatGateway.emitUnreadCountUpdate(conversation, 'student')
     return message
   }
 
@@ -138,7 +145,7 @@ export class CommunicationController {
     @Req() req: { user: { id: number; school_id?: number } },
   ) {
     await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
-    const { message } = await this.communicationService.addMessage(
+    const { message, conversation } = await this.communicationService.addMessage(
       +id,
       'student',
       req.user.id,
@@ -146,6 +153,7 @@ export class CommunicationController {
       req.user.school_id,
     )
     this.chatGateway.emitNewMessage(+id, message)
+    this.chatGateway.emitUnreadCountUpdate(conversation, 'student')
     return message
   }
 
@@ -202,8 +210,15 @@ export class CommunicationController {
   ) {
     const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
     await this.communicationService.ensureConversationAccess(+id, undefined, schoolId)
-    const { message } = await this.communicationService.addMessage(+id, 'school', req.user.id, dto.message, schoolId)
+    const { message, conversation } = await this.communicationService.addMessage(
+      +id,
+      'school',
+      req.user.id,
+      dto.message,
+      schoolId,
+    )
     this.chatGateway.emitNewMessage(+id, message)
+    this.chatGateway.emitUnreadCountUpdate(conversation, 'school')
     return message
   }
 
@@ -273,7 +288,7 @@ export class CommunicationController {
     @Req() req: { user: { id: number; school_id?: number } },
   ) {
     await this.communicationService.ensureTeacherConversationAccess(+id, req.user.id)
-    const { message } = await this.communicationService.addMessage(
+    const { message, conversation } = await this.communicationService.addMessage(
       +id,
       'teacher',
       req.user.id,
@@ -281,6 +296,7 @@ export class CommunicationController {
       req.user.school_id,
     )
     this.chatGateway.emitNewMessage(+id, message)
+    this.chatGateway.emitUnreadCountUpdate(conversation, 'teacher')
     return message
   }
 
