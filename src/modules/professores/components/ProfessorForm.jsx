@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FormInput, PhotoUpload } from '../../../components/ui';
+import { FormInput } from '../../../components/ui';
 import { professoresService } from '../../../services/professores.service';
 import { maskCpf, maskPhone, maskCep, fetchAddressByCep } from '../../../utils/masks';
 import toast from 'react-hot-toast';
@@ -13,7 +13,6 @@ const INITIAL_FORM = {
 
 export default function ProfessorForm({ onSuccess }) {
   const [form, setForm] = useState(INITIAL_FORM);
-  const [photoFile, setPhotoFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   const handleCepChange = async (value) => {
@@ -40,14 +39,9 @@ export default function ProfessorForm({ onSuccess }) {
     setSubmitting(true);
     try {
       const { confirmPassword, ...payload } = form;
-      const res = await professoresService.criar(payload);
-      const profId = res.data?.id;
-      if (photoFile && profId) {
-        await professoresService.uploadFoto(profId, photoFile);
-      }
+      await professoresService.criar(payload);
       toast.success('Professor cadastrado com sucesso!');
       setForm(INITIAL_FORM);
-      setPhotoFile(null);
       onSuccess?.();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Erro ao salvar professor.');
@@ -58,7 +52,6 @@ export default function ProfessorForm({ onSuccess }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <PhotoUpload onFileSelect={setPhotoFile} label="Foto do professor" />
       <div className="form-grid">
         <FormInput label="Nome do Professor" id="modal_prof_name" placeholder="Ex: Maria Souza" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
         <FormInput label="CPF (usuário de acesso)" id="modal_prof_document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />

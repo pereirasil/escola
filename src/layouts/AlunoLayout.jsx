@@ -18,8 +18,6 @@ import BottomNav from '../components/BottomNav'
 import NoIndex from '../components/NoIndex'
 import { NotificationBell } from '../components/ui'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-
 const alunoBottomNavItems = [
   { key: 'inicio', to: '/aluno', label: 'Início', icon: 'dashboard', end: true },
   { key: 'horarios', to: '/aluno/horarios', label: 'Calendário', icon: 'horarios', end: false },
@@ -92,18 +90,6 @@ export default function AlunoLayout() {
       {sidebarOpen && <div className="sidebar-overlay sidebar-overlay-visible" onClick={() => setSidebarOpen(false)} />}
       <aside className={`sidebar sidebar-aluno${sidebarOpen ? ' sidebar-open' : ''}`}>
         <div className="sidebar-aluno-user">
-          <div className="sidebar-aluno-photo">
-            {user?.photo ? (
-              <img
-                src={user.photo.startsWith('http') ? user.photo : `${API_URL}/uploads/${user.photo}`}
-                alt={user.name}
-              />
-            ) : (
-              <div className="sidebar-aluno-photo-placeholder">
-                <User size={24} strokeWidth={1.5} />
-              </div>
-            )}
-          </div>
           <div className="sidebar-aluno-info">
             <span className="sidebar-aluno-name">{user?.name || 'Aluno'}</span>
           </div>

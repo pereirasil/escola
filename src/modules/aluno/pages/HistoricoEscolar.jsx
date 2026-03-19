@@ -4,8 +4,6 @@ import { alunosService } from '../../../services/alunos.service'
 import { useAuthStore } from '../../../store/useAuthStore'
 import toast from 'react-hot-toast'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-
 const ANOS = [2026, 2025, 2024]
 const BIMESTRES = [1, 2, 3, 4]
 
@@ -114,16 +112,6 @@ export default function HistoricoEscolar() {
   return (
     <div className="pedagogico-page">
       <section className="pedagogico-profile">
-        <div className="pedagogico-profile-photo">
-          {user?.photo ? (
-            <img
-              src={user.photo.startsWith('http') ? user.photo : `${API_URL}/uploads/${user.photo}`}
-              alt={user?.name ?? 'Aluno'}
-            />
-          ) : (
-            <div className="pedagogico-profile-placeholder">SEM FOTO</div>
-          )}
-        </div>
         <div>
           <h2 className="pedagogico-profile-name">{user?.name ?? 'Aluno'}</h2>
         </div>

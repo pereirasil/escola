@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, PageHeader, FormInput, Spinner, Breadcrumb, PhotoUpload } from '../../../components/ui';
+import { Card, PageHeader, FormInput, Spinner, Breadcrumb } from '../../../components/ui';
 import { alunosService } from '../../../services/alunos.service';
 import { turmasService } from '../../../services/turmas.service';
 import { maskCpf, maskPhone, maskCep, fetchAddressByCep } from '../../../utils/masks';
@@ -10,8 +10,6 @@ export default function AlunoEditar() {
   const { id } = useParams();
   const [turmas, setTurmas] = useState([]);
   const [form, setForm] = useState({ name: '', birth_date: '', document: '', email: '', guardian_name: '', guardian_phone: '', guardian_document: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '', class_id: '' });
-  const [currentPhoto, setCurrentPhoto] = useState(null);
-  const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -25,7 +23,6 @@ export default function AlunoEditar() {
         const a = resAluno.data;
         setTurmas(resTurmas.data || []);
         if (a) {
-          setCurrentPhoto(a.photo || null);
           setForm({
             name: a.name || '',
             birth_date: a.birth_date || '',
@@ -87,9 +84,6 @@ export default function AlunoEditar() {
         complement: form.complement || null,
         class_id: classId
       });
-      if (photoFile) {
-        await alunosService.uploadFoto(id, photoFile);
-      }
       toast.success('Aluno atualizado com sucesso!');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Erro ao salvar.');
@@ -111,7 +105,6 @@ export default function AlunoEditar() {
 
       <Card title="Dados do aluno">
         <form onSubmit={handleSubmit}>
-          <PhotoUpload currentPhoto={currentPhoto} onFileSelect={setPhotoFile} label="Foto do aluno" />
           <div className="form-grid">
             <FormInput label="Nome do aluno" id="name" placeholder="Ex: João da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <FormInput label="Data de nascimento" id="birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />

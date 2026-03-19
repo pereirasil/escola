@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FormInput, SelectField, PhotoUpload } from '../../../components/ui';
+import { FormInput, SelectField } from '../../../components/ui';
 import { alunosService } from '../../../services/alunos.service';
 import { turmasService } from '../../../services/turmas.service';
 import { maskCpf, maskPhone, maskCep, fetchAddressByCep } from '../../../utils/masks';
@@ -14,7 +14,6 @@ const INITIAL_FORM = {
 
 export default function AlunoForm({ turmas = [], onSuccess }) {
   const [form, setForm] = useState(INITIAL_FORM);
-  const [photoFile, setPhotoFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   const handleCepChange = async (value) => {
@@ -42,14 +41,9 @@ export default function AlunoForm({ turmas = [], onSuccess }) {
     try {
       const { confirmPassword, _serie, ...payload } = form;
       const classId = form.class_id ? Number(form.class_id) : null;
-      const res = await alunosService.criar({ ...payload, class_id: classId });
-      const alunoId = res.data?.id;
-      if (photoFile && alunoId) {
-        await alunosService.uploadFoto(alunoId, photoFile);
-      }
+      await alunosService.criar({ ...payload, class_id: classId });
       toast.success('Aluno cadastrado com sucesso!');
       setForm(INITIAL_FORM);
-      setPhotoFile(null);
       onSuccess?.();
     } catch (error) {
       toast.error('Erro ao salvar aluno.');
@@ -60,7 +54,6 @@ export default function AlunoForm({ turmas = [], onSuccess }) {
 
   return (
     <form onSubmit={handleSubmit}>
-      <PhotoUpload onFileSelect={setPhotoFile} label="Foto do aluno" />
       <div className="form-grid">
         <FormInput label="Nome do aluno" id="modal_name" placeholder="Ex: João da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
         <FormInput label="Data de nascimento" id="modal_birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />

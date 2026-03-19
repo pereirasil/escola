@@ -69,17 +69,6 @@ export default function AlunoDetalhes() {
       ]} />
 
       <div className="aluno-detalhes-header">
-        {aluno.photo ? (
-          <img
-            src={`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/uploads/${aluno.photo}`}
-            alt={aluno.name}
-            className="aluno-detalhes-photo"
-          />
-        ) : (
-          <div className="aluno-detalhes-photo-placeholder">
-            {aluno.name?.charAt(0)?.toUpperCase()}
-          </div>
-        )}
         <PageHeader title={aluno.name} description={`Matrícula/CPF: ${aluno.document || 'Não informado'}`} />
       </div>
 

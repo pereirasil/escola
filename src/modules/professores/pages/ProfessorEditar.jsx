@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, PageHeader, FormInput, Spinner, Breadcrumb, PhotoUpload, SelectField, ConfirmModal } from '../../../components/ui';
+import { Card, PageHeader, FormInput, Spinner, Breadcrumb, SelectField, ConfirmModal } from '../../../components/ui';
 import { professoresService } from '../../../services/professores.service';
 import { turmasService } from '../../../services/turmas.service';
 import { horariosService } from '../../../services/horarios.service';
@@ -16,8 +16,6 @@ export default function ProfessorEditar() {
   const [materias, setMaterias] = useState([]);
   const [teacherSchedules, setTeacherSchedules] = useState([]);
   const [form, setForm] = useState({ name: '', document: '', phone: '', email: '', cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '' });
-  const [currentPhoto, setCurrentPhoto] = useState(null);
-  const [photoFile, setPhotoFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -46,7 +44,6 @@ export default function ProfessorEditar() {
       setTeacherSchedules(allSchedules.filter(s => s.teacher_id === Number(id)));
 
       if (p) {
-        setCurrentPhoto(p.photo || null);
         setForm({
           name: p.name || '',
           document: p.document ? maskCpf(p.document) : '',
@@ -87,9 +84,6 @@ export default function ProfessorEditar() {
     setSaving(true);
     try {
       await professoresService.atualizar(id, form);
-      if (photoFile) {
-        await professoresService.uploadFoto(id, photoFile);
-      }
       toast.success('Professor atualizado com sucesso!');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Erro ao salvar.');
@@ -194,7 +188,6 @@ export default function ProfessorEditar() {
 
       <Card title="Dados do professor">
         <form onSubmit={handleSubmit}>
-          <PhotoUpload currentPhoto={currentPhoto} onFileSelect={setPhotoFile} label="Foto do professor" />
           <div className="form-grid">
             <FormInput label="Nome do Professor" id="name" placeholder="Ex: Maria Souza" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
             <FormInput label="CPF" id="document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
