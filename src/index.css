@@ -3206,10 +3206,20 @@ button:focus-visible {
     z-index: 850;
   }
 
+  /* Uma única barra de rolagem: layout fixo, só layout-content rola */
+  .layout.layout-aluno,
+  .layout.layout-professor {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
   .layout-aluno .layout-main,
   .layout-professor .layout-main {
     padding-top: 52px;
     height: calc(100vh - env(safe-area-inset-top, 0px));
+    height: calc(100dvh - env(safe-area-inset-top, 0px));
     max-height: calc(100dvh - env(safe-area-inset-top, 0px));
     overflow: hidden;
     display: flex;
@@ -3221,6 +3231,7 @@ button:focus-visible {
     flex: 1;
     min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     padding: 1rem;
