@@ -20,7 +20,7 @@ import { NotificationBell } from '../components/ui'
 
 const alunoBottomNavItems = [
   { key: 'inicio', to: '/aluno', label: 'Início', icon: 'dashboard', end: true },
-  { key: 'horarios', to: '/aluno/horarios', label: 'Calendário', icon: 'horarios', end: false },
+  { key: 'horarios', to: '/aluno/horarios', label: 'Grade semanal', icon: 'horarios', end: false },
   { key: 'historico', to: '/aluno/historico', label: 'Pedagógico', icon: 'historico', end: false },
   { key: 'menu', type: 'button', label: 'Menu', icon: 'menu' },
 ]
