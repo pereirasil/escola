@@ -2223,6 +2223,14 @@ body {
   color: #fff;
 }
 
+/* Sino sempre visível no header escuro (aluno/professor) */
+.aluno-header-bar .notification-bell {
+  color: #fff;
+}
+.aluno-header-bar .notification-bell:hover {
+  color: #e0e7ff;
+}
+
 .notification-badge {
   position: absolute;
   top: -4px;
@@ -3650,6 +3658,12 @@ button:focus-visible {
   }
   .notification-bell:hover {
     color: #213547;
+  }
+  .aluno-header-bar .notification-bell {
+    color: #fff;
+  }
+  .aluno-header-bar .notification-bell:hover {
+    color: #e0e7ff;
   }
   .notification-dropdown {
     background: #fff;

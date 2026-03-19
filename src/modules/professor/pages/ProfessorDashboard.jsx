@@ -1,10 +1,5 @@
-import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../../store/useAuthStore'
-import { professoresService } from '../../../services/professores.service'
-import toast from 'react-hot-toast'
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const gridItems = [
   { to: '/professor/turmas', label: 'Minhas Turmas', icon: 'turmas' },
@@ -58,49 +53,10 @@ const icons = {
 export default function ProfessorDashboard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const fileInputRef = useRef(null)
-
-  const handlePhotoClick = () => fileInputRef.current?.click()
-
-  const handlePhotoChange = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    try {
-      const updated = await professoresService.uploadMinhaFoto(file)
-      useAuthStore.setState({ user: { ...user, photo: updated.photo } })
-      toast.success('Foto atualizada.')
-    } catch {
-      toast.error('Erro ao atualizar foto.')
-    }
-  }
 
   return (
     <div className="aluno-dashboard professor-dashboard">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        onChange={handlePhotoChange}
-        style={{ display: 'none' }}
-      />
-
       <section className="aluno-profile-card">
-        <button type="button" className="aluno-profile-photo" onClick={handlePhotoClick}>
-          {user?.photo ? (
-            <img
-              src={user.photo.startsWith('http') ? user.photo : `${API_URL}/uploads/${user.photo}`}
-              alt={user.name}
-            />
-          ) : (
-            <div className="aluno-profile-placeholder">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                <circle cx="12" cy="13" r="4" />
-              </svg>
-              <span>SEM FOTO</span>
-            </div>
-          )}
-        </button>
         <div className="aluno-profile-info">
           <h2 className="aluno-profile-name">{user?.name || 'Professor'}</h2>
           <span className="aluno-profile-role">Professor</span>
