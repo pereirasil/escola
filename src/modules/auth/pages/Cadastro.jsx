@@ -74,16 +74,13 @@ export default function Cadastro() {
                 <h2>Cadastro enviado</h2>
                 <p className="auth-card-subtitle">Confira seu e-mail para atualizações</p>
                 <p className="auth-message" style={{ whiteSpace: 'pre-line' }}>
-                  Cadastro realizado com sucesso! 
-
-Você garantiu uma vaga na promoção especial.
-
-<strong>Valor da mensalidade: R$ 99,99</strong>
-<strong>Bônus: o próximo mês é gratuito.</strong>
+                  Cadastro realizado com sucesso!
 
 Para ativar seu acesso, realize o pagamento utilizando o QR Code PIX abaixo.
 
 Assim que o pagamento for confirmado, em até 24 horas liberaremos seu acesso.
+
+Em caso de dúvidas, entre em contato pelo telefone: 21990443914
                 </p>
                 {pix && (
                   <div className="auth-pix-cadastro" style={{ marginTop: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
