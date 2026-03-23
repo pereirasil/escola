@@ -3238,6 +3238,16 @@ button:focus-visible {
     padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
   }
 
+  /* Dashboard: mais espaco no topo para o select de aluno nao ficar atras do header fixo */
+  .layout-aluno .layout-content-dashboard,
+  .layout-professor .layout-content-dashboard {
+    padding-top: 1.25rem;
+  }
+
+  .aluno-profile-card {
+    scroll-margin-top: 4rem;
+  }
+
   .sidebar {
     position: fixed;
     left: -260px;
