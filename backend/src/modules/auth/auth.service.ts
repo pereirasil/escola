@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt'
 import { UsersService } from '../users/users.service'
 import { StudentsService } from '../students/students.service'
 import { TeachersService } from '../teachers/teachers.service'
+import { ResponsiblesService } from '../responsibles/responsibles.service'
 import { BoletoService } from '../payments/services/boleto.service'
 import { RegisterDto } from './dto/register.dto'
 
@@ -15,6 +16,7 @@ export class AuthService {
     private usersService: UsersService,
     private studentsService: StudentsService,
     private teachersService: TeachersService,
+    private responsiblesService: ResponsiblesService,
     private boletoService: BoletoService,
     private jwtService: JwtService,
   ) {}
@@ -65,23 +67,52 @@ export class AuthService {
     return { user, pix }
   }
 
-  async loginStudent(cpf: string, password: string) {
-    const students = await this.studentsService.findAllByDocument(cpf)
-    let matched: typeof students[0] | null = null
-    for (const s of students) {
-      if (s.password_hash && (await bcrypt.compare(password, s.password_hash))) {
-        matched = s
-        break
-      }
-    }
-    if (!matched) {
+  async loginResponsible(cpf: string, password: string) {
+    const responsible = await this.responsiblesService.findByCpf(cpf)
+    if (!responsible) {
       throw new UnauthorizedException('CPF ou senha inválidos')
     }
-    const payload = { sub: matched.id, role: 'student', document: matched.document, school_id: matched.school_id }
+    const valid = await this.responsiblesService.validatePassword(responsible, password)
+    if (!valid) {
+      throw new UnauthorizedException('CPF ou senha inválidos')
+    }
+    const students = await this.responsiblesService.getStudentsByResponsibleId(responsible.id)
+    const firstStudent = students[0] ?? null
+    const payload = {
+      sub: responsible.id,
+      role: 'responsible',
+      student_id: firstStudent?.id ?? null,
+      school_id: firstStudent?.school_id ?? null,
+    }
     const access_token = this.jwtService.sign(payload)
     return {
       access_token,
-      user: { id: matched.id, name: matched.name, role: 'student', document: matched.document, school_id: matched.school_id, photo: matched.photo },
+      responsible: { id: responsible.id, name: responsible.name, cpf: responsible.cpf },
+      students,
+    }
+  }
+
+  async responsibleUpdatePassword(responsibleId: number, currentPassword: string, newPassword: string) {
+    await this.responsiblesService.updatePassword(responsibleId, currentPassword, newPassword)
+  }
+
+  async responsibleChooseStudent(responsibleId: number, studentId: number) {
+    await this.responsiblesService.ensureAccessToStudent(responsibleId, studentId)
+    const student = await this.studentsService.findOne(studentId)
+    if (!student) {
+      throw new UnauthorizedException('Aluno não encontrado')
+    }
+    const payload = {
+      sub: responsibleId,
+      role: 'responsible',
+      student_id: studentId,
+      school_id: student.school_id ?? null,
+    }
+    const access_token = this.jwtService.sign(payload)
+    return {
+      access_token,
+      student_id: studentId,
+      school_id: student.school_id,
     }
   }
 
@@ -129,15 +160,17 @@ export class AuthService {
   }
 
   async getAvatarByCpf(cpf: string) {
-    const students = await this.studentsService.findAllByDocument(cpf)
-    if (students.length > 0 && students[0].photo) {
-      return { photo: students[0].photo, name: students[0].name }
+    const responsible = await this.responsiblesService.findByCpf(cpf)
+    if (responsible) {
+      return { photo: null, name: responsible.name }
     }
     const teachers = await this.teachersService.findAllByDocument(cpf)
     if (teachers.length > 0 && teachers[0].photo) {
       return { photo: teachers[0].photo, name: teachers[0].name }
     }
-    const studentWithName = students[0] || teachers[0]
-    return { photo: null, name: studentWithName?.name || null }
+    if (teachers.length > 0) {
+      return { photo: null, name: teachers[0].name }
+    }
+    return { photo: null, name: null }
   }
 }

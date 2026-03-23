@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Card, DataTable, Spinner } from '../../../components/ui'
 import { alunosService } from '../../../services/alunos.service'
 import { useAuthStore } from '../../../store/useAuthStore'
@@ -32,25 +33,19 @@ function toBimestreValue(val) {
 }
 
 export default function HistoricoEscolar() {
-  const { user } = useAuthStore()
-  const [dados, setDados] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { user, studentId } = useAuthStore()
   const [tab, setTab] = useState('boletim')
   const [ano, setAno] = useState(new Date().getFullYear().toString())
   const [bimestre, setBimestre] = useState(1)
 
-  useEffect(() => {
-    alunosService.meuHistorico()
-      .then((res) => setDados(res ?? null))
-      .catch(() => {
-        toast.error('Erro ao carregar histórico.')
-        setDados(null)
-      })
-      .finally(() => setLoading(false))
-  }, [])
+  const { data: dados, isLoading, isError } = useQuery({
+    queryKey: ['aluno', 'historico', studentId],
+    queryFn: () => alunosService.meuHistorico(),
+    enabled: !!studentId,
+  })
 
-  if (loading) return <div className="page"><Spinner /></div>
-  if (!dados) return <div className="page"><div className="empty-state">Não foi possível carregar o histórico.</div></div>
+  if (isLoading) return <div className="page"><Spinner /></div>
+  if (isError || !dados) return <div className="page"><div className="empty-state">Não foi possível carregar o histórico.</div></div>
 
   const resumo = dados?.resumo ?? { total: 0, faltas: 0, presentes: 0, frequencia: 100 }
   const historico = dados?.historico ?? []
@@ -113,7 +108,7 @@ export default function HistoricoEscolar() {
     <div className="pedagogico-page">
       <section className="pedagogico-profile">
         <div>
-          <h2 className="pedagogico-profile-name">{user?.name ?? 'Aluno'}</h2>
+          <h2 className="pedagogico-profile-name">{user?.name ?? 'Responsável'}</h2>
         </div>
       </section>
 

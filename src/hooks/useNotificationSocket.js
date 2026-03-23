@@ -25,8 +25,8 @@ export function useNotificationSocket() {
 
     const role = user.role
     const payload =
-      role === 'student'
-        ? { role: 'student', studentId: user.id }
+      role === 'responsible' && user.student_id
+        ? { role: 'student', studentId: user.student_id }
         : role === 'school'
           ? { role: 'school', schoolId: user.school_id ?? user.id }
           : role === 'teacher'
@@ -48,5 +48,5 @@ export function useNotificationSocket() {
       s.disconnect()
       socketRef.current = null
     }
-  }, [token, user?.role, user?.id, user?.school_id])
+  }, [token, user?.role, user?.id, user?.student_id, user?.school_id])
 }

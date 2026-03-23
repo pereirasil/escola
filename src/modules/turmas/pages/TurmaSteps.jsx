@@ -70,11 +70,10 @@ const initialAlunoForm = {
   birth_date: '',
   document: '',
   email: '',
-  password: '',
-  confirmPassword: '',
   guardian_name: '',
   guardian_phone: '',
   guardian_document: '',
+  guardian_password: '',
   cep: '',
   state: '',
   city: '',
@@ -229,14 +228,14 @@ export default function TurmaSteps() {
 
   const handleCriarAluno = async (event) => {
     event.preventDefault();
-    if (alunoForm.password !== alunoForm.confirmPassword) {
-      toast.error('Senha e confirmação do aluno não conferem.');
+    if (!alunoForm.guardian_name?.trim() || !alunoForm.guardian_document?.trim() || !alunoForm.guardian_password || alunoForm.guardian_password.length < 6) {
+      toast.error('Preencha nome, CPF e senha do responsável (mínimo 6 caracteres).');
       return;
     }
 
     setSavingAluno(true);
     try {
-      const { confirmPassword: _confirmPassword, ...payload } = alunoForm;
+      const payload = { ...alunoForm };
       setAlunosDraft((current) => [
         ...current,
         {
@@ -380,11 +379,12 @@ export default function TurmaSteps() {
                 await alunosService.criar({
                   name: aluno.name,
                   birth_date: aluno.birth_date,
-                  document: aluno.document,
-                  password: aluno.password,
+                  document: aluno.document || undefined,
+                  email: aluno.email || undefined,
                   guardian_name: aluno.guardian_name,
                   guardian_phone: aluno.guardian_phone,
                   guardian_document: aluno.guardian_document,
+                  guardian_password: aluno.guardian_password,
                   cep: aluno.cep,
                   state: aluno.state,
                   city: aluno.city,
@@ -894,17 +894,16 @@ export default function TurmaSteps() {
                   <FormInput label="Nome do aluno" id="modal-student-name" required value={alunoForm.name} onChange={(event) => setAlunoForm({ ...alunoForm, name: event.target.value })} />
                   <FormInput label="Data de nascimento" id="modal-student-birth-date" type="date" value={alunoForm.birth_date} onChange={(event) => setAlunoForm({ ...alunoForm, birth_date: event.target.value })} />
                   <FormInput label="E-mail" id="modal-student-email" type="email" placeholder="Ex: aluno@email.com" value={alunoForm.email} onChange={(event) => setAlunoForm({ ...alunoForm, email: event.target.value })} />
-                  <FormInput label="CPF" id="modal-student-document" required maxLength={14} value={alunoForm.document} onChange={(event) => setAlunoForm({ ...alunoForm, document: maskCpf(event.target.value) })} />
-                  <FormInput label="Senha" id="modal-student-password" type="password" required value={alunoForm.password} onChange={(event) => setAlunoForm({ ...alunoForm, password: event.target.value })} />
-                  <FormInput label="Confirmar senha" id="modal-student-confirm-password" type="password" required value={alunoForm.confirmPassword} onChange={(event) => setAlunoForm({ ...alunoForm, confirmPassword: event.target.value })} />
+                  <FormInput label="CPF do aluno (opcional)" id="modal-student-document" maxLength={14} value={alunoForm.document} onChange={(event) => setAlunoForm({ ...alunoForm, document: maskCpf(event.target.value) })} />
                 </div>
               )}
 
               {alunoModalStep === 2 && (
                 <div className="form-grid">
-                  <FormInput label="Nome do responsável" id="modal-student-guardian-name" value={alunoForm.guardian_name} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_name: event.target.value })} />
+                  <FormInput label="Nome do responsável" id="modal-student-guardian-name" required value={alunoForm.guardian_name} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_name: event.target.value })} />
+                  <FormInput label="CPF do responsável" id="modal-student-guardian-document" required maxLength={14} value={alunoForm.guardian_document} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_document: maskCpf(event.target.value) })} />
+                  <FormInput label="Senha do responsável (para login)" id="modal-student-guardian-password" type="password" required placeholder="Mínimo 6 caracteres. Use a mesma se o responsável já tiver cadastro." value={alunoForm.guardian_password} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_password: event.target.value })} />
                   <FormInput label="Telefone do responsável" id="modal-student-guardian-phone" maxLength={15} value={alunoForm.guardian_phone} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_phone: maskPhone(event.target.value) })} />
-                  <FormInput label="CPF do responsável" id="modal-student-guardian-document" maxLength={14} value={alunoForm.guardian_document} onChange={(event) => setAlunoForm({ ...alunoForm, guardian_document: maskCpf(event.target.value) })} />
                 </div>
               )}
 

@@ -25,7 +25,7 @@ export const alunosService = {
   meusHorarios: () => api.get('/students/me/schedules').then((r) => r.data),
   minhasReunioes: () => api.get('/students/me/meetings').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>
-    api.patch('/students/me/password', { currentPassword, newPassword }).then((r) => r.data),
+    api.patch('/auth/responsible/password', { currentPassword, newPassword }).then((r) => r.data),
   uploadMinhaFoto: (file) => {
     const form = new FormData()
     form.append('photo', file)

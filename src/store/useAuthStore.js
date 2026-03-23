@@ -7,17 +7,36 @@ export const useAuthStore = create(
       user: null,
       token: null,
       schoolId: null,
-      
-      login: (userData, token) => set({ 
-        user: userData, 
+      responsible: null,
+      students: [],
+      studentId: null,
+
+      login: (userData, token, extra = {}) => set({
+        user: userData,
         token,
-        schoolId: userData.school_id || null
+        schoolId: userData.school_id ?? extra.schoolId ?? null,
+        responsible: extra.responsible ?? null,
+        students: extra.students ?? [],
+        studentId: extra.studentId ?? null,
       }),
-      
-      logout: () => set({ user: null, token: null, schoolId: null }),
-      
+
+      logout: () => set({
+        user: null,
+        token: null,
+        schoolId: null,
+        responsible: null,
+        students: [],
+        studentId: null,
+      }),
+
       setSchool: (schoolId) => set({ schoolId }),
-      
+
+      setStudent: (studentId, token, schoolId) => set({
+        studentId,
+        token: token ?? useAuthStore.getState().token,
+        schoolId: schoolId ?? useAuthStore.getState().schoolId,
+      }),
+
       isAuthenticated: () => {
         const state = useAuthStore.getState();
         return !!state.token;

@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller'
 import { UsersModule } from '../users/users.module'
 import { StudentsModule } from '../students/students.module'
 import { TeachersModule } from '../teachers/teachers.module'
+import { ResponsiblesModule } from '../responsibles/responsibles.module'
 import { PaymentsModule } from '../payments/payments.module'
 import { JwtStrategy } from './strategies/jwt.strategy'
 
@@ -14,6 +15,7 @@ import { JwtStrategy } from './strategies/jwt.strategy'
     UsersModule,
     StudentsModule,
     TeachersModule,
+    ResponsiblesModule,
     PaymentsModule,
     PassportModule,
     JwtModule.register({

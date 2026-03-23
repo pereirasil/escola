@@ -15,10 +15,12 @@ import { TeachersModule } from '../teachers/teachers.module'
 import { CalendarEventsModule } from '../calendar-events/calendar-events.module'
 import { MeetingsModule } from '../meetings/meetings.module'
 import { StudentMessagesModule } from '../student-messages/student-messages.module'
+import { ResponsiblesModule } from '../responsibles/responsibles.module'
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Student, User]),
+    ResponsiblesModule,
     StudentMessagesModule,
     NotificationsModule,
     forwardRef(() => GradesModule),

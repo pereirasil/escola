@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Card, Spinner } from '../../../components/ui'
 import { ReceiptCard } from '../../../components/ReceiptCard'
 import { pagamentosService } from '../../../services/pagamentos.service'
@@ -34,9 +35,7 @@ function formatarValor(val) {
 }
 
 export default function FinanceiroAluno() {
-  const { user } = useAuthStore()
-  const [pagamentos, setPagamentos] = useState([])
-  const [loading, setLoading] = useState(true)
+  const studentId = useAuthStore((s) => s.studentId)
   const [modalPagar, setModalPagar] = useState(null)
   const [opcaoModal, setOpcaoModal] = useState(null)
   const [gerandoBoleto, setGerandoBoleto] = useState(false)
@@ -45,24 +44,12 @@ export default function FinanceiroAluno() {
   const [pixGerado, setPixGerado] = useState(null)
   const [modalRecibo, setModalRecibo] = useState(null)
 
-  const carregar = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await pagamentosService.listar()
-      const lista = Array.isArray(res?.data) ? res.data : []
-      const filtrados = user?.id ? lista.filter((p) => p.student_id === user.id) : lista
-      setPagamentos(filtrados)
-    } catch {
-      toast.error('Erro ao carregar pagamentos.')
-      setPagamentos([])
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.id])
-
-  useEffect(() => {
-    carregar()
-  }, [carregar])
+  const { data: res, isLoading: loading, refetch } = useQuery({
+    queryKey: ['aluno', 'pagamentos', studentId],
+    queryFn: () => pagamentosService.listar(),
+    enabled: !!studentId,
+  })
+  const pagamentos = Array.isArray(res?.data) ? res.data : []
 
   useEffect(() => {
     if (!modalPagar || (!boletoGerado && !pixGerado)) return
@@ -73,14 +60,14 @@ export default function FinanceiroAluno() {
         if (p?.status === 'paid') {
           toast.success('Pagamento confirmado!')
           fecharModal()
-          carregar()
+          refetch()
         }
       } catch {
         // ignora erros de polling
       }
     }, 4000)
     return () => clearInterval(interval)
-  }, [modalPagar, boletoGerado, pixGerado, carregar])
+  }, [modalPagar, boletoGerado, pixGerado, refetch])
 
   const anoAtual = new Date().getFullYear()
   const pagamentosPorMes = {}

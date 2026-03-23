@@ -1,9 +1,11 @@
-import { Body, Controller, ForbiddenException, Get, Param, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, Req, UnauthorizedException, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { AuthService } from './auth.service'
 import { ChooseSchoolDto } from './dto/choose-school.dto'
+import { ChangePasswordDto } from '../students/dto/change-password.dto'
+import { ChooseStudentDto } from './dto/choose-student.dto'
 import { LoginDto } from './dto/login.dto'
-import { LoginStudentDto } from './dto/login-student.dto'
+import { LoginResponsibleDto } from './dto/login-responsible.dto'
 import { RegisterDto } from './dto/register.dto'
 
 @Controller('auth')
@@ -15,13 +17,25 @@ export class AuthController {
     return this.authService.login(dto.email, dto.password)
   }
 
-  @Post('login-student')
-  loginStudent(@Body() dto: LoginStudentDto) {
-    return this.authService.loginStudent(dto.cpf, dto.password)
+  @Post('login-responsible')
+  loginResponsible(@Body() dto: LoginResponsibleDto) {
+    return this.authService.loginResponsible(dto.cpf, dto.password)
+  }
+
+  @Post('responsible/choose-student')
+  @UseGuards(AuthGuard('jwt'))
+  responsibleChooseStudent(
+    @Body() dto: ChooseStudentDto,
+    @Req() req: { user: { id: number; role: string } },
+  ) {
+    if (req.user.role !== 'responsible') {
+      throw new ForbiddenException('Apenas responsáveis podem usar esta funcionalidade')
+    }
+    return this.authService.responsibleChooseStudent(req.user.id, dto.student_id)
   }
 
   @Post('login-teacher')
-  loginTeacher(@Body() dto: LoginStudentDto) {
+  loginTeacher(@Body() dto: LoginResponsibleDto) {
     return this.authService.loginTeacher(dto.cpf, dto.password)
   }
 

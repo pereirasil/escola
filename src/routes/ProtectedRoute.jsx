@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   }
 
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
-    if (user.role === 'student') return <Navigate to="/aluno" replace />
+    if (user.role === 'responsible') return <Navigate to="/aluno" replace />
     if (user.role === 'teacher') return <Navigate to="/professor" replace />
     return <Navigate to="/dashboard" replace />
   }

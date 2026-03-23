@@ -94,7 +94,7 @@ export class PaymentsService {
     return payments
   }
 
-  async findOne(id: number, user?: { id: number; role: string }) {
+  async findOne(id: number, user?: { id: number; role: string; student_id?: number }) {
     const payment = await this.repo
       .createQueryBuilder('payment')
       .leftJoinAndSelect('payment.student', 'student')
@@ -102,7 +102,7 @@ export class PaymentsService {
       .getOne()
 
     if (payment) {
-      if (user?.role === 'student' && payment.student_id !== user.id) {
+      if (user?.role === 'responsible' && user.student_id != null && payment.student_id !== user.student_id) {
         throw new ForbiddenException('Acesso negado a este pagamento.')
       }
       const invoice = await this.invoiceRepo.findOne({ where: { payment_id: id } })

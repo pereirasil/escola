@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, Spinner, FormInput } from '../../../components/ui'
 import { alunosService } from '../../../services/alunos.service'
 import { communicationService } from '../../../services/communication.service'
 import { ChatView } from '../../../components/chat/ChatView'
+import { useAuthStore } from '../../../store/useAuthStore'
 import toast from 'react-hot-toast'
 
 function formatarData(data) {
@@ -16,13 +18,9 @@ function truncarTexto(texto, maxLen = 60) {
 }
 
 export default function Comunicacao() {
+  const studentId = useAuthStore((s) => s.studentId)
+  const queryClient = useQueryClient()
   const [tab, setTab] = useState('aviso')
-  const [avisoLista, setAvisoLista] = useState([])
-  const [avisoLoading, setAvisoLoading] = useState(true)
-  const [conversas, setConversas] = useState([])
-  const [conversasLoading, setConversasLoading] = useState(false)
-  const [conversasProfessor, setConversasProfessor] = useState([])
-  const [conversasProfessorLoading, setConversasProfessorLoading] = useState(false)
   const [selectedConversation, setSelectedConversation] = useState(null)
   const [showNovaConversa, setShowNovaConversa] = useState(false)
   const [showNovaConversaProfessor, setShowNovaConversaProfessor] = useState(false)
@@ -34,7 +32,43 @@ export default function Comunicacao() {
   const [criando, setCriando] = useState(false)
   const [modalEncerradasSecretaria, setModalEncerradasSecretaria] = useState(false)
   const [modalEncerradasProfessor, setModalEncerradasProfessor] = useState(false)
-  const [tabCounts, setTabCounts] = useState({ aviso: 0, secretaria: 0, professor: 0 })
+
+  const { data: avisoLista = [], isLoading: avisoLoading } = useQuery({
+    queryKey: ['aluno', 'comunicacao-aviso', studentId],
+    queryFn: async () => {
+      const lista = await alunosService.minhasNotificacoes()
+      alunosService.marcarNotificacoesComoLidas().catch(() => {})
+      return lista || []
+    },
+    enabled: !!studentId,
+  })
+
+  const { data: tabCountsData, refetch: refetchTabCounts } = useQuery({
+    queryKey: ['aluno', 'comunicacao-tab-counts', studentId],
+    queryFn: async () => {
+      const [notif, conv] = await Promise.all([
+        alunosService.contarNotificacoesNaoLidas(),
+        communicationService.contarNaoLidasAlunoPorTipo(),
+      ])
+      return { aviso: notif?.count ?? 0, secretaria: conv?.school ?? 0, professor: conv?.teacher ?? 0 }
+    },
+    enabled: !!studentId,
+  })
+  const tabCounts = tabCountsData ?? { aviso: 0, secretaria: 0, professor: 0 }
+
+  const { data: conversasRaw, isLoading: conversasLoading, refetch: refetchConversas } = useQuery({
+    queryKey: ['aluno', 'comunicacao-conversas', studentId],
+    queryFn: () => communicationService.minhasConversas(),
+    enabled: !!studentId && tab === 'secretaria',
+  })
+  const conversas = Array.isArray(conversasRaw) ? conversasRaw : []
+
+  const { data: conversasProfessorRaw, isLoading: conversasProfessorLoading, refetch: refetchConversasProfessor } = useQuery({
+    queryKey: ['aluno', 'comunicacao-conversas-professor', studentId],
+    queryFn: () => communicationService.listarConversasProfessorAluno(),
+    enabled: !!studentId && tab === 'professor',
+  })
+  const conversasProfessor = Array.isArray(conversasProfessorRaw) ? conversasProfessorRaw : []
 
   const conversasSecretaria = conversas.filter((c) => c.conversation_type === 'school')
   const conversasSecretariaAbertas = conversasSecretaria.filter((c) => c.status === 'open')
@@ -42,72 +76,18 @@ export default function Comunicacao() {
   const conversasProfessorAbertas = conversasProfessor.filter((c) => c.status === 'open')
   const conversasProfessorEncerradas = conversasProfessor.filter((c) => c.status === 'closed')
 
-  const fetchTabCounts = () => {
-    Promise.all([
-      alunosService.contarNotificacoesNaoLidas(),
-      communicationService.contarNaoLidasAlunoPorTipo(),
-    ])
-      .then(([notif, conv]) => setTabCounts({
-        aviso: notif?.count ?? 0,
-        secretaria: conv?.school ?? 0,
-        professor: conv?.teacher ?? 0,
-      }))
-      .catch(() => {})
-  }
-
-  const carregarAvisos = () => {
-    setAvisoLoading(true)
-    alunosService
-      .minhasNotificacoes()
-      .then(setAvisoLista)
-      .catch(() => toast.error('Erro ao carregar avisos.'))
-      .finally(() => {
-        setAvisoLoading(false)
-        fetchTabCounts()
-      })
-    alunosService.marcarNotificacoesComoLidas().catch(() => {})
-  }
-
-  const carregarConversas = () => {
-    setConversasLoading(true)
-    communicationService
-      .minhasConversas()
-      .then((data) => setConversas(Array.isArray(data) ? data : []))
-      .catch(() => toast.error('Erro ao carregar conversas.'))
-      .finally(() => setConversasLoading(false))
-  }
-
-  const carregarConversasProfessor = () => {
-    setConversasProfessorLoading(true)
-    communicationService
-      .listarConversasProfessorAluno()
-      .then((data) => setConversasProfessor(Array.isArray(data) ? data : []))
-      .catch(() => toast.error('Erro ao carregar conversas.'))
-      .finally(() => setConversasProfessorLoading(false))
-  }
-
   useEffect(() => {
-    carregarAvisos()
-    fetchTabCounts()
-  }, [])
-
-  useEffect(() => {
-    const onConversationRead = () => fetchTabCounts()
-    const onUnreadChanged = () => fetchTabCounts()
+    const onConversationRead = () => refetchTabCounts()
+    const onUnreadChanged = () => refetchTabCounts()
     window.addEventListener('communication:conversation-read', onConversationRead)
     window.addEventListener('communication:unread-changed', onUnreadChanged)
-    const interval = setInterval(fetchTabCounts, 60000)
+    const interval = setInterval(refetchTabCounts, 60000)
     return () => {
       window.removeEventListener('communication:conversation-read', onConversationRead)
       window.removeEventListener('communication:unread-changed', onUnreadChanged)
       clearInterval(interval)
     }
-  }, [])
-
-  useEffect(() => {
-    if (tab === 'secretaria') carregarConversas()
-    if (tab === 'professor') carregarConversasProfessor()
-  }, [tab])
+  }, [refetchTabCounts])
 
   const handleCriarConversa = async (e) => {
     e.preventDefault()
@@ -127,7 +107,7 @@ export default function Comunicacao() {
         conversation_type: 'school',
         last_message: novaMensagem.trim() || null,
       }
-      setConversas((prev) => [novaComPreview, ...prev])
+      queryClient.invalidateQueries({ queryKey: ['aluno', 'comunicacao-conversas', studentId] })
       setNovaSubject('')
       setNovaMensagem('')
       setShowNovaConversa(false)
@@ -169,7 +149,7 @@ export default function Comunicacao() {
         conversation_type: 'teacher',
         last_message: novaMensagem.trim() || null,
       }
-      setConversasProfessor((prev) => [novaComPreview, ...prev])
+      queryClient.invalidateQueries({ queryKey: ['aluno', 'comunicacao-conversas-professor', studentId] })
       setNovaTeacherId('')
       setNovaSubject('')
       setNovaMensagem('')
@@ -327,7 +307,8 @@ export default function Comunicacao() {
                   onClose={() => setSelectedConversation(null)}
                   onConversationClosed={() => {
                     setSelectedConversation((c) => (c ? { ...c, status: 'closed', closed_at: new Date().toISOString() } : null))
-                    carregarConversas()
+                    refetchConversas()
+                    refetchTabCounts()
                   }}
                   isStudent
                 />
@@ -463,7 +444,8 @@ export default function Comunicacao() {
                   onClose={() => setSelectedConversation(null)}
                   onConversationClosed={() => {
                     setSelectedConversation((c) => (c ? { ...c, status: 'closed', closed_at: new Date().toISOString() } : null))
-                    carregarConversasProfessor()
+                    refetchConversasProfessor()
+                    refetchTabCounts()
                   }}
                   isStudent
                 />

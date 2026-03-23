@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useAuthStore } from '../../../store/useAuthStore'
+import { useChangeStudent } from '../../../hooks/useChangeStudent'
 import { alunosService } from '../../../services/alunos.service'
 
 const gridItems = [
@@ -80,20 +81,50 @@ const icons = {
 
 export default function AlunoDashboard() {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
-  const [notificationCount, setNotificationCount] = useState(0)
+  const { students, studentId } = useAuthStore()
+  const { changeStudent, switching: switchingStudent } = useChangeStudent()
 
-  useEffect(() => {
-    alunosService.contarNotificacoesNaoLidas()
-      .then((data) => setNotificationCount(data.count || 0))
-      .catch(() => {})
-  }, [])
+  const { data: notificationData } = useQuery({
+    queryKey: ['aluno', 'notifications-count', studentId],
+    queryFn: () => alunosService.contarNotificacoesNaoLidas(),
+    enabled: !!studentId,
+  })
+  const notificationCount = notificationData?.count ?? 0
+  const currentStudent = students?.find((s) => s.id === studentId)
+
+  const handleChangeStudent = (e) => {
+    changeStudent(Number(e.target.value))
+  }
 
   return (
     <div className="aluno-dashboard">
       <section className="aluno-profile-card">
         <div className="aluno-profile-info">
-          <h2 className="aluno-profile-name">{user?.name || 'Aluno'}</h2>
+          {students?.length > 1 ? (
+            <select
+              value={studentId ?? ''}
+              onChange={handleChangeStudent}
+              disabled={switchingStudent}
+              className="aluno-profile-select"
+              style={{
+                fontSize: 'inherit',
+                fontWeight: 'inherit',
+                fontFamily: 'inherit',
+                padding: '0.5rem 2rem 0.5rem 0.75rem',
+                borderRadius: 6,
+                border: '1px solid #ccc',
+                backgroundColor: '#fff',
+                cursor: 'pointer',
+                minWidth: 200,
+              }}
+            >
+              {students.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          ) : (
+            <h2 className="aluno-profile-name">{currentStudent?.name || 'Aluno'}</h2>
+          )}
         </div>
       </section>
 

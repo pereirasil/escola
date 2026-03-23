@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Spinner } from '../../../components/ui'
 import { alunosService } from '../../../services/alunos.service'
+import { useAuthStore } from '../../../store/useAuthStore'
 import toast from 'react-hot-toast'
 
 const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado']
@@ -25,23 +27,23 @@ function AulaCard({ aula }) {
 }
 
 export default function MeusHorarios() {
-  const [horarios, setHorarios] = useState([])
-  const [loading, setLoading] = useState(true)
+  const studentId = useAuthStore((s) => s.studentId)
 
-  useEffect(() => {
-    alunosService.meusHorarios()
-      .then((data) => {
-        const sorted = (data || []).sort((a, b) => {
-          const diaA = DIAS_SEMANA.indexOf(a.day_of_week)
-          const diaB = DIAS_SEMANA.indexOf(b.day_of_week)
-          if (diaA !== diaB) return diaA - diaB
-          return (a.start_time || '').localeCompare(b.start_time || '')
-        })
-        setHorarios(sorted)
-      })
-      .catch(() => toast.error('Erro ao carregar horários.'))
-      .finally(() => setLoading(false))
-  }, [])
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['aluno', 'horarios', studentId],
+    queryFn: () => alunosService.meusHorarios(),
+    enabled: !!studentId,
+  })
+
+  const horarios = useMemo(() => {
+    const lista = data || []
+    return [...lista].sort((a, b) => {
+      const diaA = DIAS_SEMANA.indexOf(a.day_of_week)
+      const diaB = DIAS_SEMANA.indexOf(b.day_of_week)
+      if (diaA !== diaB) return diaA - diaB
+      return (a.start_time || '').localeCompare(b.start_time || '')
+    })
+  }, [data])
 
   const diaAtual = useMemo(() => DIAS_SEMANA[new Date().getDay()], [])
   const diaInicialGrade = useMemo(
@@ -58,7 +60,17 @@ export default function MeusHorarios() {
     return mapa
   }, [horarios])
 
-  if (loading) return <div className="page"><Spinner /></div>
+  if (isLoading) return <div className="page"><Spinner /></div>
+
+  if (isError) {
+    return (
+      <div className="page">
+        <div className="meus-horarios-empty">
+          Erro ao carregar horários. Tente novamente.
+        </div>
+      </div>
+    )
+  }
 
   if (horarios.length === 0) {
     return (

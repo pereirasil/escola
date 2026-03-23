@@ -6,8 +6,8 @@ import { maskCpf, maskPhone, maskCep, fetchAddressByCep } from '../../../utils/m
 import toast from 'react-hot-toast';
 
 const INITIAL_FORM = {
-  name: '', birth_date: '', document: '', email: '', password: '', confirmPassword: '',
-  guardian_name: '', guardian_phone: '', guardian_document: '',
+  name: '', birth_date: '', document: '', email: '',
+  guardian_name: '', guardian_phone: '', guardian_document: '', guardian_password: '',
   cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '',
   class_id: '', _serie: ''
 };
@@ -32,14 +32,14 @@ export default function AlunoForm({ turmas = [], onSuccess }) {
     e.preventDefault();
     if (submitting) return;
 
-    if (form.password !== form.confirmPassword) {
-      toast.error('Senha e confirmação não conferem.');
+    if (!form.guardian_name?.trim() || !form.guardian_document?.trim() || !form.guardian_password || form.guardian_password.length < 6) {
+      toast.error('Preencha nome, CPF e senha do responsável (mínimo 6 caracteres).');
       return;
     }
 
     setSubmitting(true);
     try {
-      const { confirmPassword, _serie, ...payload } = form;
+      const { _serie, ...payload } = form;
       const classId = form.class_id ? Number(form.class_id) : null;
       await alunosService.criar({ ...payload, class_id: classId });
       toast.success('Aluno cadastrado com sucesso!');
@@ -58,11 +58,10 @@ export default function AlunoForm({ turmas = [], onSuccess }) {
         <FormInput label="Nome do aluno" id="modal_name" placeholder="Ex: João da Silva" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
         <FormInput label="Data de nascimento" id="modal_birth_date" type="date" value={form.birth_date} onChange={e => setForm({ ...form, birth_date: e.target.value })} />
         <FormInput label="E-mail" id="modal_email" type="email" placeholder="Ex: aluno@email.com" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-        <FormInput label="CPF (usuário de acesso)" id="modal_document" placeholder="000.000.000-00" required value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
-        <FormInput label="Senha" id="modal_password" type="password" placeholder="Mínimo 6 caracteres" required value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
-        <FormInput label="Confirmar senha" id="modal_confirmPassword" type="password" placeholder="Repita a senha" required value={form.confirmPassword} onChange={e => setForm({ ...form, confirmPassword: e.target.value })} />
-        <FormInput label="Nome do Responsável" id="modal_guardian_name" placeholder="Ex: Maria da Silva" value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
-        <FormInput label="CPF do Responsável" id="modal_guardian_document" placeholder="000.000.000-00" value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
+        <FormInput label="CPF do aluno (opcional)" id="modal_document" placeholder="000.000.000-00" value={form.document} onChange={e => setForm({ ...form, document: maskCpf(e.target.value) })} maxLength={14} />
+        <FormInput label="Nome do Responsável" id="modal_guardian_name" placeholder="Ex: Maria da Silva" required value={form.guardian_name} onChange={e => setForm({ ...form, guardian_name: e.target.value })} />
+        <FormInput label="CPF do Responsável" id="modal_guardian_document" placeholder="000.000.000-00" required value={form.guardian_document} onChange={e => setForm({ ...form, guardian_document: maskCpf(e.target.value) })} maxLength={14} />
+        <FormInput label="Senha do responsável (para login)" id="modal_guardian_password" type="password" placeholder="Mínimo 6 caracteres" required value={form.guardian_password} onChange={e => setForm({ ...form, guardian_password: e.target.value })} />
         <FormInput label="Telefone do Responsável" id="modal_guardian_phone" placeholder="(00) 00000-0000" value={form.guardian_phone} onChange={e => setForm({ ...form, guardian_phone: maskPhone(e.target.value) })} maxLength={15} />
         <FormInput label="CEP" id="modal_cep" placeholder="00000-000" value={form.cep} onChange={e => handleCepChange(e.target.value)} maxLength={9} />
         <FormInput label="Estado" id="modal_state" placeholder="Ex: SP" value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />

@@ -7,6 +7,7 @@ import { SendMessageDto } from './dto/send-message.dto'
 import { RolesGuard } from '../../common/guards/roles.guard'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
+import { getEffectiveStudentId, getEffectiveSchoolId } from '../../common/helpers/student-context.helper'
 
 @Controller()
 export class CommunicationController {
@@ -17,66 +18,72 @@ export class CommunicationController {
 
   @Get('students/me/conversations')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  findMyConversations(@Req() req: { user: { id: number; school_id?: number } }) {
-    return this.communicationService.findConversationsByStudent(req.user.id, req.user.school_id)
+  @Roles('responsible')
+  findMyConversations(@Req() req: { user: { role: string; student_id?: number; school_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    return this.communicationService.findConversationsByStudent(studentId, getEffectiveSchoolId(req))
   }
 
   @Get('students/me/conversations/unread-count')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  countUnreadStudent(@Req() req: { user: { id: number; school_id?: number } }) {
-    return this.communicationService.countUnreadByStudent(req.user.id, req.user.school_id).then((count) => ({ count }))
+  @Roles('responsible')
+  countUnreadStudent(@Req() req: { user: { role: string; student_id?: number; school_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    return this.communicationService.countUnreadByStudent(studentId, getEffectiveSchoolId(req)).then((count) => ({ count }))
   }
 
   @Get('students/me/conversations/unread-count-by-type')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  countUnreadStudentByType(@Req() req: { user: { id: number; school_id?: number } }) {
-    return this.communicationService.countUnreadByStudentByType(req.user.id, req.user.school_id)
+  @Roles('responsible')
+  countUnreadStudentByType(@Req() req: { user: { role: string; student_id?: number; school_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    return this.communicationService.countUnreadByStudentByType(studentId, getEffectiveSchoolId(req))
   }
 
   @Post('students/me/conversations')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
+  @Roles('responsible')
   createMyConversation(
-    @Req() req: { user: { id: number; school_id?: number } },
+    @Req() req: { user: { role: string; student_id?: number; school_id?: number } },
     @Body() dto: CreateConversationDto,
   ) {
-    return this.communicationService.createConversationByStudent(req.user.id, dto, req.user.school_id)
+    const studentId = getEffectiveStudentId(req)
+    return this.communicationService.createConversationByStudent(studentId, dto, getEffectiveSchoolId(req))
   }
 
   @Get('students/me/conversations/:id/messages')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
+  @Roles('responsible')
   async getMyConversationMessages(
     @Param('id') id: string,
     @Query('page') page: string,
     @Query('limit') limit: string,
-    @Req() req: { user: { id: number } },
+    @Req() req: { user: { role: string; student_id?: number } },
   ) {
-    await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
+    const studentId = getEffectiveStudentId(req)
+    await this.communicationService.ensureConversationAccess(+id, studentId, undefined)
     return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30), {
       type: 'student',
-      id: req.user.id,
+      id: studentId,
     })
   }
 
   @Post('students/me/conversations/:id/messages')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
+  @Roles('responsible')
   async sendMyConversationMessage(
     @Param('id') id: string,
     @Body() dto: SendMessageDto,
-    @Req() req: { user: { id: number; school_id?: number } },
+    @Req() req: { user: { role: string; student_id?: number; school_id?: number } },
   ) {
-    await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
+    const studentId = getEffectiveStudentId(req)
+    await this.communicationService.ensureConversationAccess(+id, studentId, undefined)
     const { message, conversation } = await this.communicationService.addMessage(
       +id,
       'student',
-      req.user.id,
+      studentId,
       dto.message,
-      req.user.school_id,
+      getEffectiveSchoolId(req),
     )
     this.chatGateway.emitNewMessage(+id, message)
     this.chatGateway.emitUnreadCountUpdate(conversation, 'student')
@@ -85,12 +92,13 @@ export class CommunicationController {
 
   @Patch('students/me/conversations/:id/close')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
+  @Roles('responsible')
   async closeMyConversation(
     @Param('id') id: string,
-    @Req() req: { user: { id: number } },
+    @Req() req: { user: { role: string; student_id?: number } },
   ) {
-    await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
+    const studentId = getEffectiveStudentId(req)
+    await this.communicationService.ensureConversationAccess(+id, studentId, undefined)
     const result = await this.communicationService.closeConversation(+id, undefined)
     this.chatGateway.emitConversationClosed(+id)
     return result
@@ -98,59 +106,63 @@ export class CommunicationController {
 
   @Get('students/me/teacher-conversations')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  findMyTeacherConversations(@Req() req: { user: { id: number; school_id?: number } }) {
+  @Roles('responsible')
+  findMyTeacherConversations(@Req() req: { user: { role: string; student_id?: number; school_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
     return this.communicationService.findConversationsByStudentWithTeachers(
-      req.user.id,
-      req.user.school_id,
+      studentId,
+      getEffectiveSchoolId(req),
     )
   }
 
   @Post('students/me/teacher-conversations')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
+  @Roles('responsible')
   createMyTeacherConversation(
-    @Req() req: { user: { id: number; school_id?: number } },
+    @Req() req: { user: { role: string; student_id?: number; school_id?: number } },
     @Body() dto: CreateConversationDto,
   ) {
+    const studentId = getEffectiveStudentId(req)
     return this.communicationService.createConversationByStudentWithTeacher(
-      req.user.id,
+      studentId,
       dto,
-      req.user.school_id,
+      getEffectiveSchoolId(req),
     )
   }
 
   @Get('students/me/teacher-conversations/:id/messages')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
+  @Roles('responsible')
   async getMyTeacherConversationMessages(
     @Param('id') id: string,
     @Query('page') page: string,
     @Query('limit') limit: string,
-    @Req() req: { user: { id: number } },
+    @Req() req: { user: { role: string; student_id?: number } },
   ) {
-    await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
+    const studentId = getEffectiveStudentId(req)
+    await this.communicationService.ensureConversationAccess(+id, studentId, undefined)
     return this.communicationService.getMessages(+id, +(page || 1), +(limit || 30), {
       type: 'student',
-      id: req.user.id,
+      id: studentId,
     })
   }
 
   @Post('students/me/teacher-conversations/:id/messages')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
+  @Roles('responsible')
   async sendMyTeacherConversationMessage(
     @Param('id') id: string,
     @Body() dto: SendMessageDto,
-    @Req() req: { user: { id: number; school_id?: number } },
+    @Req() req: { user: { role: string; student_id?: number; school_id?: number } },
   ) {
-    await this.communicationService.ensureConversationAccess(+id, req.user.id, undefined)
+    const studentId = getEffectiveStudentId(req)
+    await this.communicationService.ensureConversationAccess(+id, studentId, undefined)
     const { message, conversation } = await this.communicationService.addMessage(
       +id,
       'student',
-      req.user.id,
+      studentId,
       dto.message,
-      req.user.school_id,
+      getEffectiveSchoolId(req),
     )
     this.chatGateway.emitNewMessage(+id, message)
     this.chatGateway.emitUnreadCountUpdate(conversation, 'student')

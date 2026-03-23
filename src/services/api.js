@@ -22,7 +22,7 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const url = (error.config?.url || '').replace(/^\//, '')
-    const isLoginRequest = /^auth\/(login|login-student|login-teacher|teacher\/choose-school)$/.test(url)
+    const isLoginRequest = /^auth\/(login|login-responsible|login-teacher|teacher\/choose-school|responsible\/choose-student)$/.test(url)
     if (error.response?.status === 401 && !isLoginRequest) {
       useAuthStore.getState().logout();
       window.location.href = '/login'

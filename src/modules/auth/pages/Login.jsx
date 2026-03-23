@@ -27,7 +27,7 @@ export default function Login() {
         if (schoolsToChoose.length === 0) logout()
         return
       }
-      const target = role === 'student' ? '/aluno' : role === 'teacher' ? '/professor' : '/dashboard'
+      const target = role === 'responsible' ? '/aluno' : role === 'teacher' ? '/professor' : '/dashboard'
       navigate(target, { replace: true })
     }
   }, [navigate, isAuthenticated, schoolsToChoose.length])
@@ -57,12 +57,12 @@ export default function Login() {
         data = await authService.login(usuario, password)
       } else {
         try {
-          data = await authService.loginStudent(usuario, password)
-        } catch (errStudent) {
-          if (errStudent.response?.status === 401) {
+          data = await authService.loginResponsible(usuario, password)
+        } catch (errResponsible) {
+          if (errResponsible.response?.status === 401) {
             data = await authService.loginTeacher(usuario, password)
           } else {
-            throw errStudent
+            throw errResponsible
           }
         }
       }
@@ -71,10 +71,27 @@ export default function Login() {
         setSchoolsToChoose(data.schools)
         return
       }
-      login(data.user, data.access_token)
+      if (data.responsible && data.students) {
+        const firstStudent = data.students[0]
+        const userData = {
+          id: data.responsible.id,
+          name: data.responsible.name,
+          role: 'responsible',
+          school_id: firstStudent?.school_id ?? null,
+          student_id: firstStudent?.id ?? null,
+        }
+        login(userData, data.access_token, {
+          responsible: data.responsible,
+          students: data.students,
+          studentId: firstStudent?.id ?? null,
+          schoolId: firstStudent?.school_id ?? null,
+        })
+      } else {
+        login(data.user, data.access_token)
+      }
       toast.success('Bem-vindo de volta!')
-      const role = data.user.role
-      const target = role === 'student' ? '/aluno' : role === 'teacher' ? '/professor' : '/dashboard'
+      const role = data.responsible ? 'responsible' : data.user?.role
+      const target = role === 'responsible' ? '/aluno' : role === 'teacher' ? '/professor' : '/dashboard'
       navigate(target, { replace: true })
     } catch (err) {
       const msg = err.response?.data?.message
@@ -246,7 +263,7 @@ export default function Login() {
               E-mail ou CPF
               <input
                 type="text"
-                placeholder="E-mail (gestão) ou CPF (aluno)"
+                placeholder="E-mail (gestão) ou CPF (responsável)"
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
                 required

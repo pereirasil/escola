@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Outlet, useNavigate, useLocation, NavLink, Navigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import {
   LayoutDashboard,
   FileText,
@@ -13,6 +14,7 @@ import {
   Banknote,
 } from 'lucide-react'
 import { useAuthStore } from '../store/useAuthStore'
+import { useChangeStudent } from '../hooks/useChangeStudent'
 import { alunosService } from '../services/alunos.service'
 import BottomNav from '../components/BottomNav'
 import NoIndex from '../components/NoIndex'
@@ -59,20 +61,20 @@ const menuSections = [
 
 export default function AlunoLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [headerInfo, setHeaderInfo] = useState({ guardian_name: null, school_name: null })
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, logout } = useAuthStore()
+  const { user, logout, students, studentId } = useAuthStore()
+  const { changeStudent, switching: switchingStudent } = useChangeStudent()
   const isDashboard = location.pathname === '/aluno'
   const isPedagogico = location.pathname.startsWith('/aluno/historico')
 
-  useEffect(() => {
-    alunosService.headerInfo()
-      .then(setHeaderInfo)
-      .catch(() => {})
-  }, [])
+  const { data: headerInfo = { guardian_name: null, school_name: null } } = useQuery({
+    queryKey: ['aluno', 'header-info', studentId],
+    queryFn: () => alunosService.headerInfo(),
+    enabled: !!studentId,
+  })
 
-  if (user?.role !== 'student') {
+  if (user?.role !== 'responsible') {
     return <Navigate to="/dashboard" replace />
   }
 
@@ -81,8 +83,28 @@ export default function AlunoLayout() {
     navigate('/login', { replace: true })
   }
 
+  if (students?.length === 0) {
+    return (
+      <div className="layout layout-aluno">
+        <main className="layout-content" style={{ padding: '2rem', textAlign: 'center' }}>
+          <p>Você não possui alunos vinculados à sua conta.</p>
+          <p>Entre em contato com a escola para realizar o vínculo.</p>
+          <button type="button" className="btn-secondary" onClick={handleLogout} style={{ marginTop: '1rem' }}>
+            Sair
+          </button>
+        </main>
+      </div>
+    )
+  }
+
+  const handleChangeStudent = (e) => {
+    changeStudent(Number(e.target.value))
+  }
+
   const linkClass = ({ isActive }) => `sidebar-link sidebar-link-aluno ${isActive ? 'active' : ''}`
   const handleLinkClick = () => setSidebarOpen(false)
+  const currentStudent = students?.find((s) => s.id === studentId)
+  const showStudentSelector = students?.length > 1
 
   return (
     <div className="layout layout-aluno">
@@ -91,7 +113,20 @@ export default function AlunoLayout() {
       <aside className={`sidebar sidebar-aluno${sidebarOpen ? ' sidebar-open' : ''}`}>
         <div className="sidebar-aluno-user">
           <div className="sidebar-aluno-info">
-            <span className="sidebar-aluno-name">{user?.name || 'Aluno'}</span>
+            <span className="sidebar-aluno-name">{user?.name || 'Responsável'}</span>
+            {showStudentSelector && (
+              <select
+                value={studentId ?? ''}
+                onChange={handleChangeStudent}
+                disabled={switchingStudent}
+                className="sidebar-aluno-select"
+                style={{ marginTop: '0.5rem', width: '100%', padding: '0.35rem', fontSize: '0.85rem', borderRadius: 4 }}
+              >
+                {students.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -138,7 +173,12 @@ export default function AlunoLayout() {
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
-            {!isPedagogico && <span className="aluno-header-user">{headerInfo.guardian_name || user?.name || 'Aluno'}</span>}
+            {!isPedagogico && (
+              <span className="aluno-header-user">
+                {showStudentSelector && currentStudent ? `${currentStudent.name} - ` : ''}
+                {headerInfo.guardian_name || user?.name || 'Responsável'}
+              </span>
+            )}
           </div>
           {isPedagogico && <h1 className="aluno-header-title">Pedagógico</h1>}
           <div className="aluno-header-right">

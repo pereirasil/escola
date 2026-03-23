@@ -4,12 +4,10 @@ export class CreateStudentDto {
   @IsString()
   name: string
 
+  /** CPF do aluno (opcional, nao usado para login). */
+  @IsOptional()
   @IsString()
-  document: string
-
-  @IsString()
-  @MinLength(6, { message: 'Senha deve ter no mínimo 6 caracteres' })
-  password: string
+  document?: string
 
   @IsOptional()
   @IsEmail()
@@ -19,9 +17,9 @@ export class CreateStudentDto {
   @IsString()
   birth_date?: string
 
-  @IsOptional()
+  /** Nome do responsavel (obrigatorio). */
   @IsString()
-  guardian_name?: string
+  guardian_name: string
 
   @IsOptional()
   @IsString()
@@ -55,9 +53,15 @@ export class CreateStudentDto {
   @IsString()
   cep?: string
 
+  /** CPF do responsavel (obrigatorio). Usado para login do responsavel. */
+  @IsString()
+  guardian_document: string
+
+  /** Senha do responsavel. Obrigatoria apenas quando o responsavel sera criado (nao existe). */
   @IsOptional()
   @IsString()
-  guardian_document?: string
+  @MinLength(6, { message: 'Senha do responsável deve ter no mínimo 6 caracteres' })
+  guardian_password?: string
 
   @IsOptional()
   @IsNumber()

@@ -1,19 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Spinner } from '../../../components/ui'
 import { alunosService } from '../../../services/alunos.service'
-import toast from 'react-hot-toast'
+import { useAuthStore } from '../../../store/useAuthStore'
 
 export default function MinhasReunioes() {
-  const [loading, setLoading] = useState(true)
-  const [reunioes, setReunioes] = useState([])
+  const studentId = useAuthStore((s) => s.studentId)
 
-  useEffect(() => {
-    alunosService
-      .minhasReunioes()
-      .then((data) => setReunioes(Array.isArray(data) ? data : []))
-      .catch(() => toast.error('Erro ao carregar reuniões.'))
-      .finally(() => setLoading(false))
-  }, [])
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['aluno', 'reunioes', studentId],
+    queryFn: () => alunosService.minhasReunioes(),
+    enabled: !!studentId,
+  })
+  const reunioes = Array.isArray(data) ? data : []
 
   const formatarData = (dataString) => {
     if (!dataString) return '-'
@@ -22,7 +20,7 @@ export default function MinhasReunioes() {
     return `${day}/${month}/${year}`
   }
 
-  if (loading) return <div className="page"><Spinner /></div>
+  if (isLoading) return <div className="page"><Spinner /></div>
 
   return (
     <div className="page">

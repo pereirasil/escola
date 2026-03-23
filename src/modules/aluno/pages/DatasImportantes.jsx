@@ -1,19 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Card, Spinner } from '../../../components/ui'
 import { calendarEventsService } from '../../../services/calendarEvents.service'
-import toast from 'react-hot-toast'
+import { useAuthStore } from '../../../store/useAuthStore'
 
 export default function DatasImportantes() {
-  const [eventos, setEventos] = useState([])
-  const [loading, setLoading] = useState(true)
+  const studentId = useAuthStore((s) => s.studentId)
 
-  useEffect(() => {
-    calendarEventsService
-      .listarParaAluno()
-      .then((res) => setEventos(res.data || []))
-      .catch(() => toast.error('Erro ao carregar datas.'))
-      .finally(() => setLoading(false))
-  }, [])
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['aluno', 'datas-importantes', studentId],
+    queryFn: () => calendarEventsService.listarParaAluno(),
+    enabled: !!studentId,
+  })
+  const eventos = data?.data || []
 
   const formatarData = (dataString) => {
     if (!dataString) return '-'
@@ -22,7 +20,7 @@ export default function DatasImportantes() {
     return `${day}/${month}/${year}`
   }
 
-  if (loading) return <div className="page"><Spinner /></div>
+  if (isLoading) return <div className="page"><Spinner /></div>
 
   return (
     <div className="page">

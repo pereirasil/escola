@@ -1,13 +1,11 @@
-import * as bcrypt from 'bcrypt'
-import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, NotFoundException } from '@nestjs/common'
+import { Injectable, ConflictException, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Brackets, Repository } from 'typeorm'
 import { Student } from './entities/student.entity'
 import { User } from '../users/entities/user.entity'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
-
-const SALT_ROUNDS = 10
+import { ResponsiblesService } from '../responsibles/responsibles.service'
 
 function normalizeCpf(cpf: string): string {
   return (cpf || '').replace(/\D/g, '')
@@ -20,6 +18,7 @@ export class StudentsService {
     private repo: Repository<Student>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    private responsiblesService: ResponsiblesService,
   ) {}
 
   findAll(schoolId?: number, isAdmin = false) {
@@ -103,17 +102,39 @@ export class StudentsService {
   }
 
   async create(dto: CreateStudentDto, schoolId?: number) {
-    const normalizedDoc = normalizeCpf(dto.document)
-    const existing =
-      schoolId != null
-        ? await this.findByDocumentAndSchool(normalizedDoc, schoolId)
-        : await this.repo.findOne({ where: { document: normalizedDoc } })
-    if (existing) {
-      throw new ConflictException('CPF já cadastrado nesta escola')
+    const guardianCpf = normalizeCpf(dto.guardian_document)
+    let responsible = await this.responsiblesService.findByCpf(guardianCpf)
+    if (!responsible) {
+      if (!dto.guardian_password || dto.guardian_password.length < 6) {
+        throw new BadRequestException('Senha do responsável é obrigatória para novo cadastro')
+      }
+      responsible = await this.responsiblesService.create(dto.guardian_name, guardianCpf, dto.guardian_password)
     }
-    const hash = await bcrypt.hash(dto.password, SALT_ROUNDS)
-    const { password: _, ...rest } = dto
-    return this.repo.save(this.repo.create({ ...rest, document: normalizedDoc, password_hash: hash, school_id: schoolId }))
+    const studentDoc = dto.document ? normalizeCpf(dto.document) : undefined
+    const studentData: Partial<Student> = {
+      name: dto.name,
+      document: studentDoc,
+      email: dto.email ?? undefined,
+      birth_date: dto.birth_date ?? undefined,
+      guardian_name: dto.guardian_name,
+      guardian_phone: dto.guardian_phone ?? undefined,
+      guardian_document: guardianCpf,
+      state: dto.state ?? undefined,
+      city: dto.city ?? undefined,
+      neighborhood: dto.neighborhood ?? undefined,
+      street: dto.street ?? undefined,
+      number: dto.number ?? undefined,
+      complement: dto.complement ?? undefined,
+      cep: dto.cep ?? undefined,
+      class_id: dto.class_id ?? undefined,
+      monthly_fee: dto.monthly_fee ?? undefined,
+      payment_due_day: dto.payment_due_day ?? undefined,
+      late_fee_percentage: dto.late_fee_percentage ?? undefined,
+      school_id: schoolId ?? undefined,
+    }
+    const student = await this.repo.save(this.repo.create(studentData))
+    await this.responsiblesService.linkStudent(responsible.id, student.id)
+    return student
   }
 
   async update(id: number, dto: UpdateStudentDto, schoolId?: number) {
@@ -138,17 +159,4 @@ export class StudentsService {
     return this.findOne(id, schoolId)
   }
 
-  async updatePassword(studentId: number, currentPassword: string, newPassword: string) {
-    const student = await this.findOne(studentId)
-    if (!student || !student.password_hash) {
-      throw new UnauthorizedException('Aluno não encontrado ou sem senha definida')
-    }
-    const valid = await bcrypt.compare(currentPassword, student.password_hash)
-    if (!valid) {
-      throw new UnauthorizedException('Senha atual incorreta')
-    }
-    const hash = await bcrypt.hash(newPassword, SALT_ROUNDS)
-    await this.repo.update(studentId, { password_hash: hash })
-    return this.findOne(studentId)
-  }
 }

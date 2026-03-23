@@ -6,23 +6,25 @@ import { UpdatePaymentDto } from './dto/update-payment.dto'
 import { RolesGuard } from '../../common/guards/roles.guard'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
+import { getEffectiveStudentId } from '../../common/helpers/student-context.helper'
 
 @Controller('payments')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@Roles('admin', 'school', 'student')
+@Roles('admin', 'school', 'responsible')
 export class PaymentsController {
   constructor(private service: PaymentsService) {}
 
   @Get()
-  findAll(@SchoolId() schoolId: number | undefined, @Req() req: { user: { id: number; role: string } }) {
-    if (req.user?.role === 'student') {
-      return this.service.findAllByStudentId(req.user.id)
+  findAll(@SchoolId() schoolId: number | undefined, @Req() req: { user: { role: string; student_id?: number } }) {
+    if (req.user?.role === 'responsible') {
+      const studentId = getEffectiveStudentId(req)
+      return this.service.findAllByStudentId(studentId)
     }
     return this.service.findAll(schoolId)
   }
 
   @Get(':id/boleto-pdf')
-  async getBoletoPdf(@Param('id') id: string, @Req() req: { user: { id: number; role: string } }) {
+  async getBoletoPdf(@Param('id') id: string, @Req() req: { user: { id: number; role: string; student_id?: number } }) {
     const buffer = await this.service.getBoletoPdfBuffer(+id, req.user)
     return new StreamableFile(buffer, {
       type: 'application/pdf',
@@ -48,12 +50,12 @@ export class PaymentsController {
   }
 
   @Post(':id/generate-boleto')
-  generateBoleto(@Param('id') id: string, @Req() req: { user: { id: number; role: string } }) {
+  generateBoleto(@Param('id') id: string, @Req() req: { user: { id: number; role: string; student_id?: number } }) {
     return this.service.generateBoletoById(+id, req.user)
   }
 
   @Post(':id/generate-pix')
-  generatePix(@Param('id') id: string, @Req() req: { user: { id: number; role: string } }) {
+  generatePix(@Param('id') id: string, @Req() req: { user: { id: number; role: string; student_id?: number } }) {
     return this.service.generatePixById(+id, req.user)
   }
 

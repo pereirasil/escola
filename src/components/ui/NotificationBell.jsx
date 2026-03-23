@@ -19,7 +19,7 @@ export function NotificationBell() {
 
   const fetchCount = () => {
     const role = user?.role
-    if (role === 'student') {
+    if (role === 'responsible') {
       Promise.all([
         alunosService.contarNotificacoesNaoLidas(),
         communicationService.contarNaoLidasAluno(),
@@ -72,7 +72,7 @@ export function NotificationBell() {
     setOpen(true)
     setLoading(true)
     const role = user?.role
-    if (role === 'student') {
+    if (role === 'responsible') {
       alunosService.minhasNotificacoes()
         .then((data) => setLista(data || []))
         .catch(() => setLista([]))

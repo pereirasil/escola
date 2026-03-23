@@ -6,6 +6,7 @@ import { UpdateCalendarEventDto } from './dto/update-calendar-event.dto'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { RolesGuard } from '../../common/guards/roles.guard'
+import { getEffectiveStudentId } from '../../common/helpers/student-context.helper'
 
 @Controller('calendar-events')
 @UseGuards(AuthGuard('jwt'))
@@ -19,9 +20,10 @@ export class CalendarEventsController {
 
   @Get('student/me')
   @UseGuards(RolesGuard)
-  @Roles('student')
-  findForStudent(@Req() req: { user: { id: number } }) {
-    return this.service.findForStudent(req.user.id)
+  @Roles('responsible')
+  findForStudent(@Req() req: { user: { role: string; student_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    return this.service.findForStudent(studentId)
   }
 
   @Post()

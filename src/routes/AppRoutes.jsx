@@ -28,7 +28,7 @@ export const router = createBrowserRouter([
 
   {
     path: '/aluno',
-    element: <ProtectedRoute allowedRoles={['student']} />,
+    element: <ProtectedRoute allowedRoles={['responsible']} />,
     children: [
       {
         element: <AlunoLayout />,
@@ -81,7 +81,7 @@ export const router = createBrowserRouter([
 
 function LayoutWithGuard() {
   const user = useAuthStore((state) => state.user);
-  if (user?.role === 'student') return <Navigate to="/aluno" replace />;
+  if (user?.role === 'responsible') return <Navigate to="/aluno" replace />;
   if (user?.role === 'teacher') return <Navigate to="/professor" replace />;
   return <Layout />;
 }

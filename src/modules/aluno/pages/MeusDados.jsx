@@ -1,25 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, FormInput, Spinner } from '../../../components/ui'
 import { alunosService } from '../../../services/alunos.service'
 import { useAuthStore } from '../../../store/useAuthStore'
 import toast from 'react-hot-toast'
 
 export default function MeusDados() {
-  const [dados, setDados] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const user = useAuthStore((state) => state.user)
+  const studentId = useAuthStore((state) => state.studentId)
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    alunosService.me().then(setDados).catch(() => toast.error('Erro ao carregar dados.')).finally(() => setLoading(false))
-  }, [])
+  const { data: dados, isLoading, isError } = useQuery({
+    queryKey: ['aluno', 'me', studentId],
+    queryFn: () => alunosService.me(),
+    enabled: !!studentId,
+  })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!user?.id || !dados) return
+    if (!studentId || !dados) return
     setSaving(true)
     try {
-      await alunosService.atualizar(user.id, {
+      await alunosService.atualizar(studentId, {
         name: dados.name,
         email: dados.email,
         birth_date: dados.birth_date,
@@ -33,6 +35,7 @@ export default function MeusDados() {
         complement: dados.complement,
       })
       toast.success('Dados atualizados.')
+      queryClient.invalidateQueries({ queryKey: ['aluno', 'me', studentId] })
     } catch {
       toast.error('Erro ao atualizar.')
     } finally {
@@ -40,8 +43,8 @@ export default function MeusDados() {
     }
   }
 
-  if (loading) return <div className="page"><Spinner /></div>
-  if (!dados) return <div className="page">Não foi possível carregar seus dados.</div>
+  if (isLoading) return <div className="page"><Spinner /></div>
+  if (isError || !dados) return <div className="page">Não foi possível carregar seus dados.</div>
 
   return (
     <div className="page">

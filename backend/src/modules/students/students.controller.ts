@@ -12,6 +12,7 @@ import { SchedulesService } from '../schedules/schedules.service'
 import { ClassesService } from '../classes/classes.service'
 import { TeachersService } from '../teachers/teachers.service'
 import { TeacherScopeService } from '../../common/services/teacher-scope.service'
+import { ResponsiblesService } from '../responsibles/responsibles.service'
 import { CalendarEventsService } from '../calendar-events/calendar-events.service'
 import { MeetingsService } from '../meetings/meetings.service'
 import { StudentMessagesService } from '../student-messages/student-messages.service'
@@ -22,6 +23,7 @@ import { CreateStudentMessageDto } from '../student-messages/dto/create-student-
 import { RolesGuard } from '../../common/guards/roles.guard'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
+import { getEffectiveStudentId, getEffectiveSchoolId } from '../../common/helpers/student-context.helper'
 
 @Controller('students')
 export class StudentsController {
@@ -35,6 +37,7 @@ export class StudentsController {
     private classesService: ClassesService,
     private teachersService: TeachersService,
     private teacherScope: TeacherScopeService,
+    private responsiblesService: ResponsiblesService,
     private calendarEventsService: CalendarEventsService,
     private meetingsService: MeetingsService,
     private studentMessagesService: StudentMessagesService,
@@ -62,58 +65,65 @@ export class StudentsController {
 
   @Get('me')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  findMe(@Req() req: { user: { id: number } }) {
-    return this.service.findOne(req.user.id)
+  @Roles('responsible')
+  findMe(@Req() req: { user: { role: string; student_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    return this.service.findOne(studentId)
   }
 
   @Get('me/header-info')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  getMyHeaderInfo(@Req() req: { user: { id: number } }) {
-    return this.service.getHeaderInfo(req.user.id)
+  @Roles('responsible')
+  getMyHeaderInfo(@Req() req: { user: { role: string; student_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    return this.service.getHeaderInfo(studentId)
   }
 
   @Get('me/teachers')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  findMyTeachers(@Req() req: { user: { id: number; school_id?: number } }) {
-    return this.classesService.findTeachersByStudentId(req.user.id, req.user.school_id)
+  @Roles('responsible')
+  findMyTeachers(@Req() req: { user: { role: string; student_id?: number; school_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    return this.classesService.findTeachersByStudentId(studentId, req.user.school_id)
   }
 
   @Get('me/notifications')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  async findMyNotifications(@Req() req: { user: { id: number } }) {
-    const events = await this.calendarEventsService.findForStudent(req.user.id)
-    await this.notificationsService.ensureForCalendarEvents(req.user.id, events)
-    return this.notificationsService.findByStudentId(req.user.id)
+  @Roles('responsible')
+  async findMyNotifications(@Req() req: { user: { role: string; student_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    const events = await this.calendarEventsService.findForStudent(studentId)
+    await this.notificationsService.ensureForCalendarEvents(studentId, events)
+    return this.notificationsService.findByStudentId(studentId)
   }
 
   @Get('me/notifications/count')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  async countUnreadNotifications(@Req() req: { user: { id: number } }) {
-    const count = await this.notificationsService.countUnread(req.user.id)
+  @Roles('responsible')
+  async countUnreadNotifications(@Req() req: { user: { role: string; student_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    const count = await this.notificationsService.countUnread(studentId)
     return { count }
   }
 
   @Patch('me/notifications/read')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  markNotificationsAsRead(@Req() req: { user: { id: number } }) {
-    return this.notificationsService.markAllAsRead(req.user.id)
+  @Roles('responsible')
+  markNotificationsAsRead(@Req() req: { user: { role: string; student_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    return this.notificationsService.markAllAsRead(studentId)
   }
 
   @Post('me/messages')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
+  @Roles('responsible')
   async createMyMessage(
-    @Req() req: { user: { id: number; school_id?: number } },
+    @Req() req: { user: { role: string; student_id?: number; school_id?: number } },
     @Body() dto: CreateStudentMessageDto,
   ) {
+    const studentId = getEffectiveStudentId(req)
     return this.studentMessagesService.create(
-      req.user.id,
+      studentId,
       dto.subject,
       dto.message,
       req.user.school_id,
@@ -122,14 +132,15 @@ export class StudentsController {
 
   @Get('me/messages')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  findMyMessages(@Req() req: { user: { id: number } }) {
-    return this.studentMessagesService.findByStudentId(req.user.id)
+  @Roles('responsible')
+  findMyMessages(@Req() req: { user: { role: string; student_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    return this.studentMessagesService.findByStudentId(studentId)
   }
 
   @Post('me/photo')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
+  @Roles('responsible')
   @UseInterceptors(FileInterceptor('photo', {
     storage: diskStorage({
       destination: join(process.cwd(), 'uploads'),
@@ -148,31 +159,27 @@ export class StudentsController {
     limits: { fileSize: 5 * 1024 * 1024 },
   }))
   async uploadMyPhoto(
-    @Req() req: { user: { id: number } },
+    @Req() req: { user: { role: string; student_id?: number } },
     @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.service.updatePhoto(req.user.id, file.filename)
-  }
-
-  @Patch('me/password')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  changePassword(@Req() req: { user: { id: number } }, @Body() dto: ChangePasswordDto) {
-    return this.service.updatePassword(req.user.id, dto.currentPassword, dto.newPassword)
+    const studentId = getEffectiveStudentId(req)
+    return this.service.updatePhoto(studentId, file.filename)
   }
 
   @Get('me/schedules')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  async getMySchedules(@Req() req: { user: { id: number; school_id?: number } }) {
-    const student = await this.service.findOne(req.user.id)
+  @Roles('responsible')
+  async getMySchedules(@Req() req: { user: { role: string; student_id?: number; school_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    const student = await this.service.findOne(studentId)
     if (!student?.class_id) return []
 
     const turma = await this.classesService.findOne(student.class_id)
 
+    const schoolId = getEffectiveSchoolId(req)
     const [allSchedules, materias] = await Promise.all([
-      this.schedulesService.findAll(student.class_id, req.user.school_id),
-      this.subjectsService.findAll(req.user.school_id),
+      this.schedulesService.findAll(student.class_id, schoolId),
+      this.subjectsService.findAll(schoolId),
     ])
 
     const schedules = turma?.room
@@ -202,10 +209,10 @@ export class StudentsController {
 
   @Get('me/historico')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  async getHistorico(@Req() req: { user: { id: number; school_id?: number } }) {
-    const alunoId = req.user.id
-    const schoolId = req.user.school_id
+  @Roles('responsible')
+  async getHistorico(@Req() req: { user: { role: string; student_id?: number; school_id?: number } }) {
+    const alunoId = getEffectiveStudentId(req)
+    const schoolId = getEffectiveSchoolId(req)
 
     const [notas, historicoPresenca, materias] = await Promise.all([
       this.gradesService.findByAluno(alunoId, schoolId),
@@ -302,16 +309,18 @@ export class StudentsController {
 
   @Get('me/meetings')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('student')
-  async getMyMeetings(@Req() req: { user: { id: number; school_id?: number } }) {
-    const student = await this.service.findOne(req.user.id)
+  @Roles('responsible')
+  async getMyMeetings(@Req() req: { user: { role: string; student_id?: number; school_id?: number } }) {
+    const studentId = getEffectiveStudentId(req)
+    const schoolId = getEffectiveSchoolId(req)
+    const student = await this.service.findOne(studentId)
     const classIds: number[] = []
 
     if (student?.class_id) {
       classIds.push(student.class_id)
       const studentClass = await this.classesService.findOne(student.class_id)
       if (studentClass?.grade) {
-        const sameGradeClasses = await this.classesService.findAll(req.user.school_id)
+        const sameGradeClasses = await this.classesService.findAll(schoolId)
         for (const c of sameGradeClasses) {
           if (c.grade === studentClass.grade && c.id !== student.class_id) {
             classIds.push(c.id)
@@ -320,7 +329,7 @@ export class StudentsController {
       }
     }
 
-    const meetings = await this.meetingsService.findByClassIdsOrGeneral(classIds, req.user.school_id)
+    const meetings = await this.meetingsService.findByClassIdsOrGeneral(classIds, schoolId)
 
     return meetings.map((m) => {
       const scheduled = m.scheduled_at ? new Date(m.scheduled_at) : null
@@ -345,10 +354,11 @@ export class StudentsController {
     @Req() req: { user: { id: number; role: string; school_id?: number } },
   ) {
     const numId = +id
-    if (req.user.role === 'student' && numId !== req.user.id) {
-      throw new ForbiddenException('Acesso negado')
+    if (req.user.role === 'responsible') {
+      await this.responsiblesService.ensureAccessToStudent(req.user.id, numId)
+    } else {
+      await this.teacherScope.ensureStudentAccess(req.user, numId)
     }
-    await this.teacherScope.ensureStudentAccess(req.user, numId)
     const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
     return this.service.findOne(numId, schoolId)
   }
@@ -371,8 +381,8 @@ export class StudentsController {
     if (req.user.role === 'teacher') {
       throw new ForbiddenException('Professor não pode editar dados de alunos')
     }
-    if (req.user.role === 'student' && numId !== req.user.id) {
-      throw new ForbiddenException('Acesso negado')
+    if (req.user.role === 'responsible') {
+      await this.responsiblesService.ensureAccessToStudent(req.user.id, numId)
     }
     const schoolId = req.user.role === 'admin' ? undefined : req.user.school_id
     return this.service.update(numId, dto, schoolId)
