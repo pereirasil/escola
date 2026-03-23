@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { FormInput } from '../../../components/ui';
+import { FormInput, SelectField } from '../../../components/ui';
 import { professoresService } from '../../../services/professores.service';
 import { maskCpf, maskPhone, maskCep, fetchAddressByCep } from '../../../utils/masks';
 import toast from 'react-hot-toast';
@@ -8,12 +8,24 @@ import toast from 'react-hot-toast';
 const INITIAL_FORM = {
   name: '', document: '', phone: '', email: '',
   password: '', confirmPassword: '',
-  cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: ''
+  cep: '', state: '', city: '', neighborhood: '', street: '', number: '', complement: '',
+  serie: '', sala: ''
 };
 
-export default function ProfessorForm({ onSuccess }) {
+export default function ProfessorForm({ turmas = [], onSuccess }) {
   const [form, setForm] = useState(INITIAL_FORM);
   const [submitting, setSubmitting] = useState(false);
+
+  const seriesOptions = useMemo(() => {
+    const grades = [...new Set(turmas.map(t => t.grade).filter(Boolean))].sort();
+    return grades.map(g => ({ value: g, label: g }));
+  }, [turmas]);
+
+  const salasOptions = useMemo(() => {
+    const filtered = form.serie ? turmas.filter(t => t.grade === form.serie) : turmas;
+    const rooms = [...new Set(filtered.map(t => t.room).filter(Boolean))].sort();
+    return rooms.map(r => ({ value: r, label: r }));
+  }, [turmas, form.serie]);
 
   const handleCepChange = async (value) => {
     const masked = maskCep(value);
@@ -38,8 +50,13 @@ export default function ProfessorForm({ onSuccess }) {
 
     setSubmitting(true);
     try {
-      const { confirmPassword, ...payload } = form;
-      await professoresService.criar(payload);
+      const { confirmPassword, serie, sala, ...payload } = form;
+      let classId = null;
+      if (serie && sala) {
+        const turma = turmas.find(t => t.grade === serie && t.room === sala);
+        classId = turma?.id || null;
+      }
+      await professoresService.criar({ ...payload, ...(classId && { class_id: classId }) });
       toast.success('Professor cadastrado com sucesso!');
       setForm(INITIAL_FORM);
       onSuccess?.();
@@ -66,6 +83,8 @@ export default function ProfessorForm({ onSuccess }) {
         <FormInput label="Rua" id="modal_prof_street" placeholder="Ex: Rua das Flores" value={form.street} onChange={e => setForm({ ...form, street: e.target.value })} />
         <FormInput label="Número" id="modal_prof_number" placeholder="Ex: 123" value={form.number} onChange={e => setForm({ ...form, number: e.target.value })} />
         <FormInput label="Complemento" id="modal_prof_complement" placeholder="Ex: Apto 45" value={form.complement} onChange={e => setForm({ ...form, complement: e.target.value })} />
+        <SelectField label="Série" id="modal_prof_serie" value={form.serie} onChange={e => setForm(prev => ({ ...prev, serie: e.target.value, sala: '' }))} options={seriesOptions} />
+        <SelectField label="Sala" id="modal_prof_sala" value={form.sala} onChange={e => setForm(prev => ({ ...prev, sala: e.target.value }))} options={salasOptions} />
       </div>
       <p style={{ fontSize: '0.875rem', color: '#888', margin: '1rem 0' }}>
         Para vincular turmas e matérias ao professor, utilize a <Link to="/horarios" style={{ color: '#646cff' }}>Grade Horária</Link> após o cadastro.

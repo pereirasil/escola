@@ -6,6 +6,7 @@ import { Teacher } from './entities/teacher.entity'
 import { User } from '../users/entities/user.entity'
 import { CreateTeacherDto } from './dto/create-teacher.dto'
 import { UpdateTeacherDto } from './dto/update-teacher.dto'
+import { ClassesService } from '../classes/classes.service'
 
 const SALT_ROUNDS = 10
 
@@ -20,6 +21,7 @@ export class TeachersService {
     private repo: Repository<Teacher>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    private classesService: ClassesService,
   ) {}
 
   findAll(schoolId?: number, isAdmin = false) {
@@ -106,10 +108,17 @@ export class TeachersService {
       throw new ConflictException('CPF já cadastrado nesta escola')
     }
     const hash = await bcrypt.hash(dto.password, SALT_ROUNDS)
-    const { password: _, ...rest } = dto
-    return this.repo.save(
+    const { password: _, class_id: classId, ...rest } = dto
+    const teacher = await this.repo.save(
       this.repo.create({ ...rest, document: normalizedDoc, password_hash: hash, school_id: schoolId }),
     )
+    if (classId && teacher.id) {
+      const cls = await this.classesService.findOne(classId)
+      if (cls && (schoolId == null || cls.school_id === schoolId)) {
+        await this.classesService.update(classId, { teacher_id: teacher.id })
+      }
+    }
+    return teacher
   }
 
   async update(id: number, dto: UpdateTeacherDto, schoolId?: number) {

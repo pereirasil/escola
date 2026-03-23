@@ -142,7 +142,7 @@ export default function Professores() {
       </Card>
 
       <FormModal open={modalOpen} title="Cadastrar Novo Professor" onClose={() => setModalOpen(false)} size="lg">
-        <ProfessorForm onSuccess={handleFormSuccess} />
+        <ProfessorForm turmas={turmas} onSuccess={handleFormSuccess} />
       </FormModal>
 
       {viewProfile && (() => {
