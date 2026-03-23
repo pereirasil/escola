@@ -5,6 +5,8 @@ import { diskStorage } from 'multer'
 import { extname, join } from 'path'
 import { TeachersService } from './teachers.service'
 import { ClassesService } from '../classes/classes.service'
+import { SchedulesService } from '../schedules/schedules.service'
+import { SubjectsService } from '../subjects/subjects.service'
 import { CreateTeacherDto } from './dto/create-teacher.dto'
 import { UpdateTeacherDto } from './dto/update-teacher.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
@@ -17,6 +19,8 @@ export class TeachersController {
   constructor(
     private service: TeachersService,
     private classesService: ClassesService,
+    private schedulesService: SchedulesService,
+    private subjectsService: SubjectsService,
   ) {}
 
   @Get()
@@ -65,6 +69,17 @@ export class TeachersController {
   @Roles('teacher')
   findMyStudents(@Req() req: { user: { id: number; school_id?: number } }) {
     return this.classesService.findStudentsByTeacherId(req.user.id, req.user.school_id)
+  }
+
+  @Get('me/subjects')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  async findMySubjects(@Req() req: { user: { id: number; school_id?: number } }) {
+    const schedules = await this.schedulesService.findByTeacherId(req.user.id, req.user.school_id)
+    const subjectIds = [...new Set(schedules.map((s) => s.subject_id))]
+    if (subjectIds.length === 0) return []
+    const subjects = await this.subjectsService.findAll(req.user.school_id)
+    return subjects.filter((s) => subjectIds.includes(s.id)).sort((a, b) => a.name.localeCompare(b.name))
   }
 
   @Post('me/photo')

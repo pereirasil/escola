@@ -29,18 +29,21 @@ export default function Presenca() {
         const turmasPromise = user?.role === 'teacher'
           ? professoresService.minhasTurmas()
           : turmasService.listar().then((r) => r.data);
-        const [turmasData, resM] = await Promise.all([
+        const materiasPromise = user?.role === 'teacher'
+          ? professoresService.minhasMaterias()
+          : materiasService.listar().then((r) => r.data);
+        const [turmasData, materiasData] = await Promise.all([
           turmasPromise,
-          materiasService.listar()
+          materiasPromise
         ]);
         setTurmas(turmasData || []);
-        setMaterias(resM.data || []);
+        setMaterias(materiasData || []);
       } catch (err) {
         toast.error('Erro ao carregar dados iniciais');
       }
     }
     loadFiltros();
-  }, []);
+  }, [user?.role]);
 
   // Carregar alunos ao mudar a turma
   useEffect(() => {

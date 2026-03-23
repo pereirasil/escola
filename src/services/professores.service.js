@@ -16,6 +16,7 @@ export const professoresService = {
   me: () => api.get('/teachers/me').then((r) => r.data),
   headerInfo: () => api.get('/teachers/me/header-info').then((r) => r.data),
   minhasTurmas: () => api.get('/teachers/me/classes').then((r) => r.data),
+  minhasMaterias: () => api.get('/teachers/me/subjects').then((r) => r.data),
   meusAlunos: () => api.get('/teachers/me/students').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>
     api.patch('/teachers/me/password', { currentPassword, newPassword }).then((r) => r.data),
