@@ -84,7 +84,7 @@ Em caso de dúvidas, entre em contato pelo telefone: 21990443914
                 </p>
                 {pix && (
                   <div className="auth-pix-cadastro" style={{ marginTop: '1.5rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px' }}>
-                    <p style={{ marginBottom: '0.75rem', fontWeight: 600 }}>Taxa de cadastro: R$ 99,99</p>
+                    <p style={{ marginBottom: '0.75rem', fontWeight: 600 }}>Taxa de cadastro: R$ 159,99</p>
                     <p style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: '#64748b' }}>
                       Pague via PIX para concluir. O valor será creditado na conta configurada.
                     </p>

@@ -7,7 +7,7 @@ import { TeachersService } from '../teachers/teachers.service'
 import { BoletoService } from '../payments/services/boleto.service'
 import { RegisterDto } from './dto/register.dto'
 
-const TAXA_CADASTRO = 99.99
+const TAXA_CADASTRO = 159.99
 
 @Injectable()
 export class AuthService {

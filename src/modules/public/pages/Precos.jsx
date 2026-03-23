@@ -49,7 +49,7 @@ export default function Precos() {
             <span className="landing-pricing-badge">Mais Popular</span>
             <h3>Profissional</h3>
             <div className="landing-pricing-price">
-              R$ 99,99 <small>/mês</small>
+              R$ 159,99 <small>/mês</small>
             </div>
             <ul className="landing-pricing-features">
               <li>Até 500 alunos</li>
