@@ -22,6 +22,8 @@ import Notas from '../modules/notas/pages/Notas';
 import RelatorioPresenca from '../modules/presenca/pages/RelatorioPresenca';
 import AlterarSenhaProfessor from '../modules/professor/pages/AlterarSenhaProfessor';
 import ComunicacaoProfessor from '../modules/professor/pages/Comunicacao';
+import HistoricoNotasProfessor from '../modules/professor/pages/HistoricoNotasProfessor';
+import HistoricoPresencaProfessor from '../modules/professor/pages/HistoricoPresencaProfessor';
 
 export const router = createBrowserRouter([
   ...publicRoutes,
@@ -59,6 +61,8 @@ export const router = createBrowserRouter([
           { path: 'turmas', element: <MinhasTurmas /> },
           { path: 'faltas', element: <Presenca /> },
           { path: 'notas', element: <Notas /> },
+          { path: 'historico-notas', element: <HistoricoNotasProfessor /> },
+          { path: 'historico-presenca', element: <HistoricoPresencaProfessor /> },
           { path: 'comunicacao', element: <ComunicacaoProfessor /> },
           { path: 'historico', element: <RelatorioPresenca /> },
           { path: 'alterar-senha', element: <AlterarSenhaProfessor /> },

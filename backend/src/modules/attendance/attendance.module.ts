@@ -7,9 +7,16 @@ import { Student } from '../students/entities/student.entity'
 import { Class } from '../classes/entities/class.entity'
 import { Enrollment } from '../classes/entities/enrollment.entity'
 import { TeacherScopeModule } from '../../common/services/teacher-scope.module'
+import { SchedulesModule } from '../schedules/schedules.module'
+import { SubjectsModule } from '../subjects/subjects.module'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Attendance, Student, Class, Enrollment]), TeacherScopeModule],
+  imports: [
+    TypeOrmModule.forFeature([Attendance, Student, Class, Enrollment]),
+    TeacherScopeModule,
+    SchedulesModule,
+    SubjectsModule,
+  ],
   controllers: [AttendanceController],
   providers: [AttendanceService],
   exports: [AttendanceService],

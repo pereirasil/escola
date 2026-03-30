@@ -1,11 +1,33 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In } from 'typeorm'
+import { Repository } from 'typeorm'
 import { Attendance } from './entities/attendance.entity'
 import { CreateAttendanceDto } from './dto/create-attendance.dto'
 import { Student } from '../students/entities/student.entity'
 import { Class } from '../classes/entities/class.entity'
 import { Enrollment } from '../classes/entities/enrollment.entity'
+import { SchedulesService } from '../schedules/schedules.service'
+import { SubjectsService } from '../subjects/subjects.service'
+
+export type HistoricoPresencaRegistro = {
+  data: string
+  materia_id: number
+  materia_nome: string
+  aula: string
+  status: string
+  observacao: string | null
+}
+
+export type HistoricoPresencaAluno = {
+  aluno_id: number
+  nome: string
+  total_registros: number
+  faltas: number
+  presencas_contagem: number
+  frequencia_percentual: number
+  alerta_faltas: boolean
+  registros: HistoricoPresencaRegistro[]
+}
 
 @Injectable()
 export class AttendanceService {
@@ -16,6 +38,8 @@ export class AttendanceService {
     private studentRepo: Repository<Student>,
     @InjectRepository(Class)
     private classRepo: Repository<Class>,
+    private schedulesService: SchedulesService,
+    private subjectsService: SubjectsService,
   ) {}
 
   findAll(schoolId?: number, page = 1, limit = 50) {
@@ -177,5 +201,94 @@ export class AttendanceService {
       class_id: Number(row.class_id),
       faltas: Number(row.faltas),
     }))
+  }
+
+  /**
+   * Histórico por turma. Professor: só registros das matérias que leciona (grade horária).
+   * Demais perfis: todos os registros da turma na escola.
+   */
+  async getHistoricoTurmaDetalhe(
+    user: { id: number; role: string; school_id?: number },
+    turmaId: number,
+    schoolId: number | undefined,
+    dataInicio?: string,
+    dataFim?: string,
+  ): Promise<{ alunos: HistoricoPresencaAluno[] }> {
+    let subjectIds: number[] | null = null
+    if (user.role === 'teacher') {
+      const schedules = await this.schedulesService.findByTeacherId(user.id, schoolId)
+      subjectIds = [...new Set(schedules.filter((s) => s.class_id === turmaId).map((s) => s.subject_id))]
+      if (subjectIds.length === 0) {
+        return { alunos: [] }
+      }
+    }
+
+    const qb = this.repo
+      .createQueryBuilder('p')
+      .innerJoin(Student, 'stu', 'stu.id = p.student_id')
+      .where('p.class_id = :turmaId', { turmaId })
+      .andWhere('(stu.status IS NULL OR stu.status = :activeSt)', { activeSt: 'active' })
+
+    if (schoolId) qb.andWhere('p.school_id = :schoolId', { schoolId })
+    if (subjectIds) qb.andWhere('p.subject_id IN (:...subjectIds)', { subjectIds })
+    if (dataInicio) qb.andWhere('p.date >= :di', { di: dataInicio })
+    if (dataFim) qb.andWhere('p.date <= :df', { df: dataFim })
+
+    qb.orderBy('stu.name', 'ASC').addOrderBy('p.date', 'DESC').addOrderBy('p.lesson', 'ASC')
+
+    const rows = await qb
+      .select('p.student_id', 'aluno_id')
+      .addSelect('stu.name', 'nome')
+      .addSelect('p.subject_id', 'materia_id')
+      .addSelect('p.date', 'data')
+      .addSelect('p.lesson', 'aula')
+      .addSelect('p.status', 'status')
+      .addSelect('p.observation', 'observacao')
+      .getRawMany()
+
+    const subjects = await this.subjectsService.findAll(schoolId)
+    const subjectName = new Map(subjects.map((s) => [s.id, s.name]))
+
+    const byAluno = new Map<number, HistoricoPresencaAluno>()
+
+    for (const raw of rows as Record<string, string | number | null>[]) {
+      const alunoId = Number(raw.aluno_id)
+      let block = byAluno.get(alunoId)
+      if (!block) {
+        block = {
+          aluno_id: alunoId,
+          nome: String(raw.nome ?? ''),
+          total_registros: 0,
+          faltas: 0,
+          presencas_contagem: 0,
+          frequencia_percentual: 100,
+          alerta_faltas: false,
+          registros: [],
+        }
+        byAluno.set(alunoId, block)
+      }
+      const mid = Number(raw.materia_id)
+      const reg: HistoricoPresencaRegistro = {
+        data: String(raw.data ?? ''),
+        materia_id: mid,
+        materia_nome: subjectName.get(mid) || `Matéria ${mid}`,
+        aula: String(raw.aula ?? ''),
+        status: String(raw.status ?? ''),
+        observacao: raw.observacao != null ? String(raw.observacao) : null,
+      }
+      block.registros.push(reg)
+    }
+
+    for (const block of byAluno.values()) {
+      block.total_registros = block.registros.length
+      block.faltas = block.registros.filter((r) => r.status === 'F').length
+      block.presencas_contagem = block.registros.filter((r) => ['P', 'A', 'J'].includes(r.status)).length
+      const t = block.total_registros
+      block.frequencia_percentual = t > 0 ? Math.round((block.presencas_contagem / t) * 100) : 100
+      block.alerta_faltas = block.faltas >= 3
+    }
+
+    const alunos = [...byAluno.values()].sort((a, b) => a.nome.localeCompare(b.nome))
+    return { alunos }
   }
 }

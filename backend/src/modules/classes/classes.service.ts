@@ -29,15 +29,20 @@ export class ClassesService {
     return this.repo.find({ where, order: { name: 'ASC' } })
   }
 
+  /** Turmas em que o professor tem aula cadastrada na grade (schedules), não só titular da turma. */
   findByTeacherId(teacherId: number, schoolId?: number) {
-    const qb = this.repo.createQueryBuilder('c')
-      .where(
-        '(c.teacher_id = :tid OR c.id IN ' +
-        '(SELECT s.class_id FROM schedules s WHERE s.teacher_id = :tid))',
-        { tid: teacherId },
-      )
-    if (schoolId) qb.andWhere('c.school_id = :sid', { sid: schoolId })
-    return qb.orderBy('c.name', 'ASC').getMany()
+    const qb = this.scheduleRepo
+      .createQueryBuilder('s')
+      .select('DISTINCT s.class_id', 'class_id')
+      .where('s.teacher_id = :tid', { tid: teacherId })
+    if (schoolId) qb.andWhere('s.school_id = :sid', { sid: schoolId })
+    return qb.getRawMany().then((raws) => {
+      const ids = [...new Set(raws.map((r) => Number(r.class_id)).filter((id) => !Number.isNaN(id)))]
+      if (ids.length === 0) return []
+      const where: { id: ReturnType<typeof In>; school_id?: number } = { id: In(ids) }
+      if (schoolId) where.school_id = schoolId
+      return this.repo.find({ where, order: { name: 'ASC' } })
+    })
   }
 
   findOne(id: number) {

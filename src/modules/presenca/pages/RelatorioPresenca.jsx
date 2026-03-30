@@ -15,18 +15,20 @@ export default function RelatorioPresenca() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (!user) return;
     async function loadFiltros() {
       try {
-        const turmasData = user?.role === 'teacher'
-          ? await professoresService.minhasTurmas()
-          : (await turmasService.listar()).data || [];
+        const turmasData =
+          user.role === 'teacher'
+            ? await professoresService.minhasTurmas()
+            : (await turmasService.listar()).data || [];
         setTurmas(turmasData || []);
       } catch (err) {
         toast.error('Erro ao carregar turmas');
       }
     }
     loadFiltros();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (turmaId) {
@@ -51,7 +53,7 @@ export default function RelatorioPresenca() {
 
   return (
     <div className="page">
-      <PageHeader title="Relatório de Presença" description="Visão geral de frequência por turma" />
+      <PageHeader title="Resumo de frequência" description="Totais de presença e faltas por aluno na turma" />
 
       <Card title="Selecione a Turma">
         <div style={{ maxWidth: '300px' }}>
@@ -60,7 +62,10 @@ export default function RelatorioPresenca() {
             id="turma" 
             value={turmaId} 
             onChange={e => setTurmaId(e.target.value)}
-            options={turmas.map(t => ({ value: t.id, label: t.room || t.name }))}
+            options={turmas.map((t) => ({
+              value: t.id,
+              label: t.grade && t.name ? `${t.grade} - ${t.name}` : t.room || t.name,
+            }))}
           />
         </div>
       </Card>
@@ -77,9 +82,13 @@ export default function RelatorioPresenca() {
               renderRow={(item) => (
                 <tr key={item.aluno_id}>
                   <td>
-                    <Link to={`/alunos/${item.aluno_id}`} style={{ color: '#646cff', textDecoration: 'none', fontWeight: 'bold' }}>
-                      {item.nome}
-                    </Link>
+                    {user?.role === 'teacher' ? (
+                      <span style={{ fontWeight: 'bold' }}>{item.nome}</span>
+                    ) : (
+                      <Link to={`/alunos/${item.aluno_id}`} style={{ color: '#646cff', textDecoration: 'none', fontWeight: 'bold' }}>
+                        {item.nome}
+                      </Link>
+                    )}
                   </td>
                   <td>{item.presencas}</td>
                   <td>

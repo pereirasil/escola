@@ -50,7 +50,9 @@ export default function ProfessorLayout() {
           <NavLink to="/professor/turmas" className={linkClass} onClick={handleLinkClick}>Minhas Turmas</NavLink>
           <NavLink to="/professor/faltas" className={linkClass} onClick={handleLinkClick}>Lançamento de Faltas</NavLink>
           <NavLink to="/professor/notas" className={linkClass} onClick={handleLinkClick}>Lançamento de Notas</NavLink>
-          <NavLink to="/professor/historico" className={linkClass} onClick={handleLinkClick}>Histórico e Gráficos</NavLink>
+          <NavLink to="/professor/historico-notas" className={linkClass} onClick={handleLinkClick}>Histórico de Notas</NavLink>
+          <NavLink to="/professor/historico-presenca" className={linkClass} onClick={handleLinkClick}>Histórico de Presença</NavLink>
+          <NavLink to="/professor/historico" className={linkClass} onClick={handleLinkClick}>Resumo de frequência</NavLink>
           <NavLink to="/professor/alterar-senha" className={linkClass} onClick={handleLinkClick}>Alterar senha</NavLink>
           <div className="sidebar-divider" />
           <button type="button" className="sidebar-link sidebar-link-logout" onClick={() => { handleLinkClick(); handleLogout(); }}>

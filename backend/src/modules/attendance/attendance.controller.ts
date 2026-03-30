@@ -49,6 +49,19 @@ export class AttendanceController {
     return this.service.getFaltasPorTurma(+turmaId, schoolId)
   }
 
+  /** Registros de presença por aluno na turma (professor: só suas disciplinas na turma). */
+  @Get('historico-turma/:turmaId')
+  async getHistoricoTurma(
+    @Param('turmaId') turmaId: string,
+    @Query('dataInicio') dataInicio: string | undefined,
+    @Query('dataFim') dataFim: string | undefined,
+    @Req() req: { user: { id: number; role: string; school_id?: number } },
+    @SchoolId() schoolId: number | undefined,
+  ) {
+    await this.teacherScope.ensureClassAccess(req.user, +turmaId)
+    return this.service.getHistoricoTurmaDetalhe(req.user, +turmaId, schoolId, dataInicio, dataFim)
+  }
+
   @Get('historico/aluno/:alunoId')
   async getHistoricoAluno(
     @Param('alunoId') alunoId: string,
@@ -85,6 +98,11 @@ export class AttendanceController {
       await this.teacherScope.ensureClassSubjectAccess(req.user, dto.turma_id, dto.materia_id)
       checked.add(key)
     }
-    return this.service.createBulk(dtos, schoolId)
+    const tid = req.user.role === 'teacher' ? req.user.id : undefined
+    const payload = dtos.map((dto) => ({
+      ...dto,
+      teacher_id: tid ?? dto.teacher_id,
+    }))
+    return this.service.createBulk(payload, schoolId)
   }
 }

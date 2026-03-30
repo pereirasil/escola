@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, SelectField, FormInput } from '../../../components/ui';
+import { Card, PageHeader, SelectField, FormInput, Spinner } from '../../../components/ui';
 import { turmasService } from '../../../services/turmas.service';
 import { materiasService } from '../../../services/materias.service';
 import { presencasService } from '../../../services/presencas.service';
@@ -7,10 +7,15 @@ import { professoresService } from '../../../services/professores.service';
 import { useAuthStore } from '../../../store/useAuthStore';
 import toast from 'react-hot-toast';
 
+const MSG_SEM_MATERIA_PROFESSOR =
+  'Nenhuma matéria vinculada a este professor nesta turma.';
+
 export default function Presenca() {
   const user = useAuthStore((s) => s.user);
+  const isTeacher = user?.role === 'teacher';
   const [turmas, setTurmas] = useState([]);
   const [materias, setMaterias] = useState([]);
+  const [loadingMaterias, setLoadingMaterias] = useState(false);
   const [alunos, setAlunos] = useState([]);
   const [loadingAlunos, setLoadingAlunos] = useState(false);
 
@@ -26,24 +31,49 @@ export default function Presenca() {
   useEffect(() => {
     async function loadFiltros() {
       try {
-        const turmasPromise = user?.role === 'teacher'
+        const turmasPromise = isTeacher
           ? professoresService.minhasTurmas()
           : turmasService.listar().then((r) => r.data);
-        const materiasPromise = user?.role === 'teacher'
-          ? professoresService.minhasMaterias()
-          : materiasService.listar().then((r) => r.data);
-        const [turmasData, materiasData] = await Promise.all([
-          turmasPromise,
-          materiasPromise
-        ]);
+        const turmasData = await turmasPromise;
         setTurmas(turmasData || []);
-        setMaterias(materiasData || []);
+        if (!isTeacher) {
+          const materiasData = await materiasService.listar().then((r) => r.data);
+          setMaterias(materiasData || []);
+        } else {
+          setMaterias([]);
+        }
       } catch (err) {
         toast.error('Erro ao carregar dados iniciais');
       }
     }
     loadFiltros();
-  }, [user?.role]);
+  }, [isTeacher]);
+
+  useEffect(() => {
+    if (!isTeacher) return;
+    if (!form.turma_id) {
+      setMaterias([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingMaterias(true);
+    (async () => {
+      try {
+        const data = await professoresService.minhasMateriasNaTurma(form.turma_id);
+        if (!cancelled) setMaterias(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (!cancelled) {
+          setMaterias([]);
+          toast.error('Erro ao carregar matérias desta turma');
+        }
+      } finally {
+        if (!cancelled) setLoadingMaterias(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isTeacher, form.turma_id]);
 
   // Carregar alunos ao mudar a turma
   useEffect(() => {
@@ -78,7 +108,11 @@ export default function Presenca() {
 
   const handleChangeForm = (e) => {
     const { id, value } = e.target;
-    setForm(prev => ({ ...prev, [id]: value }));
+    if (id === 'turma_id') {
+      setForm((prev) => ({ ...prev, turma_id: value, materia_id: '' }));
+      return;
+    }
+    setForm((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleStatusChange = (alunoId, status) => {
@@ -143,13 +177,25 @@ export default function Presenca() {
             onChange={handleChangeForm}
             options={turmas.map(t => ({ value: t.id, label: t.room || t.name }))}
           />
-          <SelectField 
-            label="Matéria" 
-            id="materia_id" 
-            value={form.materia_id} 
+          <SelectField
+            label="Matéria"
+            id="materia_id"
+            value={form.materia_id}
             onChange={handleChangeForm}
-            options={materias.map(m => ({ value: m.id, label: m.name }))}
+            disabled={isTeacher && (!form.turma_id || loadingMaterias)}
+            options={materias.map((m) => ({ value: m.id, label: m.name }))}
           />
+          {isTeacher && form.turma_id && loadingMaterias && (
+            <div className="form-group" style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Spinner />
+              <span className="field-hint">Carregando matérias…</span>
+            </div>
+          )}
+          {isTeacher && form.turma_id && !loadingMaterias && materias.length === 0 && (
+            <p className="field-hint" style={{ gridColumn: '1 / -1', marginTop: '-0.5rem' }}>
+              {MSG_SEM_MATERIA_PROFESSOR}
+            </p>
+          )}
           <FormInput 
             label="Data" 
             id="data" 
@@ -177,11 +223,20 @@ export default function Presenca() {
       {form.turma_id && (
         <Card title="Lista de Chamada">
           {loadingAlunos ? (
-            <p>Carregando alunos...</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0' }}>
+              <Spinner />
+              <span>Carregando alunos…</span>
+            </div>
           ) : alunos.length === 0 ? (
-            <div className="empty-state">Nenhum aluno matriculado nesta turma.</div>
+            <div className="empty-state">Nenhum aluno encontrado nesta turma.</div>
           ) : (
             <>
+              <div className="presenca-legenda" aria-hidden="true">
+                <span className="presenca-legenda-item presenca-legenda-item--P">Presente</span>
+                <span className="presenca-legenda-item presenca-legenda-item--F">Falta</span>
+                <span className="presenca-legenda-item presenca-legenda-item--A">Atraso</span>
+                <span className="presenca-legenda-item presenca-legenda-item--J">Justificado</span>
+              </div>
               <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>
                 <table className="data-table">
                   <thead>
@@ -198,11 +253,14 @@ export default function Presenca() {
                     {alunos.map(aluno => {
                       const statusAtual = chamada[aluno.id]?.status || '';
                       const obsAtual = chamada[aluno.id]?.observacao || '';
+                      const rowCls = statusAtual
+                        ? `presenca-chamada-row presenca-chamada-row--${statusAtual}`
+                        : 'presenca-chamada-row';
 
                       return (
-                        <tr key={aluno.id}>
+                        <tr key={aluno.id} className={rowCls}>
                           <td style={{ fontWeight: '500' }}>{aluno.name}</td>
-                          <td style={{ textAlign: 'center' }}>
+                          <td className="presenca-celula-status presenca-celula-status--P" style={{ textAlign: 'center' }}>
                             <input 
                               type="radio" 
                               name={`status-${aluno.id}`} 
@@ -212,7 +270,7 @@ export default function Presenca() {
                               style={{ transform: 'scale(1.5)', cursor: 'pointer' }}
                             />
                           </td>
-                          <td style={{ textAlign: 'center' }}>
+                          <td className="presenca-celula-status presenca-celula-status--F" style={{ textAlign: 'center' }}>
                             <input 
                               type="radio" 
                               name={`status-${aluno.id}`} 
@@ -222,7 +280,7 @@ export default function Presenca() {
                               style={{ transform: 'scale(1.5)', cursor: 'pointer' }}
                             />
                           </td>
-                          <td style={{ textAlign: 'center' }}>
+                          <td className="presenca-celula-status presenca-celula-status--A" style={{ textAlign: 'center' }}>
                             <input 
                               type="radio" 
                               name={`status-${aluno.id}`} 
@@ -232,7 +290,7 @@ export default function Presenca() {
                               style={{ transform: 'scale(1.5)', cursor: 'pointer' }}
                             />
                           </td>
-                          <td style={{ textAlign: 'center' }}>
+                          <td className="presenca-celula-status presenca-celula-status--J" style={{ textAlign: 'center' }}>
                             <input 
                               type="radio" 
                               name={`status-${aluno.id}`} 

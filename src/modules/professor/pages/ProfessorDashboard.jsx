@@ -5,8 +5,10 @@ const gridItems = [
   { to: '/professor/turmas', label: 'Minhas Turmas', icon: 'turmas' },
   { to: '/professor/notas', label: 'Lançar Notas', icon: 'notas' },
   { to: '/professor/faltas', label: 'Chamada', icon: 'faltas' },
+  { to: '/professor/historico-notas', label: 'Histórico de Notas', icon: 'historico' },
+  { to: '/professor/historico-presenca', label: 'Histórico de Presença', icon: 'historico' },
+  { to: '/professor/historico', label: 'Resumo frequência', icon: 'historico' },
   { to: '/professor/comunicacao', label: 'Comunicação', icon: 'aviso' },
-  { to: '/professor/historico', label: 'Histórico', icon: 'historico' },
   { to: '/professor/alterar-senha', label: 'Alterar Senha', icon: 'senha' },
 ]
 
@@ -40,6 +42,12 @@ const icons = {
     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  aviso: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
   ),
   senha: (

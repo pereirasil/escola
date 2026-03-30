@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, SelectField } from '../../../components/ui';
+import { Card, PageHeader, SelectField, Spinner } from '../../../components/ui';
 import { turmasService } from '../../../services/turmas.service';
 import { materiasService } from '../../../services/materias.service';
 import { notasService } from '../../../services/notas.service';
@@ -182,6 +182,12 @@ export default function Notas() {
             disabled={isTeacher && (!form.turma_id || loadingMaterias)}
             options={materias.map((m) => ({ value: m.id, label: m.name }))}
           />
+          {isTeacher && form.turma_id && loadingMaterias && (
+            <div className="form-group" style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Spinner />
+              <span className="field-hint">Carregando matérias…</span>
+            </div>
+          )}
           {isTeacher && form.turma_id && !loadingMaterias && materias.length === 0 && (
             <p className="field-hint" style={{ gridColumn: '1 / -1', marginTop: '-0.5rem' }}>
               {MSG_SEM_MATERIA_PROFESSOR}
@@ -207,9 +213,12 @@ export default function Notas() {
       {form.turma_id && form.materia_id && form.bimestre && (
         <Card title="Lista de Alunos">
           {loadingAlunos ? (
-            <p>Carregando alunos e notas...</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0' }}>
+              <Spinner />
+              <span>Carregando alunos e notas…</span>
+            </div>
           ) : alunos.length === 0 ? (
-            <div className="empty-state">Nenhum aluno matriculado nesta turma.</div>
+            <div className="empty-state">Nenhum aluno encontrado nesta turma.</div>
           ) : (
             <>
               <div style={{ overflowX: 'auto', marginBottom: '1.5rem' }}>

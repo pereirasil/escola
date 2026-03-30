@@ -3897,3 +3897,205 @@ button:focus-visible {
   font-weight: bold;
   flex-shrink: 0;
 }
+
+/* Chamada / presença — legenda e feedback visual */
+.presenca-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.8rem;
+}
+
+.presenca-legenda-item {
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.presenca-legenda-item--P {
+  background: rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.presenca-legenda-item--F {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.presenca-legenda-item--A {
+  background: rgba(234, 179, 8, 0.28);
+  color: #fde047;
+}
+
+.presenca-legenda-item--J {
+  background: rgba(59, 130, 246, 0.28);
+  color: #93c5fd;
+}
+
+.presenca-chamada-row--P {
+  box-shadow: inset 4px 0 0 #22c55e;
+}
+
+.presenca-chamada-row--F {
+  box-shadow: inset 4px 0 0 #ef4444;
+}
+
+.presenca-chamada-row--A {
+  box-shadow: inset 4px 0 0 #eab308;
+}
+
+.presenca-chamada-row--J {
+  box-shadow: inset 4px 0 0 #3b82f6;
+}
+
+.presenca-celula-status--P:has(input:checked) {
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.presenca-celula-status--F:has(input:checked) {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.presenca-celula-status--A:has(input:checked) {
+  background: rgba(234, 179, 8, 0.18);
+}
+
+.presenca-celula-status--J:has(input:checked) {
+  background: rgba(59, 130, 246, 0.18);
+}
+
+/* Histórico de presença (professor) */
+.historico-presenca-alunos {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.historico-presenca-bloco {
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.historico-presenca-bloco--alerta {
+  border-color: rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+.historico-presenca-bloco-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  align-items: baseline;
+}
+
+.historico-presenca-stats {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.historico-presenca-freq--ok {
+  color: #86efac;
+  font-weight: 600;
+}
+
+.historico-presenca-freq--baixa {
+  color: #fca5a5;
+  font-weight: 600;
+}
+
+.historico-presenca-tabela {
+  font-size: 0.85rem;
+}
+
+.presenca-status-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.presenca-status-badge--P {
+  background: rgba(34, 197, 94, 0.25);
+  color: #86efac;
+}
+
+.presenca-status-badge--F {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.presenca-status-badge--A {
+  background: rgba(234, 179, 8, 0.28);
+  color: #fde047;
+}
+
+.presenca-status-badge--J {
+  background: rgba(59, 130, 246, 0.28);
+  color: #93c5fd;
+}
+
+@media (prefers-color-scheme: light) {
+  .historico-presenca-bloco {
+    border-color: #e5e7eb;
+    background: #f9fafb;
+  }
+
+  .historico-presenca-bloco--alerta {
+    border-color: #fecaca;
+    background: #fef2f2;
+  }
+
+  .historico-presenca-stats {
+    color: #64748b;
+  }
+
+  .historico-presenca-freq--ok {
+    color: #15803d;
+  }
+
+  .historico-presenca-freq--baixa {
+    color: #b91c1c;
+  }
+
+  .presenca-legenda-item--P {
+    color: #166534;
+    background: rgba(34, 197, 94, 0.2);
+  }
+
+  .presenca-legenda-item--F {
+    color: #991b1b;
+    background: rgba(239, 68, 68, 0.15);
+  }
+
+  .presenca-legenda-item--A {
+    color: #854d0e;
+    background: rgba(234, 179, 8, 0.22);
+  }
+
+  .presenca-legenda-item--J {
+    color: #1d4ed8;
+    background: rgba(59, 130, 246, 0.18);
+  }
+
+  .presenca-status-badge--P {
+    color: #166534;
+  }
+
+  .presenca-status-badge--F {
+    color: #991b1b;
+  }
+
+  .presenca-status-badge--A {
+    color: #854d0e;
+  }
+
+  .presenca-status-badge--J {
+    color: #1d4ed8;
+  }
+}

@@ -26,12 +26,8 @@ export class TeacherScopeService {
   private async loadTeacherScope(user: UserContext): Promise<void> {
     if (this.classIdsCache !== null) return
 
-    const [ownedClasses, schedules] = await Promise.all([
-      this.classesService.findByTeacherId(user.id, user.school_id),
-      this.schedulesService.findByTeacherId(user.id, user.school_id),
-    ])
-
-    const classIdSet = new Set(ownedClasses.map((c) => c.id))
+    const schedules = await this.schedulesService.findByTeacherId(user.id, user.school_id)
+    const classIdSet = new Set<number>()
     const subjectMap = new Map<number, number[]>()
 
     for (const s of schedules) {
@@ -39,6 +35,10 @@ export class TeacherScopeService {
       const existing = subjectMap.get(s.class_id) || []
       existing.push(s.subject_id)
       subjectMap.set(s.class_id, existing)
+    }
+
+    for (const [cid, subs] of subjectMap) {
+      subjectMap.set(cid, [...new Set(subs)])
     }
 
     this.classIdsCache = [...classIdSet]
