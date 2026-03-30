@@ -311,30 +311,37 @@ export class BoletoService {
       doc.roundedRect(cardLeft, cardTop, cardWidth, cardHeight, cardRadius).fillAndStroke('#FFFFFF', '#E5E7EB')
 
       let y = cardTop + padding
+      const headerWidth = cardWidth - padding * 2
+      const titleStr = isPaid ? 'RECIBO DE PAGAMENTO' : 'COMPROVANTE DE COBRANÇA'
+      const subtitleStr = isPaid
+        ? 'Comprovante de quitação de mensalidade escolar'
+        : 'Mensalidade Escolar - Pagamento na secretaria ou via boleto (quando disponível)'
 
-      // Cabeçalho
+      // Cabeçalho (avanço em y pela altura real do bloco — evita sobreposição no PDF)
       doc.fontSize(22).font('Helvetica-Bold').fillColor(textPrimary)
-      doc.text(isPaid ? 'RECIBO DE PAGAMENTO' : 'COMPROVANTE DE COBRANÇA', cardLeft + padding, y, {
-        width: cardWidth - padding * 2,
+      const titleH = doc.heightOfString(titleStr, { width: headerWidth, align: 'center' })
+      doc.text(titleStr, cardLeft + padding, y, {
+        width: headerWidth,
         align: 'center',
       })
-      y += 14
+      y += titleH + 6
 
       doc.fontSize(12).font('Helvetica').fillColor(textSecondary)
-      doc.text(
-        isPaid ? 'Comprovante de quitação de mensalidade escolar' : 'Mensalidade Escolar - Pagamento na secretaria ou via boleto (quando disponível)',
-        cardLeft + padding,
-        y,
-        { width: cardWidth - padding * 2, align: 'center' },
-      )
-      y += 12
-
-      doc.fontSize(10)
-      doc.text(`Emitido em: ${dataEmissao}`, cardLeft + padding, y, {
-        width: cardWidth - padding * 2,
+      const subtitleH = doc.heightOfString(subtitleStr, { width: headerWidth, align: 'center' })
+      doc.text(subtitleStr, cardLeft + padding, y, {
+        width: headerWidth,
         align: 'center',
       })
-      y += 24
+      y += subtitleH + 6
+
+      doc.fontSize(10).font('Helvetica').fillColor(textSecondary)
+      const emissaoStr = `Emitido em: ${dataEmissao}`
+      const emissaoH = doc.heightOfString(emissaoStr, { width: headerWidth, align: 'center' })
+      doc.text(emissaoStr, cardLeft + padding, y, {
+        width: headerWidth,
+        align: 'center',
+      })
+      y += emissaoH + 16
 
       // Separador
       doc.strokeColor(borderColor).lineWidth(1)
