@@ -1,4 +1,9 @@
 :root {
+  /* Altura útil da faixa do header (abaixo do notch); safe-area somada no layout mobile */
+  --header-height: 5rem;
+  /* Área reservada acima do conteúdo para a bottom nav mobile */
+  --bottom-nav-padding: 72px;
+
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -11,6 +16,11 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  height: 100%;
 }
 
 a {
@@ -26,18 +36,21 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* Layout */
 .layout {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
 }
 
 .layout-main {
+  box-sizing: border-box;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -241,6 +254,7 @@ body {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
   color: #fff;
   border: none;
+  box-sizing: border-box;
 }
 
 .aluno-header-bar-sub {
@@ -317,11 +331,6 @@ body {
 .layout-content-dashboard {
   padding: 0 1rem 1rem;
   background: #f5f5f7;
-}
-
-.layout-aluno .layout-content-dashboard,
-.layout-professor .layout-content-dashboard {
-  min-height: calc(100vh - 56px - 72px);
 }
 
 .aluno-profile-card {
@@ -1528,6 +1537,7 @@ body {
 /* Auth pages */
 .auth-page {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: row;
 }
@@ -3292,21 +3302,19 @@ button:focus-visible {
     padding-bottom: 0;
   }
 
-  /* Uma única barra de rolagem: layout fixo, só layout-content rola */
+  /* Uma única barra de rolagem: só .layout-content tem overflow-y: auto */
   .layout.layout-aluno,
   .layout.layout-professor {
+    min-height: 100vh;
+    min-height: 100dvh;
     height: 100vh;
     height: 100dvh;
+    max-height: 100vh;
     max-height: 100dvh;
-    overflow: hidden;
-    /*
-     * Offset do header fixo = padding-top do .layout-main (área rolável começa abaixo da faixa).
-     * safe-area (notch) + ~68px: menu, nome longo em até ~2 linhas, sino e badge.
-     */
-    --aluno-mobile-header-offset: calc(env(safe-area-inset-top, 0px) + 4.25rem);
+    overflow-x: hidden;
   }
 
-  /* Header fixo: altura mínima alinhada ao espaço reservado em .layout-main */
+  /* Header fixo: altura total = faixa (--header-height) + notch */
   .layout-aluno .aluno-header-bar,
   .layout-professor .aluno-header-bar {
     position: fixed;
@@ -3314,21 +3322,29 @@ button:focus-visible {
     left: 0;
     right: 0;
     z-index: 850;
-    padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
-    padding-bottom: 0.75rem;
     box-sizing: border-box;
-    min-height: var(--aluno-mobile-header-offset);
+    height: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+    min-height: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    align-items: center;
   }
 
   .layout-aluno .layout-main,
   .layout-professor .layout-main {
-    padding-top: var(--aluno-mobile-header-offset);
-    height: calc(100vh - env(safe-area-inset-top, 0px));
-    height: calc(100dvh - env(safe-area-inset-top, 0px));
-    max-height: calc(100dvh - env(safe-area-inset-top, 0px));
-    overflow: hidden;
+    box-sizing: border-box;
+    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
   }
 
   .layout-aluno .layout-content,
@@ -3340,13 +3356,21 @@ button:focus-visible {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     padding: 1rem;
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--bottom-nav-padding) + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Dashboard: espaço no topo abaixo do header fixo */
+  /* Dashboard: espaço no topo; min-height preenche a área útil (header + bottom nav descontados) */
   .layout-aluno .layout-content-dashboard,
   .layout-professor .layout-content-dashboard {
     padding-top: 1.25rem;
+    min-height: calc(
+      100vh - var(--header-height) - env(safe-area-inset-top, 0px) - var(--bottom-nav-padding) -
+        env(safe-area-inset-bottom, 0px)
+    );
+    min-height: calc(
+      100dvh - var(--header-height) - env(safe-area-inset-top, 0px) - var(--bottom-nav-padding) -
+        env(safe-area-inset-bottom, 0px)
+    );
   }
 
   /* Aluno (mobile): select e faixa branca só no menu lateral; header já mostra aluno/responsável */
@@ -3354,12 +3378,8 @@ button:focus-visible {
     display: none;
   }
 
-  .layout-aluno .layout-content-dashboard {
-    padding-top: 1.25rem;
-  }
-
   .layout-professor .aluno-profile-card {
-    scroll-margin-top: 4rem;
+    scroll-margin-top: var(--header-height);
   }
 
   .sidebar {
