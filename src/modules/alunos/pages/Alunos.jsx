@@ -12,8 +12,11 @@ export default function Alunos() {
   const [turmas, setTurmas] = useState([]);
   const [ranking, setRanking] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deactivateTarget, setDeactivateTarget] = useState(null);
+  const [statusModalLoading, setStatusModalLoading] = useState(false);
+  const [statusUpdatingId, setStatusUpdatingId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('active');
 
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroTurma, setFiltroTurma] = useState('');
@@ -23,7 +26,7 @@ export default function Alunos() {
   const load = async (p = page) => {
     try {
       const [resA, resT, resR] = await Promise.all([
-        alunosService.listarPaginado(p),
+        alunosService.listarPaginado(p, 10, statusFilter),
         turmasService.listar(),
         presencasService.rankingFaltas().catch(() => ({ data: [] }))
       ]);
@@ -38,20 +41,47 @@ export default function Alunos() {
     }
   };
 
-  useEffect(() => { load(page) }, [page]);
+  useEffect(() => {
+    load(page);
+  }, [page, statusFilter]);
 
-  const confirmDelete = async () => {
-    if (!deleteTarget) return;
+  const confirmDeactivate = async () => {
+    if (!deactivateTarget) return;
+    setStatusModalLoading(true);
     try {
-      await alunosService.excluir(deleteTarget);
-      toast.success('Aluno excluído com sucesso!');
-      load();
+      await alunosService.atualizarStatus(deactivateTarget, 'inactive');
+      toast.success('Aluno desativado.');
+      setDeactivateTarget(null);
+      await load();
     } catch (error) {
-      toast.error('Erro ao excluir aluno.');
+      toast.error(error.response?.data?.message || 'Erro ao desativar aluno.');
     } finally {
-      setDeleteTarget(null);
+      setStatusModalLoading(false);
     }
   };
+
+  const reativar = async (studentId) => {
+    setStatusUpdatingId(studentId);
+    try {
+      await alunosService.atualizarStatus(studentId, 'active');
+      toast.success('Aluno reativado.');
+      await load();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Erro ao reativar aluno.');
+    } finally {
+      setStatusUpdatingId(null);
+    }
+  };
+
+  const handleStatusSwitch = (student, wantsActive) => {
+    const isCurrentlyActive = student.status !== 'inactive';
+    if (wantsActive === isCurrentlyActive) return;
+    if (wantsActive) {
+      reativar(student.id);
+      return;
+    }
+    setDeactivateTarget(student.id);
+  }
 
   const handleFormSuccess = () => {
     setModalOpen(false);
@@ -73,7 +103,7 @@ export default function Alunos() {
       </PageHeader>
 
       <Card title="Lista de Alunos">
-        <div className="form-grid" style={{ marginBottom: '1rem' }}>
+        <div className="form-grid" style={{ marginBottom: '1rem', alignItems: 'end' }}>
           <FormInput 
             label="Filtrar por nome" 
             id="filtroNome" 
@@ -88,18 +118,51 @@ export default function Alunos() {
             onChange={e => setFiltroTurma(e.target.value)}
             options={turmas.map(t => ({ value: t.id, label: t.name }))}
           />
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <span style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.65)' }}>
+              Situação na lista
+            </span>
+            <div className="alunos-status-filter-toggle" style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className={statusFilter === 'active' ? 'btn-primary' : 'btn-secondary'}
+                style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}
+                onClick={() => {
+                  setStatusFilter('active');
+                  setPage(1);
+                }}
+              >
+                Alunos Ativos
+              </button>
+              <button
+                type="button"
+                className={statusFilter === 'inactive' ? 'btn-primary' : 'btn-secondary'}
+                style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}
+                onClick={() => {
+                  setStatusFilter('inactive');
+                  setPage(1);
+                }}
+              >
+                Alunos Inativos
+              </button>
+            </div>
+          </div>
         </div>
 
         {loadingData ? <Spinner /> : (
           <>
             <DataTable
-              columns={['Nome', 'CPF/Matrícula', 'Série', 'Sala', 'Faltas', 'Ações']}
+              columns={['Nome', 'CPF/Matrícula', 'Série', 'Sala', 'Faltas', 'Situação', 'Ações']}
               data={alunosFiltrados}
               renderRow={(a) => {
                 const t = turmas.find(t => t.id === a.class_id);
                 const stats = ranking.find(r => r.aluno_id === a.id);
                 const totalFaltas = stats ? stats.faltas : 0;
                 const alerta = totalFaltas >= 5;
+                const isActive = a.status !== 'inactive';
+                const switchBusy =
+                  statusUpdatingId === a.id ||
+                  (statusModalLoading && deactivateTarget === a.id);
 
                 return (
                   <tr key={a.id}>
@@ -119,6 +182,22 @@ export default function Alunos() {
                         {totalFaltas}
                       </span>
                     </td>
+                    <td>
+                      <label className="student-status-switch">
+                        <input
+                          type="checkbox"
+                          role="switch"
+                          aria-checked={isActive}
+                          checked={isActive}
+                          disabled={switchBusy}
+                          onChange={(e) => handleStatusSwitch(a, e.target.checked)}
+                        />
+                        <span className="student-status-switch-track" aria-hidden>
+                          <span className="student-status-switch-thumb" />
+                        </span>
+                        <span className="student-status-switch-label-text">{isActive ? 'Ativo' : 'Inativo'}</span>
+                      </label>
+                    </td>
                     <td style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <Link to={`/alunos/${a.id}/editar`}>
                         <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Editar</button>
@@ -126,7 +205,6 @@ export default function Alunos() {
                       <Link to={`/alunos/${a.id}`}>
                         <button type="button" className="btn-primary" style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>Histórico</button>
                       </Link>
-                      <button type="button" className="btn-danger" onClick={() => setDeleteTarget(a.id)}>Excluir</button>
                     </td>
                   </tr>
                 );
@@ -148,13 +226,15 @@ export default function Alunos() {
       </FormModal>
 
       <ConfirmModal
-        open={!!deleteTarget}
-        title="Excluir aluno"
-        message="Tem certeza que deseja excluir este aluno? Esta ação não pode ser desfeita."
-        confirmLabel="Excluir"
+        open={!!deactivateTarget}
+        title="Desativar aluno?"
+        message="Este aluno ficará inativo no sistema. O ideal é desativar apenas se o aluno tiver trancado a matrícula ou sido transferido para outra escola."
+        confirmLabel="Confirmar"
+        cancelLabel="Cancelar"
         danger
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleteTarget(null)}
+        loading={statusModalLoading}
+        onConfirm={confirmDeactivate}
+        onCancel={() => !statusModalLoading && setDeactivateTarget(null)}
       />
     </div>
   );

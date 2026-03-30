@@ -4,6 +4,9 @@ import { Student } from './entities/student.entity'
 import { User } from '../users/entities/user.entity'
 import { StudentsService } from './students.service'
 import { StudentsController } from './students.controller'
+import { AlunosController } from './alunos.controller'
+import { BoletimPdfService } from './services/boletim-pdf.service'
+import { PresencaHistoricoPdfService } from './services/presenca-historico-pdf.service'
 import { NotificationsModule } from '../notifications/notifications.module'
 import { GradesModule } from '../grades/grades.module'
 import { AttendanceModule } from '../attendance/attendance.module'
@@ -33,8 +36,8 @@ import { ResponsiblesModule } from '../responsibles/responsibles.module'
     CalendarEventsModule,
     MeetingsModule,
   ],
-  controllers: [StudentsController],
-  providers: [StudentsService],
+  controllers: [StudentsController, AlunosController],
+  providers: [StudentsService, BoletimPdfService, PresencaHistoricoPdfService],
   exports: [StudentsService],
 })
 export class StudentsModule {}

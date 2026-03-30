@@ -7,6 +7,15 @@ import { materiasService } from '../../../services/materias.service';
 import { notasService } from '../../../services/notas.service';
 import toast from 'react-hot-toast';
 
+function sanitizeFilename(name) {
+  return (name || 'aluno')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9-_]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80) || 'aluno';
+}
+
 export default function AlunoDetalhes() {
   const { id } = useParams();
   const [aluno, setAluno] = useState(null);
@@ -14,6 +23,8 @@ export default function AlunoDetalhes() {
   const [resumo, setResumo] = useState({ total: 0, faltas: 0, presentes: 0, frequencia: 100 });
   const [materias, setMaterias] = useState([]);
   const [notas, setNotas] = useState([]);
+  const [exportandoBoletimPdf, setExportandoBoletimPdf] = useState(false);
+  const [exportandoPresencaPdf, setExportandoPresencaPdf] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -59,6 +70,88 @@ export default function AlunoDetalhes() {
     return dataStr;
   };
 
+  const exportarBoletimPdf = async () => {
+    if (!aluno) return;
+    setExportandoBoletimPdf(true);
+    try {
+      const res = await alunosService.baixarBoletimPdf(id);
+      const blob = res.data;
+      if (blob.type && blob.type.includes('application/json')) {
+        const text = await blob.text();
+        const j = JSON.parse(text);
+        throw new Error(j.message || 'Erro ao gerar PDF');
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `boletim-${sanitizeFilename(aluno.name)}-${id}.pdf`;
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('PDF do boletim baixado.');
+    } catch (error) {
+      let msg = 'Erro ao exportar PDF.';
+      const d = error.response?.data;
+      if (d instanceof Blob) {
+        try {
+          const t = await d.text();
+          const j = JSON.parse(t);
+          if (j.message) msg = j.message;
+        } catch {
+          /* ignore */
+        }
+      } else if (error.message) {
+        msg = error.message;
+      }
+      toast.error(msg);
+    } finally {
+      setExportandoBoletimPdf(false);
+    }
+  };
+
+  const exportarPresencaPdf = async () => {
+    if (!aluno) return;
+    setExportandoPresencaPdf(true);
+    try {
+      const res = await alunosService.baixarPresencaPdf(id);
+      const blob = res.data;
+      if (blob.type && blob.type.includes('application/json')) {
+        const text = await blob.text();
+        const j = JSON.parse(text);
+        throw new Error(j.message || 'Erro ao gerar PDF');
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `presenca-${sanitizeFilename(aluno.name)}-${id}.pdf`;
+      a.rel = 'noopener';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('PDF do histórico de presença baixado.');
+    } catch (error) {
+      let msg = 'Erro ao exportar PDF.';
+      const d = error.response?.data;
+      if (d instanceof Blob) {
+        try {
+          const t = await d.text();
+          const j = JSON.parse(t);
+          if (j.message) msg = j.message;
+        } catch {
+          /* ignore */
+        }
+      } else if (error.message) {
+        msg = error.message;
+      }
+      toast.error(msg);
+    } finally {
+      setExportandoPresencaPdf(false);
+    }
+  };
+
   if (!aluno) return <div className="page"><Spinner /></div>;
 
   return (
@@ -69,7 +162,31 @@ export default function AlunoDetalhes() {
       ]} />
 
       <div className="aluno-detalhes-header">
-        <PageHeader title={aluno.name} description={`Matrícula/CPF: ${aluno.document || 'Não informado'}`} />
+        <PageHeader
+          title={
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {aluno.name}
+              {aluno.status === 'inactive' && (
+                <span
+                  style={{
+                    fontSize: '0.75rem',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '4px',
+                    background: 'rgba(248, 113, 113, 0.15)',
+                    color: '#f87171',
+                    border: '1px solid rgba(248, 113, 113, 0.4)',
+                  }}
+                >
+                  Inativo
+                </span>
+              )}
+            </span>
+          }
+          description={`Matrícula/CPF: ${aluno.document || 'Não informado'}`}
+        />
       </div>
 
       <div className="form-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
@@ -90,7 +207,28 @@ export default function AlunoDetalhes() {
       </div>
 
       <div className="form-grid">
-        <Card title="Boletim de Notas">
+        <Card>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              marginBottom: '1rem',
+            }}
+          >
+            <h3 className="card-title" style={{ margin: 0 }}>Boletim de Notas</h3>
+            <button
+              type="button"
+              className="btn-primary"
+              style={{ padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+              disabled={exportandoBoletimPdf}
+              onClick={exportarBoletimPdf}
+            >
+              {exportandoBoletimPdf ? 'Gerando PDF…' : 'Exportar PDF'}
+            </button>
+          </div>
           <DataTable
             columns={['Matéria', 'Bimestre', 'Nota']}
             data={notas}
@@ -109,7 +247,28 @@ export default function AlunoDetalhes() {
           />
         </Card>
 
-        <Card title="Histórico de Presença">
+        <Card>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              marginBottom: '1rem',
+            }}
+          >
+            <h3 className="card-title" style={{ margin: 0 }}>Histórico de Presença</h3>
+            <button
+              type="button"
+              className="btn-primary"
+              style={{ padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+              disabled={exportandoPresencaPdf}
+              onClick={exportarPresencaPdf}
+            >
+              {exportandoPresencaPdf ? 'Gerando PDF…' : 'Exportar PDF'}
+            </button>
+          </div>
           <DataTable
             columns={['Data', 'Aula', 'Matéria', 'Status', 'Observação']}
             data={historico}

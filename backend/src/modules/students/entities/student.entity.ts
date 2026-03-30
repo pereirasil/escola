@@ -69,4 +69,8 @@ export class Student extends BaseEntity {
   @Column({ nullable: true })
   @Exclude()
   password_hash: string
+
+  /** 'active' | 'inactive' — inativo oculto das listagens principais; sem exclusão física */
+  @Column({ type: 'varchar', length: 20, default: 'active' })
+  status: string
 }

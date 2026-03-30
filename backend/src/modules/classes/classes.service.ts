@@ -56,6 +56,8 @@ export class ClassesService {
       qb.andWhere('student.school_id = :schoolId', { schoolId })
     }
 
+    qb.andWhere('(student.status IS NULL OR student.status = :activeSt)', { activeSt: 'active' })
+
     return qb.getMany()
   }
 
@@ -75,6 +77,7 @@ export class ClassesService {
     if (schoolId) {
       qb.andWhere('student.school_id = :sid', { sid: schoolId })
     }
+    qb.andWhere('(student.status IS NULL OR student.status = :activeSt)', { activeSt: 'active' })
     return qb.getMany()
   }
 

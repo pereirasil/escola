@@ -40,6 +40,8 @@ export class AttendanceService {
       qb.andWhere('student.school_id = :schoolId', { schoolId })
     }
 
+    qb.andWhere('(student.status IS NULL OR student.status = :activeSt)', { activeSt: 'active' })
+
     return qb.getMany()
   }
 
@@ -132,6 +134,8 @@ export class AttendanceService {
       .orderBy('faltas', 'DESC')
     if (schoolId) qb.andWhere('p.school_id = :schoolId', { schoolId })
 
+    qb.andWhere('(s.status IS NULL OR s.status = :activeSt)', { activeSt: 'active' })
+
     const rows = await qb.getRawMany()
 
     return rows.map(row => ({
@@ -162,6 +166,8 @@ export class AttendanceService {
       .addSelect('COUNT(*)', 'faltas')
       .orderBy('faltas', 'DESC')
     if (schoolId) qb.andWhere('p.school_id = :schoolId', { schoolId })
+
+    qb.andWhere('(s.status IS NULL OR s.status = :activeSt)', { activeSt: 'active' })
 
     const rows = await qb.getRawMany()
 

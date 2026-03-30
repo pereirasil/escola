@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, Patch, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
+import { Body, Controller, ForbiddenException, Get, Param, Patch, Post, Put, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
@@ -18,12 +18,23 @@ import { MeetingsService } from '../meetings/meetings.service'
 import { StudentMessagesService } from '../student-messages/student-messages.service'
 import { CreateStudentDto } from './dto/create-student.dto'
 import { UpdateStudentDto } from './dto/update-student.dto'
+import { UpdateStudentStatusDto } from './dto/update-student-status.dto'
 import { ChangePasswordDto } from './dto/change-password.dto'
 import { CreateStudentMessageDto } from '../student-messages/dto/create-student-message.dto'
 import { RolesGuard } from '../../common/guards/roles.guard'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
 import { getEffectiveStudentId, getEffectiveSchoolId } from '../../common/helpers/student-context.helper'
+
+function parseIncludeInactive(v?: string): boolean {
+  return v === '1' || v === 'true'
+}
+
+function parseListStatus(includeInactive?: string, status?: string): 'active' | 'inactive' | 'all' {
+  if (parseIncludeInactive(includeInactive)) return 'all'
+  if (status === 'inactive') return 'inactive'
+  return 'active'
+}
 
 @Controller('students')
 export class StudentsController {
@@ -51,16 +62,19 @@ export class StudentsController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('q') q?: string,
+    @Query('include_inactive') includeInactive?: string,
+    @Query('status') status?: string,
     @Req() req?: { user: { role: string } },
   ) {
     const isAdmin = req?.user?.role === 'admin'
+    const listStatus = parseListStatus(includeInactive, status)
     if (q !== undefined) {
-      return this.service.search(schoolId, q, +(limit || 20), isAdmin)
+      return this.service.search(schoolId, q, +(limit || 20), isAdmin, listStatus)
     }
     if (page) {
-      return this.service.findAllPaginated(schoolId, +page, +(limit || 10), isAdmin)
+      return this.service.findAllPaginated(schoolId, +page, +(limit || 10), isAdmin, listStatus)
     }
-    return this.service.findAll(schoolId, isAdmin)
+    return this.service.findAll(schoolId, isAdmin, listStatus)
   }
 
   @Get('me')
@@ -418,14 +432,15 @@ export class StudentsController {
     return this.service.updatePhoto(+id, file.filename, sid)
   }
 
-  @Delete(':id')
+  @Patch(':id/status')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'school')
-  remove(
+  updateStatus(
     @Param('id') id: string,
+    @Body() dto: UpdateStudentStatusDto,
     @Req() req: { user: { role: string } },
     @SchoolId() schoolId: number | undefined,
   ) {
-    return this.service.remove(+id, req.user.role === 'admin' ? undefined : schoolId)
+    return this.service.updateStatus(+id, dto.status, req.user.role === 'admin' ? undefined : schoolId)
   }
 }

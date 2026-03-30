@@ -1,13 +1,34 @@
 import { api } from './api'
 
+/** @param {'active'|'inactive'} statusFilter */
+function statusSuffix(statusFilter) {
+  return statusFilter === 'inactive' ? '&status=inactive' : ''
+}
+
 export const alunosService = {
-  listar: () => api.get('/students'),
-  buscar: (q, limit = 20) => api.get(`/students?q=${encodeURIComponent(q || '')}&limit=${limit}`).then((r) => r.data),
-  listarPaginado: (page, limit = 10) => api.get(`/students?page=${page}&limit=${limit}`).then((r) => r.data),
+  listar: (statusFilter = 'active') => {
+    let url = '/students'
+    if (statusFilter === 'inactive') url += '?status=inactive'
+    return api.get(url)
+  },
+  buscar: (q, limit = 20, statusFilter = 'active') =>
+    api
+      .get(
+        `/students?q=${encodeURIComponent(q || '')}&limit=${limit}${statusFilter === 'inactive' ? '&status=inactive' : ''}`,
+      )
+      .then((r) => r.data),
+  listarPaginado: (page, limit = 10, statusFilter = 'active') =>
+    api
+      .get(`/students?page=${page}&limit=${limit}${statusSuffix(statusFilter)}`)
+      .then((r) => r.data),
   buscarPorId: (id) => api.get(`/students/${id}`),
   criar: (data) => api.post('/students', data),
   atualizar: (id, data) => api.put(`/students/${id}`, data),
-  excluir: (id) => api.delete(`/students/${id}`),
+  atualizarStatus: (id, status) => api.patch(`/students/${id}/status`, { status }),
+  baixarBoletimPdf: (id) =>
+    api.get(`/alunos/${id}/boletim-pdf`, { responseType: 'blob' }),
+  baixarPresencaPdf: (id) =>
+    api.get(`/alunos/${id}/presenca-pdf`, { responseType: 'blob' }),
   uploadFoto: (id, file) => {
     const form = new FormData()
     form.append('photo', file)

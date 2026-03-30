@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS students (
   birth_date TEXT,
   guardian_name TEXT,
   guardian_phone TEXT,
+  status TEXT NOT NULL DEFAULT 'active',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );

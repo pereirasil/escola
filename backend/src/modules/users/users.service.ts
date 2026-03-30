@@ -124,6 +124,7 @@ export class UsersService {
       .select('s.school_id', 'school_id')
       .addSelect('COUNT(*)', 'count')
       .where('s.school_id IN (:...ids)', { ids: schoolIds })
+      .andWhere('(s.status IS NULL OR s.status = :st)', { st: 'active' })
       .groupBy('s.school_id')
       .getRawMany<{ school_id: number; count: string }>()
 

@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, ForbiddenException, NotFoundException, BadRequestException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Brackets, Repository } from 'typeorm'
+import { Brackets, Repository, SelectQueryBuilder } from 'typeorm'
 import { Student } from './entities/student.entity'
 import { User } from '../users/entities/user.entity'
 import { CreateStudentDto } from './dto/create-student.dto'
@@ -21,13 +21,32 @@ export class StudentsService {
     private responsiblesService: ResponsiblesService,
   ) {}
 
-  findAll(schoolId?: number, isAdmin = false) {
-    if (!isAdmin && schoolId == null) throw new ForbiddenException('Identificação da escola não encontrada')
-    const where = schoolId != null ? { school_id: schoolId } : {}
-    return this.repo.find({ where, order: { name: 'ASC' } })
+  /** active = só ativos (padrão); inactive = só inativos; all = todos (legado include_inactive) */
+  private applyListStatusFilter(qb: SelectQueryBuilder<Student>, listStatus: 'active' | 'inactive' | 'all') {
+    if (listStatus === 'active') {
+      qb.andWhere('(student.status IS NULL OR student.status = :activeSt)', { activeSt: 'active' })
+    } else if (listStatus === 'inactive') {
+      qb.andWhere('student.status = :inact', { inact: 'inactive' })
+    }
   }
 
-  search(schoolId: number | undefined, query = '', limit = 20, isAdmin = false) {
+  findAll(schoolId?: number, isAdmin = false, listStatus: 'active' | 'inactive' | 'all' = 'active') {
+    if (!isAdmin && schoolId == null) throw new ForbiddenException('Identificação da escola não encontrada')
+    const qb = this.repo.createQueryBuilder('student').orderBy('student.name', 'ASC')
+    if (schoolId != null) {
+      qb.andWhere('student.school_id = :schoolId', { schoolId })
+    }
+    this.applyListStatusFilter(qb, listStatus)
+    return qb.getMany()
+  }
+
+  search(
+    schoolId: number | undefined,
+    query = '',
+    limit = 20,
+    isAdmin = false,
+    listStatus: 'active' | 'inactive' | 'all' = 'active',
+  ) {
     if (!isAdmin && schoolId == null) throw new ForbiddenException('Identificação da escola não encontrada')
     const normalizedQuery = query.trim()
     const qb = this.repo.createQueryBuilder('student').orderBy('student.name', 'ASC').take(limit)
@@ -35,6 +54,8 @@ export class StudentsService {
     if (schoolId != null) {
       qb.andWhere('student.school_id = :schoolId', { schoolId })
     }
+
+    this.applyListStatusFilter(qb, listStatus)
 
     if (normalizedQuery) {
       const digits = normalizeCpf(normalizedQuery)
@@ -51,16 +72,28 @@ export class StudentsService {
     return qb.getMany()
   }
 
-  async findAllPaginated(schoolId: number | undefined, page: number, limit: number, isAdmin = false) {
+  async findAllPaginated(
+    schoolId: number | undefined,
+    page: number,
+    limit: number,
+    isAdmin = false,
+    listStatus: 'active' | 'inactive' | 'all' = 'active',
+  ) {
     if (!isAdmin && schoolId == null) throw new ForbiddenException('Identificação da escola não encontrada')
-    const where = schoolId != null ? { school_id: schoolId } : {}
-    const [data, total] = await this.repo.findAndCount({
-      where,
-      order: { name: 'ASC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    })
-    return { data, page, limit, total, totalPages: Math.ceil(total / limit) }
+    const buildQb = () => {
+      const qb = this.repo.createQueryBuilder('student').orderBy('student.name', 'ASC')
+      if (schoolId != null) {
+        qb.andWhere('student.school_id = :schoolId', { schoolId })
+      }
+      this.applyListStatusFilter(qb, listStatus)
+      return qb
+    }
+    const total = await buildQb().getCount()
+    const data = await buildQb()
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany()
+    return { data, page, limit, total, totalPages: Math.ceil(total / limit) || 1 }
   }
 
   findOne(id: number, schoolId?: number) {
@@ -132,7 +165,7 @@ export class StudentsService {
       late_fee_percentage: dto.late_fee_percentage ?? undefined,
       school_id: schoolId ?? undefined,
     }
-    const student = await this.repo.save(this.repo.create(studentData))
+    const student = await this.repo.save(this.repo.create({ ...studentData, status: 'active' }))
     await this.responsiblesService.linkStudent(responsible.id, student.id)
     return student
   }
@@ -141,15 +174,17 @@ export class StudentsService {
     const existing = await this.findOne(id, schoolId)
     if (!existing) throw new NotFoundException('Aluno não encontrado')
     const data = { ...dto } as any
+    delete data.status
     if (data.document) data.document = normalizeCpf(data.document)
     await this.repo.update({ id, ...(schoolId != null && { school_id: schoolId }) }, data as Partial<Student>)
     return this.findOne(id, schoolId)
   }
 
-  async remove(id: number, schoolId?: number) {
+  async updateStatus(id: number, status: 'active' | 'inactive', schoolId?: number) {
     const existing = await this.findOne(id, schoolId)
     if (!existing) throw new NotFoundException('Aluno não encontrado')
-    return this.repo.delete({ id, ...(schoolId != null && { school_id: schoolId }) })
+    await this.repo.update({ id, ...(schoolId != null && { school_id: schoolId }) }, { status })
+    return this.findOne(id, schoolId)
   }
 
   async updatePhoto(id: number, filename: string, schoolId?: number) {

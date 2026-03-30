@@ -28,9 +28,11 @@ export class MonthlyPaymentsService {
 
     const defaultAmount = Number(process.env.MONTHLY_FEE_DEFAULT) || DEFAULT_MONTHLY_FEE
 
-    const students = await this.studentRepo.find({
-      where: {},
-    })
+    const students = await this.studentRepo
+      .createQueryBuilder('s')
+      .where('s.school_id IS NOT NULL')
+      .andWhere('(s.status IS NULL OR s.status = :st)', { st: 'active' })
+      .getMany()
 
     let created = 0
     let skipped = 0

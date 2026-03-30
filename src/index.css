@@ -2141,6 +2141,66 @@ body {
   border-color: #444;
 }
 
+/* Switch ativo/inativo (lista de alunos) */
+.student-status-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.student-status-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.student-status-switch-track {
+  position: relative;
+  width: 2.5rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #333;
+  border: 1px solid #444;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.student-status-switch input:checked + .student-status-switch-track {
+  background: rgba(100, 108, 255, 0.35);
+  border-color: #646cff;
+}
+
+.student-status-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(1.35rem - 6px);
+  height: calc(1.35rem - 6px);
+  border-radius: 50%;
+  background: #888;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.student-status-switch input:checked + .student-status-switch-track .student-status-switch-thumb {
+  transform: translateX(1.15rem);
+  background: #646cff;
+}
+
+.student-status-switch input:disabled + .student-status-switch-track {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.student-status-switch-label-text {
+  min-width: 3.25rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
 .btn-outline-primary {
   background-color: transparent;
   color: #646cff;
