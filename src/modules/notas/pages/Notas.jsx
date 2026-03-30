@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, PageHeader, DataTable, FormInput, SelectField } from '../../../components/ui';
+import { Card, PageHeader, SelectField } from '../../../components/ui';
 import { turmasService } from '../../../services/turmas.service';
 import { materiasService } from '../../../services/materias.service';
 import { notasService } from '../../../services/notas.service';
@@ -7,10 +7,15 @@ import { professoresService } from '../../../services/professores.service';
 import { useAuthStore } from '../../../store/useAuthStore';
 import toast from 'react-hot-toast';
 
+const MSG_SEM_MATERIA_PROFESSOR =
+  'Nenhuma matéria vinculada a este professor nesta turma.';
+
 export default function Notas() {
   const user = useAuthStore((s) => s.user);
+  const isTeacher = user?.role === 'teacher';
   const [turmas, setTurmas] = useState([]);
   const [materias, setMaterias] = useState([]);
+  const [loadingMaterias, setLoadingMaterias] = useState(false);
   const [alunos, setAlunos] = useState([]);
   const [loadingAlunos, setLoadingAlunos] = useState(false);
 
@@ -23,23 +28,51 @@ export default function Notas() {
   const [notas, setNotas] = useState({});
 
   useEffect(() => {
-    async function loadFiltros() {
+    async function loadTurmas() {
       try {
-        const turmasPromise = user?.role === 'teacher'
+        const turmasPromise = isTeacher
           ? professoresService.minhasTurmas()
           : turmasService.listar().then((r) => r.data);
-        const [turmasData, resM] = await Promise.all([
-          turmasPromise,
-          materiasService.listar()
-        ]);
+        const turmasData = await turmasPromise;
         setTurmas(turmasData || []);
-        setMaterias(resM.data || []);
+        if (!isTeacher) {
+          const resM = await materiasService.listar();
+          setMaterias(resM.data || []);
+        } else {
+          setMaterias([]);
+        }
       } catch (err) {
         toast.error('Erro ao carregar dados iniciais');
       }
     }
-    loadFiltros();
-  }, []);
+    loadTurmas();
+  }, [isTeacher]);
+
+  useEffect(() => {
+    if (!isTeacher) return;
+    if (!form.turma_id) {
+      setMaterias([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingMaterias(true);
+    (async () => {
+      try {
+        const data = await professoresService.minhasMateriasNaTurma(form.turma_id);
+        if (!cancelled) setMaterias(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (!cancelled) {
+          setMaterias([]);
+          toast.error('Erro ao carregar matérias desta turma');
+        }
+      } finally {
+        if (!cancelled) setLoadingMaterias(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isTeacher, form.turma_id]);
 
   // Carregar alunos e notas existentes ao selecionar turma, matéria e bimestre
   useEffect(() => {
@@ -82,7 +115,11 @@ export default function Notas() {
 
   const handleChangeForm = (e) => {
     const { id, value } = e.target;
-    setForm(prev => ({ ...prev, [id]: value }));
+    if (id === 'turma_id') {
+      setForm((prev) => ({ ...prev, turma_id: value, materia_id: '' }));
+      return;
+    }
+    setForm((prev) => ({ ...prev, [id]: value }));
   };
 
   const handleNotaChange = (alunoId, valor) => {
@@ -137,13 +174,19 @@ export default function Notas() {
             onChange={handleChangeForm}
             options={turmas.map(t => ({ value: t.id, label: `${t.grade} - ${t.name}` }))}
           />
-          <SelectField 
-            label="Matéria" 
-            id="materia_id" 
-            value={form.materia_id} 
+          <SelectField
+            label="Matéria"
+            id="materia_id"
+            value={form.materia_id}
             onChange={handleChangeForm}
-            options={materias.map(m => ({ value: m.id, label: m.name }))}
+            disabled={isTeacher && (!form.turma_id || loadingMaterias)}
+            options={materias.map((m) => ({ value: m.id, label: m.name }))}
           />
+          {isTeacher && form.turma_id && !loadingMaterias && materias.length === 0 && (
+            <p className="field-hint" style={{ gridColumn: '1 / -1', marginTop: '-0.5rem' }}>
+              {MSG_SEM_MATERIA_PROFESSOR}
+            </p>
+          )}
           <SelectField 
             label="Bimestre" 
             id="bimestre" 

@@ -13,6 +13,7 @@ import { ChangePasswordDto } from './dto/change-password.dto'
 import { RolesGuard } from '../../common/guards/roles.guard'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
+import { TeacherScopeService } from '../../common/services/teacher-scope.service'
 
 @Controller('teachers')
 export class TeachersController {
@@ -21,6 +22,7 @@ export class TeachersController {
     private classesService: ClassesService,
     private schedulesService: SchedulesService,
     private subjectsService: SubjectsService,
+    private teacherScope: TeacherScopeService,
   ) {}
 
   @Get()
@@ -62,6 +64,23 @@ export class TeachersController {
   @Roles('teacher')
   findMyClasses(@Req() req: { user: { id: number; school_id?: number } }) {
     return this.classesService.findByTeacherId(req.user.id, req.user.school_id)
+  }
+
+  /** Disciplinas que o professor leciona na turma (via grade horária). Turma deve estar no escopo do professor. */
+  @Get('me/classes/:classId/subjects')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  async findMySubjectsForClass(
+    @Req() req: { user: { id: number; school_id?: number; role: string } },
+    @Param('classId') classId: string,
+  ) {
+    const cid = +classId
+    await this.teacherScope.ensureClassAccess(req.user, cid)
+    const schedules = await this.schedulesService.findByTeacherId(req.user.id, req.user.school_id)
+    const subjectIds = [...new Set(schedules.filter((s) => s.class_id === cid).map((s) => s.subject_id))]
+    if (subjectIds.length === 0) return []
+    const subjects = await this.subjectsService.findAll(req.user.school_id)
+    return subjects.filter((s) => subjectIds.includes(s.id)).sort((a, b) => a.name.localeCompare(b.name))
   }
 
   @Get('me/students')

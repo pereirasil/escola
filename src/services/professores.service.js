@@ -17,6 +17,9 @@ export const professoresService = {
   headerInfo: () => api.get('/teachers/me/header-info').then((r) => r.data),
   minhasTurmas: () => api.get('/teachers/me/classes').then((r) => r.data),
   minhasMaterias: () => api.get('/teachers/me/subjects').then((r) => r.data),
+  /** Matérias do professor na turma (grade horária); exige turma no escopo do professor */
+  minhasMateriasNaTurma: (turmaId) =>
+    api.get(`/teachers/me/classes/${turmaId}/subjects`).then((r) => r.data),
   meusAlunos: () => api.get('/teachers/me/students').then((r) => r.data),
   alterarSenha: (currentPassword, newPassword) =>
     api.patch('/teachers/me/password', { currentPassword, newPassword }).then((r) => r.data),
