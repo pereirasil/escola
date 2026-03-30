@@ -3292,16 +3292,6 @@ button:focus-visible {
     padding-bottom: 0;
   }
 
-  /* Header fixo no topo para aluno e professor */
-  .layout-aluno .aluno-header-bar,
-  .layout-professor .aluno-header-bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 850;
-  }
-
   /* Uma única barra de rolagem: layout fixo, só layout-content rola */
   .layout.layout-aluno,
   .layout.layout-professor {
@@ -3309,11 +3299,30 @@ button:focus-visible {
     height: 100dvh;
     max-height: 100dvh;
     overflow: hidden;
+    /*
+     * Offset do header fixo = padding-top do .layout-main (área rolável começa abaixo da faixa).
+     * safe-area (notch) + ~68px: menu, nome longo em até ~2 linhas, sino e badge.
+     */
+    --aluno-mobile-header-offset: calc(env(safe-area-inset-top, 0px) + 4.25rem);
+  }
+
+  /* Header fixo: altura mínima alinhada ao espaço reservado em .layout-main */
+  .layout-aluno .aluno-header-bar,
+  .layout-professor .aluno-header-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 850;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
+    padding-bottom: 0.75rem;
+    box-sizing: border-box;
+    min-height: var(--aluno-mobile-header-offset);
   }
 
   .layout-aluno .layout-main,
   .layout-professor .layout-main {
-    padding-top: 52px;
+    padding-top: var(--aluno-mobile-header-offset);
     height: calc(100vh - env(safe-area-inset-top, 0px));
     height: calc(100dvh - env(safe-area-inset-top, 0px));
     max-height: calc(100dvh - env(safe-area-inset-top, 0px));
