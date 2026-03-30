@@ -448,7 +448,7 @@ export class PaymentsService {
     const payment = await this.findOne(id, user)
     if (!payment) throw new BadRequestException('Pagamento não encontrado')
     if (payment.status === 'paid') {
-      throw new BadRequestException('Pagamento já foi pago. Não é possível gerar novo boleto.')
+      throw new BadRequestException('Este pagamento já foi realizado. Não é possível gerar um novo boleto.')
     }
 
     const schoolId = payment.school_id
