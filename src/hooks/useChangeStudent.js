@@ -20,7 +20,7 @@ export function useChangeStudent() {
       setSwitching(true)
       try {
         const data = await authService.chooseStudent(Number(newStudentId))
-        setStudent(Number(newStudentId), data.access_token, data.school_id)
+        setStudent(Number(newStudentId), data.access_token, data.school_id, data.refresh_token)
         queryClient.invalidateQueries({ predicate: (q) => q.queryKey[0] === 'aluno' })
       } finally {
         setSwitching(false)

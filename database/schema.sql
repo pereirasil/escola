@@ -1,3 +1,7 @@
+-- LEGADO / REFERÊNCIA: este arquivo descreve um modelo SQLite genérico.
+-- A aplicação em produção usa MySQL + entidades TypeORM + scripts em database/migrations/.
+-- Não use este schema como fonte única de verdade para o banco atual.
+
 -- Schema SQL para o sistema de gestão escolar (SQLite)
 -- Cada tabela possui id, created_at, updated_at
 

@@ -67,7 +67,7 @@ export default function Login() {
         }
       }
       if (data.requires_school_choice && data.schools?.length) {
-        login(data.user, data.access_token)
+        login(data.user, data.access_token, { refreshToken: data.refresh_token })
         setSchoolsToChoose(data.schools)
         return
       }
@@ -85,9 +85,10 @@ export default function Login() {
           students: data.students,
           studentId: firstStudent?.id ?? null,
           schoolId: firstStudent?.school_id ?? null,
+          refreshToken: data.refresh_token,
         })
       } else {
-        login(data.user, data.access_token)
+        login(data.user, data.access_token, { refreshToken: data.refresh_token })
       }
       toast.success('Bem-vindo de volta!')
       const role = data.responsible ? 'responsible' : data.user?.role
@@ -115,7 +116,7 @@ export default function Login() {
     setChoosingLoading(true)
     try {
       const data = await authService.chooseSchool(schoolId)
-      login(data.user, data.access_token)
+      login(data.user, data.access_token, { refreshToken: data.refresh_token })
       toast.success('Bem-vindo de volta!')
       navigate('/professor', { replace: true })
     } catch (err) {

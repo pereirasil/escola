@@ -1,17 +1,28 @@
 import * as bcrypt from 'bcrypt'
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common'
+import { createHash, randomBytes } from 'crypto'
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  Logger,
+} from '@nestjs/common'
 import { JwtService } from '@nestjs/jwt'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import { UsersService } from '../users/users.service'
 import { StudentsService } from '../students/students.service'
 import { TeachersService } from '../teachers/teachers.service'
 import { ResponsiblesService } from '../responsibles/responsibles.service'
 import { BoletoService } from '../payments/services/boleto.service'
 import { RegisterDto } from './dto/register.dto'
+import { RefreshToken, JwtSessionPayload } from './entities/refresh-token.entity'
 
 const TAXA_CADASTRO = 159.99
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name)
+
   constructor(
     private usersService: UsersService,
     private studentsService: StudentsService,
@@ -19,7 +30,74 @@ export class AuthService {
     private responsiblesService: ResponsiblesService,
     private boletoService: BoletoService,
     private jwtService: JwtService,
+    @InjectRepository(RefreshToken)
+    private refreshRepo: Repository<RefreshToken>,
   ) {}
+
+  private getAccessExpiresIn(): string {
+    return process.env.JWT_ACCESS_EXPIRES_IN?.trim() || '15m'
+  }
+
+  private getRefreshTtlMs(): number {
+    const days = Number(process.env.JWT_REFRESH_DAYS || '7')
+    if (!Number.isFinite(days) || days < 1) return 7 * 86400000
+    return days * 86400000
+  }
+
+  private signAccessToken(payload: JwtSessionPayload): string {
+    return this.jwtService.sign(
+      {
+        sub: payload.sub,
+        email: payload.email ?? undefined,
+        role: payload.role,
+        document: payload.document ?? undefined,
+        school_id: payload.school_id ?? undefined,
+        student_id: payload.student_id ?? undefined,
+      },
+      { expiresIn: this.getAccessExpiresIn() },
+    )
+  }
+
+  private hashRefresh(raw: string): string {
+    return createHash('sha256').update(raw, 'utf8').digest('hex')
+  }
+
+  private async persistRefreshToken(payload: JwtSessionPayload): Promise<string> {
+    const raw = randomBytes(32).toString('hex')
+    const row = this.refreshRepo.create({
+      token_hash: this.hashRefresh(raw),
+      expires_at: new Date(Date.now() + this.getRefreshTtlMs()),
+      payload_json: payload,
+      revoked_at: null,
+    })
+    await this.refreshRepo.save(row)
+    return raw
+  }
+
+  private async issueTokens(payload: JwtSessionPayload) {
+    const access_token = this.signAccessToken(payload)
+    const refresh_token = await this.persistRefreshToken(payload)
+    return { access_token, refresh_token }
+  }
+
+  async refreshSession(refreshTokenRaw: string) {
+    const hash = this.hashRefresh(refreshTokenRaw)
+    const row = await this.refreshRepo.findOne({ where: { token_hash: hash } })
+    if (!row || row.revoked_at || row.expires_at.getTime() <= Date.now()) {
+      throw new UnauthorizedException('Sessão inválida ou expirada')
+    }
+    row.revoked_at = new Date()
+    await this.refreshRepo.save(row)
+    return this.issueTokens(row.payload_json)
+  }
+
+  async revokeRefreshToken(refreshTokenRaw: string): Promise<void> {
+    const hash = this.hashRefresh(refreshTokenRaw)
+    const row = await this.refreshRepo.findOne({ where: { token_hash: hash } })
+    if (!row || row.revoked_at) return
+    row.revoked_at = new Date()
+    await this.refreshRepo.save(row)
+  }
 
   async login(email: string, password: string) {
     const user = await this.usersService.findByEmail(email)
@@ -33,8 +111,25 @@ export class AuthService {
       throw new UnauthorizedException('Cadastro ainda não aprovado. Aguarde o administrador.')
     }
     const school_id = user.role === 'school' ? user.id : null
-    const payload = { sub: user.id, email: user.email, role: user.role, school_id }
-    return { access_token: this.jwtService.sign(payload), user: { id: user.id, email: user.email, name: user.name, role: user.role, school_id } }
+    const session: JwtSessionPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      school_id,
+      student_id: null,
+      document: null,
+    }
+    const tokens = await this.issueTokens(session)
+    return {
+      ...tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        school_id,
+      },
+    }
   }
 
   async register(dto: RegisterDto) {
@@ -62,7 +157,7 @@ export class AuthService {
       )
       pix = { qr_code: result.qr_code, qr_code_text: result.qr_code_text }
     } catch (err) {
-      console.error('[AuthService] Erro ao gerar PIX de cadastro:', err)
+      this.logger.warn(`Erro ao gerar PIX de cadastro: ${err instanceof Error ? err.message : err}`)
     }
     return { user, pix }
   }
@@ -78,15 +173,17 @@ export class AuthService {
     }
     const students = await this.responsiblesService.getStudentsByResponsibleId(responsible.id)
     const firstStudent = students[0] ?? null
-    const payload = {
+    const session: JwtSessionPayload = {
       sub: responsible.id,
       role: 'responsible',
       student_id: firstStudent?.id ?? null,
       school_id: firstStudent?.school_id ?? null,
+      email: null,
+      document: null,
     }
-    const access_token = this.jwtService.sign(payload)
+    const tokens = await this.issueTokens(session)
     return {
-      access_token,
+      ...tokens,
       responsible: { id: responsible.id, name: responsible.name, cpf: responsible.cpf },
       students,
     }
@@ -102,15 +199,17 @@ export class AuthService {
     if (!student) {
       throw new UnauthorizedException('Aluno não encontrado')
     }
-    const payload = {
+    const session: JwtSessionPayload = {
       sub: responsibleId,
       role: 'responsible',
       student_id: studentId,
       school_id: student.school_id ?? null,
+      email: null,
+      document: null,
     }
-    const access_token = this.jwtService.sign(payload)
+    const tokens = await this.issueTokens(session)
     return {
-      access_token,
+      ...tokens,
       student_id: studentId,
       school_id: student.school_id,
     }
@@ -129,33 +228,75 @@ export class AuthService {
     }
     if (matched.length === 1) {
       const m = matched[0]
-      const payload = { sub: m.id, role: 'teacher', document: m.document, school_id: m.school_id }
-      const access_token = this.jwtService.sign(payload)
+      const session: JwtSessionPayload = {
+        sub: m.id,
+        role: 'teacher',
+        document: m.document,
+        school_id: m.school_id,
+        email: m.email ?? null,
+        student_id: null,
+      }
+      const tokens = await this.issueTokens(session)
       return {
-        access_token,
-        user: { id: m.id, name: m.name, role: 'teacher', document: m.document, school_id: m.school_id, photo: m.photo },
+        ...tokens,
+        user: {
+          id: m.id,
+          name: m.name,
+          role: 'teacher',
+          document: m.document,
+          school_id: m.school_id,
+          photo: m.photo,
+        },
       }
     }
     const schools = await this.teachersService.getSchoolsForTeachers(matched)
     const first = matched[0]
-    const payload = { sub: first.id, role: 'teacher', document: first.document, school_id: null }
-    const access_token = this.jwtService.sign(payload)
+    const session: JwtSessionPayload = {
+      sub: first.id,
+      role: 'teacher',
+      document: first.document,
+      school_id: null,
+      email: first.email ?? null,
+      student_id: null,
+    }
+    const tokens = await this.issueTokens(session)
     return {
       requires_school_choice: true,
       schools,
-      access_token,
-      user: { id: first.id, name: first.name, role: 'teacher', document: first.document, school_id: null, photo: first.photo },
+      ...tokens,
+      user: {
+        id: first.id,
+        name: first.name,
+        role: 'teacher',
+        document: first.document,
+        school_id: null,
+        photo: first.photo,
+      },
     }
   }
 
   async teacherChooseSchool(document: string, schoolId: number) {
     const target = await this.teachersService.findByDocumentAndSchool(document, schoolId)
     if (!target) throw new UnauthorizedException('Escola inválida ou você não possui cadastro nela')
-    const payload = { sub: target.id, role: 'teacher', document: target.document, school_id: target.school_id }
-    const access_token = this.jwtService.sign(payload)
+    const session: JwtSessionPayload = {
+      sub: target.id,
+      role: 'teacher',
+      document: target.document,
+      school_id: target.school_id,
+      email: target.email ?? null,
+      student_id: null,
+    }
+    const tokens = await this.issueTokens(session)
     return {
-      access_token,
-      user: { id: target.id, name: target.name, role: 'teacher', document: target.document, school_id: target.school_id, photo: target.photo },
+      ...tokens,
+      user: {
+        id: target.id,
+        name: target.name,
+        role: 'teacher',
+        document: target.document,
+        school_id: target.school_id,
+        photo: target.photo,
+      },
     }
   }
 

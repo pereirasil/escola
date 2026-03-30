@@ -7,10 +7,22 @@ import { ChooseStudentDto } from './dto/choose-student.dto'
 import { LoginDto } from './dto/login.dto'
 import { LoginResponsibleDto } from './dto/login-responsible.dto'
 import { RegisterDto } from './dto/register.dto'
+import { RefreshSessionDto } from './dto/refresh-session.dto'
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @Post('refresh')
+  refresh(@Body() dto: RefreshSessionDto) {
+    return this.authService.refreshSession(dto.refresh_token)
+  }
+
+  @Post('logout')
+  async logout(@Body() dto: RefreshSessionDto) {
+    await this.authService.revokeRefreshToken(dto.refresh_token)
+    return { ok: true }
+  }
 
   @Post('login')
   login(@Body() dto: LoginDto) {
