@@ -16,6 +16,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # O runner acessa o GitHub; o servidor só recebe arquivos por SSH (evita git fetch quando DNS do servidor falha).
+      - name: Sync repository to server
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          set -e
+          sudo apt-get update -qq
+          sudo apt-get install -qq -y sshpass openssh-client
+          export SSHPASS="$SSH_PASSWORD"
+          HOST="${{ secrets.SSH_HOST }}"
+          USER="${{ secrets.SSH_USER }}"
+          sshpass -e ssh -o StrictHostKeyChecking=accept-new -p 22 "${USER}@${HOST}" "mkdir -p /var/www/escola"
+          sshpass -e rsync -avz \
+            -e "ssh -o StrictHostKeyChecking=accept-new -p 22" \
+            --exclude='.git' \
+            ./ "${USER}@${HOST}:/var/www/escola/"
+
       - name: Deploy Backend
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -25,14 +42,6 @@ jobs:
           port: 22
           script: |
             set -e
-
-            if [ ! -d /var/www/escola/.git ]; then
-              git clone git@github.com:pereirasil/escola.git /var/www/escola
-            fi
-
-            cd /var/www/escola
-            git fetch --all
-            git reset --hard origin/${{ github.ref_name }}
 
             cd /var/www/escola/backend
             rm -rf node_modules
@@ -52,14 +61,7 @@ jobs:
           script: |
             set -e
 
-            if [ ! -d /var/www/escola/.git ]; then
-              git clone git@github.com:pereirasil/escola.git /var/www/escola
-            fi
-
             cd /var/www/escola
-            git fetch --all
-            git reset --hard origin/${{ github.ref_name }}
-
             cat > .env.production <<'EOF'
             VITE_API_URL=https://escola.simplesmente.app/api
             EOF
