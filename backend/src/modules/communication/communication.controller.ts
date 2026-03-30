@@ -185,6 +185,27 @@ export class CommunicationController {
     return this.communicationService.countUnreadBySchool(sid, req.user.id).then((count) => ({ count }))
   }
 
+  @Get('school/inbox')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('school')
+  async getSchoolInbox(@Req() req: { user: { id: number; school_id?: number } }) {
+    const sid = req.user.school_id ?? req.user.id
+    const items = await this.communicationService.listUnreadInboxForSchool(sid, req.user.id)
+    const rows = items.map((m) => ({
+      kind: 'message' as const,
+      source_id: m.source_id,
+      notification_id: null as number | null,
+      notice_type: null as string | null,
+      type_label: 'Mensagem',
+      title: m.title,
+      subtitle: m.subtitle,
+      at: m.at,
+      conversation_id: m.conversation_id,
+      channel: null as null,
+    }))
+    return { items: rows }
+  }
+
   @Post('school/conversations')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin', 'school')
@@ -259,6 +280,26 @@ export class CommunicationController {
   @Roles('teacher')
   countUnreadTeacher(@Req() req: { user: { id: number } }) {
     return this.communicationService.countUnreadByTeacher(req.user.id).then((count) => ({ count }))
+  }
+
+  @Get('teacher/inbox')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('teacher')
+  async getTeacherInbox(@Req() req: { user: { id: number } }) {
+    const items = await this.communicationService.listUnreadInboxForTeacher(req.user.id)
+    const rows = items.map((m) => ({
+      kind: 'message' as const,
+      source_id: m.source_id,
+      notification_id: null as number | null,
+      notice_type: null as string | null,
+      type_label: 'Mensagem',
+      title: m.title,
+      subtitle: m.subtitle,
+      at: m.at,
+      conversation_id: m.conversation_id,
+      channel: null as null,
+    }))
+    return { items: rows }
   }
 
   @Post('teacher/conversations')

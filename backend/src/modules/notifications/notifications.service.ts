@@ -26,6 +26,23 @@ export class NotificationsService {
     })
   }
 
+  findUnreadByStudentId(studentId: number) {
+    return this.notificationRepo.find({
+      where: { student_id: studentId, read_at: IsNull() },
+      order: { created_at: 'DESC' },
+    })
+  }
+
+  async markOneAsRead(studentId: number, notificationId: number) {
+    const n = await this.notificationRepo.findOne({
+      where: { id: notificationId, student_id: studentId },
+    })
+    if (!n) return { ok: false }
+    if (n.read_at) return { ok: true }
+    await this.notificationRepo.update(notificationId, { read_at: new Date().toISOString() })
+    return { ok: true }
+  }
+
   countUnread(studentId: number) {
     return this.notificationRepo.count({
       where: { student_id: studentId, read_at: IsNull() },

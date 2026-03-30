@@ -354,27 +354,153 @@ export class CommunicationService {
     return this._countUnreadByLastRead(convs, 'teacher', teacherId)
   }
 
-  private async _countUnreadByLastRead(
+  private async getUnreadConversationIds(
     convs: { id: number; last_message_at: string | null }[],
     readerType: string,
     readerId: number,
-  ): Promise<number> {
-    if (convs.length === 0) return 0
+  ): Promise<number[]> {
+    if (convs.length === 0) return []
     const ids = convs.map((c) => c.id)
     const reads = await this.readRepo.find({
       where: { conversation_id: In(ids), reader_type: readerType, reader_id: readerId },
       select: ['conversation_id', 'last_read_at'],
     })
     const readByConv = new Map(reads.map((r) => [r.conversation_id, r.last_read_at]))
-    let count = 0
+    const unread: number[] = []
     for (const c of convs) {
       const lastRead = readByConv.get(c.id)
       const lastMsgAt = c.last_message_at ?? ''
       if (!lastMsgAt) continue
       if (!lastRead || lastMsgAt > lastRead) {
-        count++
+        unread.push(c.id)
       }
     }
-    return count
+    return unread
+  }
+
+  private async _countUnreadByLastRead(
+    convs: { id: number; last_message_at: string | null }[],
+    readerType: string,
+    readerId: number,
+  ): Promise<number> {
+    const unread = await this.getUnreadConversationIds(convs, readerType, readerId)
+    return unread.length
+  }
+
+  /**
+   * Itens de conversa não lidas para o feed do sininho (responsável/aluno).
+   */
+  async listUnreadInboxForStudent(studentId: number, schoolId?: number) {
+    const convs = await this.findConversationsByStudent(studentId, schoolId)
+    const unreadIds = new Set(
+      await this.getUnreadConversationIds(
+        convs.map((c) => ({ id: c.id, last_message_at: c.last_message_at })),
+        'student',
+        studentId,
+      ),
+    )
+    const items: {
+      kind: 'message'
+      source_id: string
+      conversation_id: number
+      channel: 'school' | 'teacher'
+      title: string
+      subtitle: string | null
+      at: string
+    }[] = []
+    for (const c of convs) {
+      if (!unreadIds.has(c.id)) continue
+      const channel = c.teacher_id ? 'teacher' : 'school'
+      const at = c.last_message_at || c.created_at
+      const atStr = typeof at === 'string' ? at : at instanceof Date ? at.toISOString() : ''
+      const title =
+        channel === 'school'
+          ? 'Nova mensagem — Secretaria'
+          : `Nova mensagem — ${(c as { teacher_name?: string }).teacher_name || 'Professor'}`
+      items.push({
+        kind: 'message',
+        source_id: `msg-${c.id}-${channel}`,
+        conversation_id: c.id,
+        channel,
+        title,
+        subtitle: c.subject || (c as { last_message?: string }).last_message || null,
+        at: atStr,
+      })
+    }
+    return items
+  }
+
+  /**
+   * Conversas com a escola (secretaria) não lidas pelo usuário da escola.
+   */
+  async listUnreadInboxForSchool(schoolId: number, schoolUserId: number) {
+    const convs = await this.findConversationsBySchool(schoolId)
+    const unreadIds = new Set(
+      await this.getUnreadConversationIds(
+        convs.map((c) => ({ id: c.id, last_message_at: c.last_message_at })),
+        'school',
+        schoolUserId,
+      ),
+    )
+    const items: {
+      kind: 'message'
+      source_id: string
+      conversation_id: number
+      title: string
+      subtitle: string | null
+      at: string
+    }[] = []
+    for (const c of convs) {
+      if (!unreadIds.has(c.id)) continue
+      const at = c.last_message_at || c.created_at
+      const atStr = typeof at === 'string' ? at : at instanceof Date ? at.toISOString() : ''
+      const studentName = (c as { student_name?: string }).student_name || 'Aluno'
+      items.push({
+        kind: 'message',
+        source_id: `msg-${c.id}`,
+        conversation_id: c.id,
+        title: `Nova mensagem — ${studentName}`,
+        subtitle: c.subject || null,
+        at: atStr,
+      })
+    }
+    return items
+  }
+
+  /**
+   * Conversas com o professor não lidas pelo professor.
+   */
+  async listUnreadInboxForTeacher(teacherId: number) {
+    const convs = await this.findConversationsByTeacher(teacherId)
+    const unreadIds = new Set(
+      await this.getUnreadConversationIds(
+        convs.map((c) => ({ id: c.id, last_message_at: c.last_message_at })),
+        'teacher',
+        teacherId,
+      ),
+    )
+    const items: {
+      kind: 'message'
+      source_id: string
+      conversation_id: number
+      title: string
+      subtitle: string | null
+      at: string
+    }[] = []
+    for (const c of convs) {
+      if (!unreadIds.has(c.id)) continue
+      const at = c.last_message_at || c.created_at
+      const atStr = typeof at === 'string' ? at : at instanceof Date ? at.toISOString() : ''
+      const studentName = (c as { student_name?: string }).student_name || 'Aluno'
+      items.push({
+        kind: 'message',
+        source_id: `msg-${c.id}`,
+        conversation_id: c.id,
+        title: `Nova mensagem — ${studentName}`,
+        subtitle: c.subject || null,
+        at: atStr,
+      })
+    }
+    return items
   }
 }

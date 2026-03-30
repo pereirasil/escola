@@ -25,6 +25,7 @@ import { RolesGuard } from '../../common/guards/roles.guard'
 import { Roles } from '../../common/decorators/roles.decorator'
 import { SchoolId } from '../../common/decorators/school-id.decorator'
 import { getEffectiveStudentId, getEffectiveSchoolId } from '../../common/helpers/student-context.helper'
+import { CommunicationService } from '../communication/communication.service'
 
 function parseIncludeInactive(v?: string): boolean {
   return v === '1' || v === 'true'
@@ -52,6 +53,7 @@ export class StudentsController {
     private calendarEventsService: CalendarEventsService,
     private meetingsService: MeetingsService,
     private studentMessagesService: StudentMessagesService,
+    private communicationService: CommunicationService,
   ) {}
 
   @Get()
@@ -126,6 +128,68 @@ export class StudentsController {
   markNotificationsAsRead(@Req() req: { user: { role: string; student_id?: number } }) {
     const studentId = getEffectiveStudentId(req)
     return this.notificationsService.markAllAsRead(studentId)
+  }
+
+  @Patch('me/notifications/:id/read')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('responsible')
+  markOneNotificationRead(
+    @Param('id') id: string,
+    @Req() req: { user: { role: string; student_id?: number } },
+  ) {
+    const studentId = getEffectiveStudentId(req)
+    return this.notificationsService.markOneAsRead(studentId, +id)
+  }
+
+  @Get('me/inbox')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('responsible')
+  async getMyInbox(
+    @Req() req: { user: { role: string; student_id?: number; school_id?: number } },
+  ) {
+    const studentId = getEffectiveStudentId(req)
+    const schoolId = getEffectiveSchoolId(req)
+    const events = await this.calendarEventsService.findForStudent(studentId)
+    await this.notificationsService.ensureForCalendarEvents(studentId, events)
+    const [dbUnread, msgItems] = await Promise.all([
+      this.notificationsService.findUnreadByStudentId(studentId),
+      this.communicationService.listUnreadInboxForStudent(studentId, schoolId),
+    ])
+    const typeLabel: Record<string, string> = {
+      meeting: 'Reunião',
+      calendar_event: 'Evento',
+    }
+    const notifRows = dbUnread.map((n) => {
+      const created = n.created_at as unknown as Date
+      const atStr = created instanceof Date ? created.toISOString() : String(n.created_at ?? '')
+      return {
+        kind: 'notice' as const,
+        source_id: `notif-${n.id}`,
+        notification_id: n.id,
+        notice_type: n.type,
+        type_label: typeLabel[n.type] || 'Aviso',
+        title: n.title,
+        subtitle: n.message ?? null,
+        at: atStr,
+        conversation_id: null as number | null,
+        channel: null as 'school' | 'teacher' | null,
+      }
+    })
+    const msgRows = msgItems.map((m) => ({
+      kind: 'message' as const,
+      source_id: m.source_id,
+      notification_id: null as number | null,
+      notice_type: null as string | null,
+      type_label: 'Mensagem',
+      title: m.title,
+      subtitle: m.subtitle,
+      at: m.at,
+      conversation_id: m.conversation_id,
+      channel: m.channel,
+    }))
+    const merged = [...notifRows, ...msgRows]
+    merged.sort((a, b) => (a.at > b.at ? -1 : a.at < b.at ? 1 : 0))
+    return { items: merged }
   }
 
   @Post('me/messages')

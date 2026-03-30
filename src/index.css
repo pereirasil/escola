@@ -2333,6 +2333,11 @@ body {
   overflow-y: auto;
 }
 
+.notification-dropdown-body--scroll {
+  max-height: min(360px, 55vh);
+  overflow-y: auto;
+}
+
 .notification-dropdown-empty {
   padding: 1.5rem 1rem;
   text-align: center;
@@ -2340,28 +2345,53 @@ body {
   font-size: 0.85rem;
 }
 
-.notification-dropdown-item {
+.notification-dropdown-empty--solo {
+  padding: 2rem 1.25rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+button.notification-dropdown-item {
+  width: 100%;
+  display: block;
+  background: none;
+  border: none;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
   padding: 0.75rem 1rem;
   border-bottom: 1px solid #2a2a3a;
   cursor: pointer;
   transition: background 0.15s;
 }
 
-.notification-dropdown-item:last-child {
+button.notification-dropdown-item:last-child {
   border-bottom: none;
 }
 
-.notification-dropdown-item:hover {
+button.notification-dropdown-item:hover {
   background: #2a2a3a;
 }
 
-.notification-dropdown-item strong {
+.notification-dropdown-type {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #818cf8;
+  margin-bottom: 0.35rem;
+}
+
+button.notification-dropdown-item strong {
   display: block;
   font-size: 0.85rem;
   margin-bottom: 0.2rem;
+  font-weight: 600;
 }
 
-.notification-dropdown-item p {
+button.notification-dropdown-item p {
   margin: 0;
   font-size: 0.8rem;
   color: #aaa;
@@ -2370,7 +2400,9 @@ body {
   text-overflow: ellipsis;
 }
 
-.notification-dropdown-item small {
+button.notification-dropdown-item small {
+  display: block;
+  margin-top: 0.35rem;
   color: #666;
   font-size: 0.7rem;
 }
@@ -3755,17 +3787,20 @@ button:focus-visible {
     border-bottom-color: #eee;
     color: #213547;
   }
-  .notification-dropdown-item {
+  button.notification-dropdown-item {
     border-bottom-color: #f0f0f0;
   }
-  .notification-dropdown-item:hover {
+  button.notification-dropdown-item:hover {
     background: #f5f5f5;
   }
-  .notification-dropdown-item p {
+  button.notification-dropdown-item p {
     color: #666;
   }
-  .notification-dropdown-item small {
+  button.notification-dropdown-item small {
     color: #999;
+  }
+  .notification-dropdown-empty--solo {
+    color: #6b7280;
   }
   .notification-dropdown-footer {
     border-top-color: #eee;

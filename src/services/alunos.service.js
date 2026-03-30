@@ -38,8 +38,12 @@ export const alunosService = {
   headerInfo: () => api.get('/students/me/header-info').then((r) => r.data),
   meusProfessores: () => api.get('/students/me/teachers').then((r) => r.data),
   minhasNotificacoes: () => api.get('/students/me/notifications').then((r) => r.data),
+  /** Feed unificado (avisos não lidos + conversas não lidas) para o sininho */
+  meuInbox: () => api.get('/students/me/inbox').then((r) => r.data),
   contarNotificacoesNaoLidas: () => api.get('/students/me/notifications/count').then((r) => r.data),
   marcarNotificacoesComoLidas: () => api.patch('/students/me/notifications/read').then((r) => r.data),
+  marcarNotificacaoComoLida: (id) =>
+    api.patch(`/students/me/notifications/${id}/read`).then((r) => r.data),
   minhasMensagens: () => api.get('/students/me/messages').then((r) => r.data),
   enviarMensagem: (data) => api.post('/students/me/messages', data).then((r) => r.data),
   meuHistorico: () => api.get('/students/me/historico').then((r) => r.data),

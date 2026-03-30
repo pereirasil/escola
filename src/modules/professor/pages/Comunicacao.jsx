@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Card, PageHeader, Spinner } from '../../../components/ui'
 import { communicationService } from '../../../services/communication.service'
 import { professoresService } from '../../../services/professores.service'
@@ -11,6 +12,7 @@ function formatarData(data) {
 }
 
 export default function ComunicacaoProfessor() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [conversas, setConversas] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedConversation, setSelectedConversation] = useState(null)
@@ -38,6 +40,23 @@ export default function ComunicacaoProfessor() {
   useEffect(() => {
     carregarConversas()
   }, [])
+
+  useEffect(() => {
+    const conv = searchParams.get('conversation')
+    if (!conv || loading) return
+    const pendingId = parseInt(conv, 10)
+    if (Number.isNaN(pendingId)) return
+    const c = conversas.find((x) => x.id === pendingId)
+    if (c) setSelectedConversation(c)
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('conversation')
+        return next
+      },
+      { replace: true },
+    )
+  }, [searchParams, loading, conversas, setSearchParams])
 
   const handleAbrirNovaConversa = () => {
     setShowNovaConversa(true)

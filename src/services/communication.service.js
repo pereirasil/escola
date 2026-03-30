@@ -57,4 +57,7 @@ export const communicationService = {
     api.get('/students/me/conversations/unread-count-by-type').then((r) => r.data),
   contarNaoLidasEscola: () => api.get('/school/conversations/unread-count').then((r) => r.data),
   contarNaoLidasProfessor: () => api.get('/teacher/conversations/unread-count').then((r) => r.data),
+
+  inboxEscola: () => api.get('/school/inbox').then((r) => r.data),
+  inboxProfessor: () => api.get('/teacher/inbox').then((r) => r.data),
 }

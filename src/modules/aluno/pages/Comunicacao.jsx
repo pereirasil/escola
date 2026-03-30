@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Card, Spinner, FormInput } from '../../../components/ui'
 import { alunosService } from '../../../services/alunos.service'
@@ -20,6 +21,7 @@ function truncarTexto(texto, maxLen = 60) {
 export default function Comunicacao() {
   const studentId = useAuthStore((s) => s.studentId)
   const queryClient = useQueryClient()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [tab, setTab] = useState('aviso')
   const [selectedConversation, setSelectedConversation] = useState(null)
   const [showNovaConversa, setShowNovaConversa] = useState(false)
@@ -37,7 +39,6 @@ export default function Comunicacao() {
     queryKey: ['aluno', 'comunicacao-aviso', studentId],
     queryFn: async () => {
       const lista = await alunosService.minhasNotificacoes()
-      alunosService.marcarNotificacoesComoLidas().catch(() => {})
       return lista || []
     },
     enabled: !!studentId,
@@ -79,15 +80,69 @@ export default function Comunicacao() {
   useEffect(() => {
     const onConversationRead = () => refetchTabCounts()
     const onUnreadChanged = () => refetchTabCounts()
+    const onFeedChanged = () => {
+      queryClient.invalidateQueries({ queryKey: ['aluno', 'comunicacao-aviso', studentId] })
+    }
     window.addEventListener('communication:conversation-read', onConversationRead)
     window.addEventListener('communication:unread-changed', onUnreadChanged)
+    window.addEventListener('notifications:feed-changed', onFeedChanged)
     const interval = setInterval(refetchTabCounts, 60000)
     return () => {
       window.removeEventListener('communication:conversation-read', onConversationRead)
       window.removeEventListener('communication:unread-changed', onUnreadChanged)
+      window.removeEventListener('notifications:feed-changed', onFeedChanged)
       clearInterval(interval)
     }
-  }, [refetchTabCounts])
+  }, [refetchTabCounts, queryClient, studentId])
+
+  const clearConversationParam = () => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('conversation')
+        next.delete('tab')
+        return next
+      },
+      { replace: true },
+    )
+  }
+
+  useEffect(() => {
+    const t = searchParams.get('tab')
+    if (t === 'aviso' || t === 'secretaria' || t === 'professor') {
+      setTab(t)
+    }
+  }, [searchParams])
+
+  useEffect(() => {
+    const t = searchParams.get('tab')
+    const conv = searchParams.get('conversation')
+    if (!conv) return
+    const pendingId = parseInt(conv, 10)
+    if (Number.isNaN(pendingId)) return
+
+    if (t === 'secretaria') {
+      if (conversasLoading) return
+      const c = conversas.find((x) => x.id === pendingId && x.conversation_type === 'school')
+      if (c) setSelectedConversation(c)
+      clearConversationParam()
+      return
+    }
+
+    if (t === 'professor') {
+      if (conversasProfessorLoading) return
+      const c = conversasProfessor.find((x) => x.id === pendingId)
+      if (c) setSelectedConversation(c)
+      clearConversationParam()
+    }
+  }, [
+    searchParams,
+    conversas,
+    conversasProfessor,
+    conversasLoading,
+    conversasProfessorLoading,
+    setSearchParams,
+  ])
 
   const handleCriarConversa = async (e) => {
     e.preventDefault()
